@@ -1,8 +1,9 @@
 // ─────────────────────────────────────────────────────────────
 //  /blog — Server Component
-//  Fetches from Strapi; falls back to mock data if empty
+//  ISR: fallback revalidate 1 hour — instant via /api/revalidate webhook
 // ─────────────────────────────────────────────────────────────
-export const dynamic = 'force-dynamic' // always fetch fresh — no stale ISR cache
+
+export const revalidate = 3600 // 1h fallback — webhook clears cache instantly on admin publish
 
 import type { Metadata } from 'next'
 import Header from '@/components/Header'

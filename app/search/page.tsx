@@ -8,8 +8,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StickyBanner from "@/components/StickyBanner";
 import { SearchIcon, ArrowRightIcon } from "@/components/icons/ZenIcons";
-import { searchPostsAndCategories, fetchAllCategories } from "@/app/actions/search";
-import type { BlogPost, Category } from "@/types/strapi";
+import { searchPostsAndCategories, fetchAllCategories, fetchAllTags } from "@/app/actions/search";
+import type { BlogPost, Category, BlogTag } from "@/types/strapi";
 import { format, subDays, subMonths } from "date-fns";
 
 const TIME_FILTERS = [
@@ -34,16 +34,21 @@ export default function SearchPage() {
   const debouncedQuery = useDebounce(query, 500);
 
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
   const [activeTime, setActiveTime] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<BlogTag[]>([]);
   const [results, setResults] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories on mount
+  // Fetch categories and tags on mount
   useEffect(() => {
-    fetchAllCategories().then(cats => setCategories(cats)).catch(console.error);
+    Promise.all([
+      fetchAllCategories().then(cats => setCategories(cats)),
+      fetchAllTags().then(tagsData => setTags(tagsData))
+    ]).catch(console.error);
   }, []);
 
   // Fetch results when filters or debounced query changes
@@ -63,6 +68,7 @@ export default function SearchPage() {
         const res = await searchPostsAndCategories({
           search: debouncedQuery,
           categorySlug: activeCategory || undefined,
+          tagSlugs: activeTags.length > 0 ? activeTags : undefined,
           dateFrom,
           dateTo,
           pageSize: 20
@@ -76,18 +82,18 @@ export default function SearchPage() {
       }
     }
     fetchData();
-  }, [debouncedQuery, activeCategory, activeTime]);
+  }, [debouncedQuery, activeCategory, activeTags, activeTime]);
 
   return (
     <div className="min-h-screen bg-background selection:bg-gold/20 selection:text-gold flex flex-col">
       <Header />
-      <main className="flex-1 py-16">
+      <main className="flex-1 py-5">
         <div className="container mx-auto px-6">
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-10">
             <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">Tra cứu nhanh</p>
             <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Kho Tàng Khai Thị</h1>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">Tìm thấy câu trả lời bạn cần trong hàng ngàn bài giảng của Sư Phụ.</p>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Tìm thấy câu trả lời bạn cần trong hàng ngàn bài giảng của Sư Phụ.</p>
           </motion.div>
 
           <div className="max-w-3xl mx-auto mb-8 relative z-20">
@@ -143,6 +149,24 @@ export default function SearchPage() {
                             className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${activeCategory === cat.slug ? "bg-gold text-black border-gold" : "bg-background text-muted-foreground border-border/50 hover:border-gold/30 hover:text-foreground"}`}
                           >
                             {cat.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t border-border/30">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-medium text-foreground">Tags</p>
+                        {activeTags.length > 0 && <button onClick={() => setActiveTags([])} className="text-xs text-muted-foreground hover:text-gold">Xóa chọn</button>}
+                      </div>
+                      <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                        {tags.map((tag) => (
+                          <button
+                            key={tag.slug}
+                            onClick={() => setActiveTags(activeTags.includes(tag.slug) ? activeTags.filter(t => t !== tag.slug) : [...activeTags, tag.slug])}
+                            className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors border whitespace-nowrap ${activeTags.includes(tag.slug) ? "bg-gold/20 text-gold border-gold/50" : "bg-background text-muted-foreground border-border/50 hover:border-gold/30 hover:text-foreground"}`}
+                          >
+                            #{tag.name}
                           </button>
                         ))}
                       </div>
@@ -228,9 +252,9 @@ export default function SearchPage() {
                   <h3 className="text-lg font-medium text-foreground mb-2">Không tìm thấy bài viết nào</h3>
                   <p className="text-muted-foreground text-sm max-w-sm mx-auto">Vui lòng thử lại với từ khóa khác hoặc xóa bớt các bộ lọc để xem nhiều kết quả hơn.</p>
 
-                  {(query || activeCategory || activeTime !== "all") && (
+                  {(query || activeCategory || activeTags.length > 0 || activeTime !== "all") && (
                     <button
-                      onClick={() => { setQuery(''); setActiveCategory(null); setActiveTime('all'); setShowFilters(false); }}
+                      onClick={() => { setQuery(''); setActiveCategory(null); setActiveTags([]); setActiveTime('all'); setShowFilters(false); }}
                       className="mt-6 px-4 py-2 rounded-lg bg-primary/10 text-gold text-sm font-medium hover:bg-gold hover:text-black transition-colors"
                     >
                       Xóa tất cả bộ lọc

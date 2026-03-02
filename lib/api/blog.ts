@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { strapiFetch } from '@/lib/strapi'
-import type { BlogPost, StrapiList, StrapiSingle, Category } from '@/types/strapi'
+import type { BlogPost, StrapiList, StrapiSingle, Category, BlogTag } from '@/types/strapi'
 
 /** Shared populate config for all post queries */
 const POPULATE_FULL = [
@@ -12,15 +12,20 @@ const POPULATE_FULL = [
   'gallery',
   'seo',
   'categories',
+  'tags'
 ]
 
 /** Lightweight populate for list views */
-const POPULATE_LIST = ['thumbnail', 'gallery', 'categories']
+const POPULATE_LIST = ['thumbnail', 'gallery', 'categories', 'tags']
+
+/** Minimal populate for SEO metadata only (faster) */
+const POPULATE_METADATA = ['thumbnail', 'seo']
 
 export interface GetPostsOptions {
   page?: number
   pageSize?: number
   categorySlug?: string
+  tagSlugs?: string[]              // NEW: filter by one or more tags
   search?: string
   source?: string
   featured?: boolean
@@ -37,7 +42,7 @@ export interface GetPostsOptions {
 
 /** Get paginated list of published blog posts */
 export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiList<BlogPost>> {
-  const { page = 1, pageSize = 10, categorySlug, search, source, featured, language, dateFrom, dateTo, revalidate = 60 } = options
+  const { page = 1, pageSize = 10, categorySlug, tagSlugs, search, source, featured, language, dateFrom, dateTo, revalidate = 3600 } = options
 
   const filters: Record<string, unknown> = {}
   if (search) {
@@ -50,6 +55,10 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
   }
   if (categorySlug) {
     filters['categories'] = { slug: { $eq: categorySlug } }
+  }
+  if (tagSlugs && tagSlugs.length > 0) {
+    // Filter by one or more tags (ANY tag match)
+    filters['tags'] = { slug: { $in: tagSlugs } }
   }
   if (source) {
     filters['source'] = { $containsi: source }
@@ -71,7 +80,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
 
   try {
     console.log('[Blog] Starting getPosts')
-    console.log('[Blog]   Options:', { page, pageSize, search, language, revalidate })
+    console.log('[Blog]   Options:', { page, pageSize, search, tagSlugs, language, revalidate })
     console.log('[Blog]   Populate fields:', POPULATE_LIST)
 
     const result = await strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
@@ -106,8 +115,26 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     filters: { slug: { $eq: slug } },
     populate: POPULATE_FULL,
     pagination: { page: 1, pageSize: 1 },
-    noCache: true, // Force fresh for now to debug views
-    next: { revalidate: 0, tags: [`blog-post-${slug}`] },
+    noCache: false, // Can use cache now since we have request deduplication
+    next: { revalidate: 3600, tags: [`blog-post-${slug}`] },
+  })
+
+  return res.data[0] ?? null
+}
+
+/**
+ * Get post for metadata generation only (faster)
+ * Returns only fields needed for SEO: title, slug, content preview, thumbnail, seo
+ * Used in generateMetadata() to avoid fetching full content
+ */
+export async function getPostBySlugForMetadata(slug: string): Promise<BlogPost | null> {
+  const res = await strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
+    filters: { slug: { $eq: slug } },
+    populate: POPULATE_METADATA,
+    pagination: { page: 1, pageSize: 1 },
+    fields: ['title', 'slug', 'content', 'publishedAt', 'createdAt'],
+    noCache: false,
+    next: { revalidate: 3600, tags: [`blog-post-seo-${slug}`] },
   })
 
   return res.data[0] ?? null
@@ -118,7 +145,7 @@ export async function getPostById(documentId: string): Promise<BlogPost | null> 
   try {
     const res = await strapiFetch<StrapiSingle<BlogPost>>(`/blog-posts/${documentId}`, {
       populate: POPULATE_FULL,
-      next: { revalidate: 300, tags: [`blog-post-${documentId}`] },
+      next: { revalidate: 3600, tags: [`blog-post-${documentId}`] },
     })
     return res.data
   } catch {
@@ -179,7 +206,7 @@ export async function getRelatedPosts(post: BlogPost, limit = 4): Promise<BlogPo
       sort: ['publishedAt:desc'],
       pagination: { page: 1, pageSize: limit },
       populate: POPULATE_LIST,
-      next: { revalidate: 300 },
+      next: { revalidate: 3600, tags: ['blog-posts-related'] },
     })
     return res.data
   } catch {
@@ -202,8 +229,7 @@ export async function incrementPostViews(documentId: string): Promise<void> {
   }).catch(() => { }) // fire-and-forget
 }
 
-/**
- * Fetch all categories with parent relations populated.
+/** Fetch all categories with parent relations populated.
  * Returns flat list; client can build tree using parent/children relations.
  * Note: Strapi draftAndPublish is disabled for Category, so all entries shown.
  */
@@ -221,3 +247,23 @@ export async function getCategories(): Promise<Category[]> {
     return []
   }
 }
+
+/**
+ * Fetch all blog tags
+ * Sorted by name for UI display
+ * Cached for 1 hour (tags rarely change)
+ */
+export async function getAllTags(): Promise<BlogTag[]> {
+  try {
+    const res = await strapiFetch<StrapiList<BlogTag>>('/blog-tags', {
+      sort: ['name:asc'],
+      pagination: { page: 1, pageSize: 500 },
+      next: { revalidate: 3600, tags: ['blog-tags'] }, // Cache for 1 hour
+    })
+    return res.data ?? []
+  } catch (err) {
+    console.error('Failed to fetch tags:', err)
+    return []
+  }
+}
+

@@ -22,6 +22,8 @@ function getServerToken(): string | undefined {
 export interface FetchOptions {
   /** Strapi populate param — default: '*' */
   populate?: string | string[] | Record<string, unknown>
+  /** Strapi fields param — only fetch specific fields (performance optimization) */
+  fields?: string[]
   /** Strapi filters */
   filters?: Record<string, unknown>
   /** Strapi sort e.g. ['createdAt:desc'] */
@@ -38,9 +40,9 @@ export interface FetchOptions {
  * Build full Strapi API URL with query params
  */
 export function buildStrapiUrl(path: string, options: Omit<FetchOptions, 'next' | 'noCache'> = {}): string {
-  const { populate = '*', filters, sort, pagination } = options
+  const { populate = '*', fields, filters, sort, pagination } = options
   const query = qs.stringify(
-    { populate, filters, sort, pagination },
+    { populate, fields, filters, sort, pagination },
     { encodeValuesOnly: true, skipNulls: true }
   )
   return `${STRAPI_URL}/api${path}${query ? `?${query}` : ''}`
@@ -50,6 +52,10 @@ export function buildStrapiUrl(path: string, options: Omit<FetchOptions, 'next' 
  * Server-side fetch with API token auth + ISR support.
  * ⚠️  Only call from Server Components, Server Actions, or Route Handlers.
  *     Never call from 'use client' files.
+ *
+ * Next.js automatically deduplicates identical fetch() calls within the
+ * same render cycle — no manual cache needed.
+ * Use On-Demand Revalidation via /api/revalidate for instant cache clearing.
  */
 export async function strapiFetch<T>(
   path: string,
@@ -57,12 +63,13 @@ export async function strapiFetch<T>(
 ): Promise<T> {
   const { next, noCache, ...queryOptions } = options
   const url = buildStrapiUrl(path, queryOptions)
+
   const token = getServerToken()
 
   console.log(`[Strapi] Fetching ${path}`)
   console.log(`[Strapi]   URL: ${url}`)
   console.log(`[Strapi]   Auth: ${token ? 'Bearer token present' : 'NO TOKEN'}`)
-  console.log(`[Strapi]   Cache: ${noCache ? 'no-store' : `revalidate=${next?.revalidate ?? 60}`}`)
+  console.log(`[Strapi]   Cache: ${noCache ? 'no-store' : `revalidate=${next?.revalidate ?? 3600}`}`)
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -74,60 +81,62 @@ export async function strapiFetch<T>(
   try {
     const res = await fetch(url, {
       headers,
-      next: noCache ? undefined : { revalidate: next?.revalidate ?? 60, tags: next?.tags },
+      // Default revalidate: 3600s (1h) — On-Demand Revalidation via /api/revalidate
+      // handles instant invalidation when admin updates content in Strapi.
+      next: noCache ? undefined : { revalidate: next?.revalidate ?? 3600, tags: next?.tags },
       cache: noCache ? 'no-store' : undefined,
     })
 
     console.log(`[Strapi] Response status: ${res.status} ${res.statusText}`)
-    console.log(`[Strapi]   Content-Type: ${res.headers.get('content-type')}`)
-    console.log(`[Strapi]   Content-Length: ${res.headers.get('content-length')} bytes`)
+      console.log(`[Strapi]   Content-Type: ${res.headers.get('content-type')}`)
+      console.log(`[Strapi]   Content-Length: ${res.headers.get('content-length')} bytes`)
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      const errMsg = err?.error?.message ?? res.statusText
-      console.error(`[Strapi ERROR] Failed to fetch ${path}`)
-      console.error(`[Strapi ERROR]   Status: ${res.status}`)
-      console.error(`[Strapi ERROR]   Message: ${errMsg}`)
-      console.error(`[Strapi ERROR]   Raw error:`, err)
-      throw new StrapiAPIError(res.status, errMsg, path)
-    }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        const errMsg = err?.error?.message ?? res.statusText
+        console.error(`[Strapi ERROR] Failed to fetch ${path}`)
+        console.error(`[Strapi ERROR]   Status: ${res.status}`)
+        console.error(`[Strapi ERROR]   Message: ${errMsg}`)
+        console.error(`[Strapi ERROR]   Raw error:`, err)
+        throw new StrapiAPIError(res.status, errMsg, path)
+      }
 
-    const json = await res.json()
-    
-    // Extract response structure info
-    const responseKeys = Object.keys(json)
-    const hasData = Array.isArray(json.data)
-    const hasResults = Array.isArray(json.results)
-    const dataLength = hasData ? json.data.length : hasResults ? json.results.length : 0
-    
-    console.log(`[Strapi] Parsed response for ${path}`)
-    console.log(`[Strapi]   Keys: [${responseKeys.join(', ')}]`)
-    console.log(`[Strapi]   Has data array: ${hasData} (length: ${hasData ? json.data.length : 'N/A'})`)
-    console.log(`[Strapi]   Has results array: ${hasResults} (length: ${hasResults ? json.results.length : 'N/A'})`)
-    console.log(`[Strapi]   Has meta: ${!!json.meta}`)
-    console.log(`[Strapi]   Has pagination: ${!!(json.pagination || json.meta?.pagination)}`)
+      const json = await res.json()
+      
+      // Extract response structure info
+      const responseKeys = Object.keys(json)
+      const hasData = Array.isArray(json.data)
+      const hasResults = Array.isArray(json.results)
+      const dataLength = hasData ? json.data.length : hasResults ? json.results.length : 0
+      
+      console.log(`[Strapi] Parsed response for ${path}`)
+      console.log(`[Strapi]   Keys: [${responseKeys.join(', ')}]`)
+      console.log(`[Strapi]   Has data array: ${hasData} (length: ${hasData ? json.data.length : 'N/A'})`)
+      console.log(`[Strapi]   Has results array: ${hasResults} (length: ${hasResults ? json.results.length : 'N/A'})`)
+      console.log(`[Strapi]   Has meta: ${!!json.meta}`)
+      console.log(`[Strapi]   Has pagination: ${!!(json.pagination || json.meta?.pagination)}`)
 
-    if (isStrapiError(json)) {
-      const errMsg = json.error?.message ?? 'Unknown error'
-      console.error(`[Strapi ERROR] Received error response for ${path}`)
-      console.error(`[Strapi ERROR]   Status: ${json.error?.status}`)
-      console.error(`[Strapi ERROR]   Message: ${errMsg}`)
-      throw new StrapiAPIError(json.error.status, errMsg, path)
-    }
+      if (isStrapiError(json)) {
+        const errMsg = json.error?.message ?? 'Unknown error'
+        console.error(`[Strapi ERROR] Received error response for ${path}`)
+        console.error(`[Strapi ERROR]   Status: ${json.error?.status}`)
+        console.error(`[Strapi ERROR]   Message: ${errMsg}`)
+        throw new StrapiAPIError(json.error.status, errMsg, path)
+      }
 
-    // Normalize non-standard Strapi response: {results, pagination} → {data, meta}
-    if (json && typeof json === 'object' && Array.isArray(json.results) && !Array.isArray(json.data)) {
-      console.log(`[Strapi] Normalizing ${path}: Converting from {results, pagination} to {data, meta}`)
-      console.log(`[Strapi]   Results count: ${json.results.length}`)
-      console.log(`[Strapi]   Pagination:`, json.pagination)
-      return {
-        data: json.results,
-        meta: { pagination: json.pagination ?? {} },
-      } as T
-    }
+      // Normalize non-standard Strapi response: {results, pagination} → {data, meta}
+      if (json && typeof json === 'object' && Array.isArray(json.results) && !Array.isArray(json.data)) {
+        console.log(`[Strapi] Normalizing ${path}: Converting from {results, pagination} to {data, meta}`)
+        console.log(`[Strapi]   Results count: ${json.results.length}`)
+        console.log(`[Strapi]   Pagination:`, json.pagination)
+        return {
+          data: json.results,
+          meta: { pagination: json.pagination ?? {} },
+        } as T
+      }
 
-    console.log(`[Strapi] Successfully fetched ${path} (${dataLength} items)`)
-    return json as T
+      console.log(`[Strapi] Successfully fetched ${path} (${dataLength} items)`)
+      return json as T
   } catch (error) {
     if (error instanceof StrapiAPIError) throw error
     const msg = error instanceof Error ? error.message : String(error)

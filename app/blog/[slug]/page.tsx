@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 //  /blog/[slug] — Server Component (dynamic blog post)
-//  ISR: revalidates every 5 minutes
+//  ISR: fallback revalidate 1 hour — instant via /api/revalidate webhook
 // ─────────────────────────────────────────────────────────────
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -9,14 +9,14 @@ import Image from 'next/image'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
-import { getPostBySlug, getAllPostSlugs, getRelatedPosts } from '@/lib/api/blog'
+import { getPostBySlug, getAllPostSlugs, getRelatedPosts, getPostBySlugForMetadata } from '@/lib/api/blog'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ViewTracker from '@/components/ViewTracker'
 import { ArrowRightIcon } from '@/components/icons/ZenIcons'
 import ShareButtons from './ShareButtons'
 
-export const revalidate = 60 // 1 minute (faster view updates)
+export const revalidate = 3600 // 1h fallback — webhook clears cache instantly on admin publish
 
 interface Props {
   params: { slug: string }
@@ -35,7 +35,8 @@ export async function generateStaticParams() {
 /** Dynamic SEO metadata per post */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
-    const post = await getPostBySlug(params.slug)
+    // Use lighter fetch for metadata (faster, only fetches needed fields)
+    const post = await getPostBySlugForMetadata(params.slug)
     if (!post) return { title: 'Bài không tồn tại' }
 
     const seoData = post.seo
@@ -165,17 +166,12 @@ export default async function BlogPostPage({ params }: Props) {
               {post.title}
             </h1>
 
-            {/* Original Chinese title */}
+            {/* Tựa gốc tiếng Trung */}
             {post.original_title && (
               <p className="text-muted-foreground/70 text-lg mb-3 font-light tracking-wide">
                 {post.original_title}
               </p>
             )}
-
-            {/* Excerpt */}
-            <p className="text-muted-foreground text-lg leading-relaxed border-l-4 border-gold/30 pl-4 italic mb-4">
-              {post.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
-            </p>
 
             {/* Author + stats row */}
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -236,13 +232,13 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* ── Content (HTML from CKEditor) ── */}
           <article
-            className="prose prose-invert prose-gold max-w-none mb-10 whitespace-pre-wrap
+            className="prose dark:prose-invert prose-gold max-w-none mb-10 whitespace-pre-wrap
               prose-headings:font-display prose-headings:text-foreground
               prose-p:text-muted-foreground prose-p:leading-relaxed
               prose-a:text-gold hover:prose-a:underline
               prose-strong:text-foreground
               prose-blockquote:border-gold/30 prose-blockquote:text-muted-foreground
-              prose-img:rounded-lg"
+              prose-img:rounded-lg "
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
 

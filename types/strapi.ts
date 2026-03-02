@@ -96,7 +96,19 @@ export interface CategoryTree extends Category {
   depth: number
 }
 
-// BlogCategory is removed as we now use true relations
+// ─── BlogTag  ─────────────────────────────────────────────────
+
+/** BlogTag entity — replaces JSON array tags for searchability */
+export interface BlogTag {
+  id: number
+  documentId: string
+  name: string
+  slug: string
+  description: string | null
+  blog_posts: BlogPost[] | null
+  createdAt: string
+  updatedAt: string
+}
 
 /** BlogPost entity (Strapi v5 flat format) */
 export interface BlogPost {
@@ -105,11 +117,12 @@ export interface BlogPost {
   title: string
   slug: string
   content: string
+  excerpt: string | null           // denormalized text preview (auto-extracted from content)
   /** Original link to the source if available */
   original_link: string | null
   /** Many-to-many: one post can have multiple topic categories */
   categories: Category[] | null
-  tags: string[] | null
+  tags: BlogTag[] | null           // Changed from string[] to BlogTag relation
   thumbnail: StrapiMedia | null
   gallery: StrapiMedia[] | null      // additional images
   video_url: string | null           // YouTube / embed URL
