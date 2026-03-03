@@ -1,16 +1,23 @@
 'use client'
 
-import { useState, useEffect } from "react";
+// ─────────────────────────────────────────────────────────────
+//  /search — Trang tìm kiếm nhanh kho tàng khai thị
+//  Phân trang: state-based (client component) — mỗi trang 20 bài
+// ─────────────────────────────────────────────────────────────
+
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Header from "@/components/Header";
-
 import Footer from "@/components/Footer";
 import StickyBanner from "@/components/StickyBanner";
 import { SearchIcon, ArrowRightIcon } from "@/components/icons/ZenIcons";
 import { searchPostsAndCategories, fetchAllCategories, fetchAllTags } from "@/app/actions/search";
 import type { BlogPost, Category, BlogTag } from "@/types/strapi";
 import { format, subDays, subMonths } from "date-fns";
+import { ChevronLeft, ChevronRight, MoreHorizontal, Loader2 } from "lucide-react";
+import { PAGINATION, getPaginationRange } from "@/lib/config/pagination";
+import { cn } from "@/lib/utils";
 
 const TIME_FILTERS = [
   { label: "Tất cả", value: "all" },
@@ -21,12 +28,75 @@ const TIME_FILTERS = [
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(handler);
   }, [value, delay]);
   return debouncedValue;
+}
+
+// ── Inline Pagination (đơn giản cho search page) ────────────────────────
+interface SearchPaginationProps {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
+function SearchPagination({ currentPage, totalPages, onPageChange }: SearchPaginationProps) {
+  if (totalPages <= 1) return null
+  const range = getPaginationRange(currentPage, totalPages)
+  return (
+    <nav className="flex items-center justify-center gap-1 mt-10" aria-label="Phân trang kết quả tìm kiếm">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage <= 1}
+        className={cn(
+          'inline-flex h-9 items-center gap-1.5 px-3 rounded-lg border text-sm font-medium transition-all',
+          currentPage <= 1
+            ? 'border-border/40 text-muted-foreground/40 cursor-not-allowed'
+            : 'border-border text-muted-foreground hover:border-gold/50 hover:text-gold hover:bg-gold/5'
+        )}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Trước</span>
+      </button>
+      {range.map((item, idx) =>
+        item === 'ellipsis' ? (
+          <span key={`e-${idx}`} className="flex h-9 w-9 items-center justify-center text-muted-foreground/60">
+            <MoreHorizontal className="h-4 w-4" />
+          </span>
+        ) : (
+          <button
+            key={item}
+            onClick={() => item !== currentPage && onPageChange(item)}
+            aria-current={item === currentPage ? 'page' : undefined}
+            className={cn(
+              'inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-all',
+              item === currentPage
+                ? 'border-gold bg-gold/10 text-gold font-semibold cursor-default'
+                : 'border-border/60 text-muted-foreground hover:border-gold/40 hover:text-gold hover:bg-gold/5'
+            )}
+          >
+            {item}
+          </button>
+        )
+      )}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        className={cn(
+          'inline-flex h-9 items-center gap-1.5 px-3 rounded-lg border text-sm font-medium transition-all',
+          currentPage >= totalPages
+            ? 'border-border/40 text-muted-foreground/40 cursor-not-allowed'
+            : 'border-border text-muted-foreground hover:border-gold/50 hover:text-gold hover:bg-gold/5'
+        )}
+      >
+        <span className="hidden sm:inline">Sau</span>
+        <ChevronRight className="h-4 w-4" />
+      </button>
+      <span className="ml-3 text-xs text-muted-foreground/60 hidden md:block">
+        Trang {currentPage}/{totalPages}
+      </span>
+    </nav>
+  )
 }
 
 export default function SearchPage() {
@@ -41,9 +111,12 @@ export default function SearchPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<BlogTag[]>([]);
   const [results, setResults] = useState<BlogPost[]>([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // Fetch categories and tags on mount
+  // Tải danh mục và tags một lần khi mount
   useEffect(() => {
     Promise.all([
       fetchAllCategories().then(cats => setCategories(cats)),
@@ -51,38 +124,48 @@ export default function SearchPage() {
     ]).catch(console.error);
   }, []);
 
-  // Fetch results when filters or debounced query changes
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        let dateFrom: string | undefined = undefined;
-        const dateTo: string | undefined = undefined;
+  // Tải kết quả khi filter hoặc trang thay đổi
+  const fetchResults = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      let dateFrom: string | undefined = undefined;
 
-        if (activeTime === "week") {
-          dateFrom = format(subDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm:ssXX");
-        } else if (activeTime === "month") {
-          dateFrom = format(subMonths(new Date(), 1), "yyyy-MM-dd'T'HH:mm:ssXX");
-        }
-
-        const res = await searchPostsAndCategories({
-          search: debouncedQuery,
-          categorySlug: activeCategory || undefined,
-          tagSlugs: activeTags.length > 0 ? activeTags : undefined,
-          dateFrom,
-          dateTo,
-          pageSize: 20
-        });
-
-        setResults(res.data);
-      } catch (err) {
-        console.error("Search failed:", err);
-      } finally {
-        setLoading(false);
+      if (activeTime === "week") {
+        dateFrom = format(subDays(new Date(), 7), "yyyy-MM-dd'T'HH:mm:ssXX");
+      } else if (activeTime === "month") {
+        dateFrom = format(subMonths(new Date(), 1), "yyyy-MM-dd'T'HH:mm:ssXX");
       }
+
+      const res = await searchPostsAndCategories({
+        search: debouncedQuery || undefined,
+        categorySlug: activeCategory || undefined,
+        tagSlugs: activeTags.length > 0 ? activeTags : undefined,
+        dateFrom,
+        page,
+        pageSize: PAGINATION.SEARCH_PAGE_SIZE,
+      });
+
+      setResults(res.data);
+      const meta = res.meta?.pagination
+      setTotalResults(meta?.total ?? res.data.length);
+      setTotalPages(meta?.pageCount ?? 1);
+      setCurrentPage(page);
+    } catch (err) {
+      console.error("Search failed:", err);
+    } finally {
+      setLoading(false);
     }
-    fetchData();
   }, [debouncedQuery, activeCategory, activeTags, activeTime]);
+
+  // Re-fetch khi filter đổi, reset về trang 1
+  useEffect(() => {
+    fetchResults(1);
+  }, [fetchResults]);
+
+  const handlePageChange = (page: number) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchResults(page);
+  };
 
   return (
     <div className="min-h-screen bg-background selection:bg-gold/20 selection:text-gold flex flex-col">
@@ -96,6 +179,7 @@ export default function SearchPage() {
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Tìm thấy câu trả lời bạn cần trong hàng ngàn bài giảng của Sư Phụ.</p>
           </motion.div>
 
+          {/* ── Search box ── */}
           <div className="max-w-3xl mx-auto mb-8 relative z-20">
             <div className="flex gap-2">
               <div className="relative flex-1 group">
@@ -126,6 +210,7 @@ export default function SearchPage() {
           </div>
 
           <div className="max-w-3xl mx-auto">
+            {/* ── Bộ lọc mở rộng ── */}
             <AnimatePresence>
               {showFilters && (
                 <motion.div
@@ -136,6 +221,7 @@ export default function SearchPage() {
                   className="overflow-hidden mb-8"
                 >
                   <div className="p-5 rounded-2xl bg-card border border-border/50 shadow-sm space-y-6">
+                    {/* Danh mục */}
                     <div>
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-medium text-foreground">Danh mục chủ đề</p>
@@ -154,6 +240,7 @@ export default function SearchPage() {
                       </div>
                     </div>
 
+                    {/* Tags */}
                     <div className="pt-4 border-t border-border/30">
                       <div className="flex items-center justify-between mb-3">
                         <p className="text-sm font-medium text-foreground">Tags</p>
@@ -172,6 +259,7 @@ export default function SearchPage() {
                       </div>
                     </div>
 
+                    {/* Thời gian */}
                     <div className="pt-4 border-t border-border/30">
                       <p className="text-sm font-medium text-foreground mb-3">Thời gian đăng tải</p>
                       <div className="flex flex-wrap gap-2">
@@ -191,22 +279,30 @@ export default function SearchPage() {
               )}
             </AnimatePresence>
 
+            {/* ── Kết quả ── */}
             <div className="space-y-4">
+              {/* Status bar */}
               <div className="flex items-center justify-between px-1 mb-2">
-                <h2 className="text-sm font-medium text-muted-foreground">
-                  {loading ? "Đang tìm kiếm..." : `Tìm thấy ${results.length} kết quả phù hợp`}
+                <h2 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-gold" />}
+                  {loading
+                    ? "Đang tìm kiếm..."
+                    : `Tìm thấy ${totalResults.toLocaleString('vi-VN')} kết quả`}
                 </h2>
+                {!loading && totalPages > 1 && (
+                  <span className="text-xs text-muted-foreground/60">Trang {currentPage}/{totalPages}</span>
+                )}
               </div>
 
               {loading ? (
                 // Skeleton loading
                 [1, 2, 3, 4].map(i => (
                   <div key={i} className="p-5 rounded-2xl bg-card border border-border/30 animate-pulse">
-                    <div className="h-4 bg-secondary rounded w-1/4 mb-3"></div>
-                    <div className="h-5 bg-secondary rounded w-3/4 mb-4"></div>
+                    <div className="h-4 bg-secondary rounded w-1/4 mb-3" />
+                    <div className="h-5 bg-secondary rounded w-3/4 mb-4" />
                     <div className="space-y-2">
-                      <div className="h-3 bg-secondary rounded w-full"></div>
-                      <div className="h-3 bg-secondary rounded w-5/6"></div>
+                      <div className="h-3 bg-secondary rounded w-full" />
+                      <div className="h-3 bg-secondary rounded w-5/6" />
                     </div>
                   </div>
                 ))
@@ -216,7 +312,7 @@ export default function SearchPage() {
                     key={r.documentId}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.03, duration: 0.3 }}
+                    transition={{ delay: Math.min(i * 0.03, 0.25), duration: 0.3 }}
                   >
                     <Link
                       href={`/blog/${r.slug}`}
@@ -229,7 +325,7 @@ export default function SearchPage() {
                         ) : (
                           <span className="text-[11px] text-muted-foreground">{new Date(r.publishedAt || r.createdAt).toLocaleDateString("vi-VN")}</span>
                         )}
-                        <span className="ml-auto text-[11px] text-muted-foreground">{r.views} lượt xem</span>
+                        <span className="ml-auto text-[11px] text-muted-foreground">{r.views.toLocaleString('vi-VN')} lượt xem</span>
                       </div>
 
                       <h3 className="text-base md:text-lg font-display text-foreground mb-2 group-hover:text-gold transition-colors">{r.title}</h3>
@@ -250,7 +346,7 @@ export default function SearchPage() {
                     <SearchIcon className="w-6 h-6 text-muted-foreground opacity-50" />
                   </div>
                   <h3 className="text-lg font-medium text-foreground mb-2">Không tìm thấy bài viết nào</h3>
-                  <p className="text-muted-foreground text-sm max-w-sm mx-auto">Vui lòng thử lại với từ khóa khác hoặc xóa bớt các bộ lọc để xem nhiều kết quả hơn.</p>
+                  <p className="text-muted-foreground text-sm max-w-sm mx-auto">Vui lòng thử lại với từ khóa khác hoặc xóa bớt các bộ lọc.</p>
 
                   {(query || activeCategory || activeTags.length > 0 || activeTime !== "all") && (
                     <button
@@ -263,19 +359,20 @@ export default function SearchPage() {
                 </div>
               )}
             </div>
+
+            {/* ── Phân trang ── */}
+            {!loading && (
+              <SearchPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
           </div>
         </div>
       </main>
       <Footer />
       <StickyBanner />
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.5); }
-      `}} />
     </div>
   );
 }

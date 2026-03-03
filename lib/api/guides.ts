@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { strapiFetch } from '@/lib/strapi'
-import type { StrapiList, BeginnerGuide } from '@/types/strapi'
+import type { StrapiList, BeginnerGuide, BeginnerGuideFile } from '@/types/strapi'
 
 /**
  * Fetch danh sách hướng dẫn theo loại.
@@ -46,5 +46,21 @@ export async function getGuideById(documentId: string): Promise<BeginnerGuide | 
     return res.data ?? null
   } catch {
     return null
+  }
+}
+
+/** Fetch danh sách tài liệu file hướng dẫn sơ học */
+export async function getBeginnerGuideFiles(): Promise<BeginnerGuideFile[]> {
+  try {
+    const res = await strapiFetch<StrapiList<BeginnerGuideFile>>('/beginner-guide-files', {
+      sort: ['order:asc'],
+      populate: ['files'],
+      pagination: { page: 1, pageSize: 100 },
+      next: { revalidate: 300, tags: ['beginner-guide-files'] },
+    })
+    return res.data ?? []
+  } catch (err) {
+    console.error('[Guides] Failed to fetch guide files:', err)
+    return []
   }
 }

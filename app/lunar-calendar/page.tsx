@@ -17,7 +17,6 @@ import {
   Sparkles,
   Calendar as CalendarIcon,
   Bell as BellIcon,
-  Link as LinkIcon,
   ChevronLeft,
   ChevronRight,
   PartyPopper,
@@ -27,7 +26,7 @@ import {
   Sword,
   type LucideIcon
 } from 'lucide-react';
-import { fetchLunarEvents } from '@/lib/api/lunar-calendar';
+// fetchLunarEvents chạy server-side qua route handler /api/lunar-events
 
 /* ── Lazy-load lunar lib ─────────────────────────────────────── */
 // @forvn/vn-lunar-calendar — converts solar <-> Vietnamese lunar
@@ -39,17 +38,23 @@ async function getLunarLib() {
 }
 
 /* ── Types ──────────────────────────────────────────────────── */
+interface BlogLink {
+  id: number;
+  title: string;
+  slug: string;
+}
+
 interface SpecialDay {
   lunarMonth: number;
   lunarDay: number;
   name: string;
   type: 'buddha' | 'bodhisattva' | 'teacher' | 'fast' | 'holiday' | 'normal';
-  teachingSlug?: string; // link to /teachings/xxx
   description: string;
   icon: LucideIcon;
   reciteCount?: number;
   solarDate?: string;
   isRecurringLunar?: boolean;
+  relatedBlogs?: BlogLink[]; // Khai thị blog liên quan từ admin
 }
 
 /* ── Dữ liệu ngày đặc biệt theo LỊCH ÂM ─────────────────────
@@ -63,21 +68,21 @@ const SPECIAL_DAYS: SpecialDay[] = [
   { lunarMonth: 1, lunarDay: 15, name: 'Rằm Thượng Nguyên', type: 'holiday', description: 'Ngày cầu nguyện linh ứng nhất năm.', icon: Sun },
   { lunarMonth: 2, lunarDay: 8, name: 'Vía Phật Thích Ca Xuất Gia', type: 'buddha', description: 'Kỷ niệm Thái tử Tất Đạt Đa rời hoàng cung tu đạo.', icon: Sparkles },
   { lunarMonth: 2, lunarDay: 15, name: 'Vía Phật Thích Ca Nhập Niết Bàn', type: 'buddha', description: 'Kỷ niệm ngày Đức Phật nhập diệt tại rừng Câu Thi Na.', icon: Moon },
-  { lunarMonth: 2, lunarDay: 19, name: 'Vía Quán Thế Âm Đản Sinh', type: 'bodhisattva', teachingSlug: 'quan-the-am-dan-sinh', description: 'Đản sinh Bồ Tát Quán Thế Âm — Chú Đại Bi 49+ biến.', icon: Flower2 },
+  { lunarMonth: 2, lunarDay: 19, name: 'Vía Quán Thế Âm Đản Sinh', type: 'bodhisattva', description: 'Đản sinh Bồ Tát Quán Thế Âm — Chú Đại Bi 49+ biến.', icon: Flower2 },
   { lunarMonth: 2, lunarDay: 21, name: 'Vía Phổ Hiền Bồ Tát', type: 'bodhisattva', description: 'Đại Hạnh Bồ Tát Phổ Hiền — khổ hạnh, thực hành.', icon: Sparkles },
   { lunarMonth: 3, lunarDay: 16, name: 'Vía Chuẩn Đề Bồ Tát', type: 'bodhisattva', description: 'Công đức vô lượng — niệm Chuẩn Đề Thần Chú tăng phước.', icon: Sparkles },
   { lunarMonth: 4, lunarDay: 4, name: 'Vía Văn Thù Sư Lợi Bồ Tát', type: 'bodhisattva', description: 'Đản sinh Bồ Tát Văn Thù — trí tuệ, học hành.', icon: BookOpen },
   { lunarMonth: 4, lunarDay: 8, name: 'Vía Phật Thích Ca Đản Sinh (Phật Đản)', type: 'buddha', description: 'Đức Phật đản sinh tại vườn Lâm Tỳ Ni.', icon: Sparkles },
-  { lunarMonth: 4, lunarDay: 15, name: 'Phật Đản (Lễ Hội Vesak)', type: 'buddha', teachingSlug: 'phat-dan', description: 'Kỷ niệm ngày Đức Phật Thích Ca ra đời. Ăn chay, phóng sinh.', icon: Sparkles },
+  { lunarMonth: 4, lunarDay: 15, name: 'Phật Đản (Lễ Hội Vesak)', type: 'buddha', description: 'Kỷ niệm ngày Đức Phật Thích Ca ra đời. Ăn chay, phóng sinh.', icon: Sparkles },
   { lunarMonth: 6, lunarDay: 3, name: 'Vía Hộ Pháp Vi Đà Bồ Tát', type: 'bodhisattva', description: 'Bảo hộ chánh pháp — niệm kinh hộ trì.', icon: Sword },
-  { lunarMonth: 6, lunarDay: 19, name: 'Vía Quán Thế Âm Thành Đạo', type: 'bodhisattva', teachingSlug: 'quan-the-am-thanh-dao', description: 'Ngày Bồ Tát Quán Thế Âm đắc đạo — Chú Đại Bi 49 biến.', icon: Flower2 },
+  { lunarMonth: 6, lunarDay: 19, name: 'Vía Quán Thế Âm Thành Đạo', type: 'bodhisattva', description: 'Ngày Bồ Tát Quán Thế Âm đắc đạo — Chú Đại Bi 49 biến.', icon: Flower2 },
   { lunarMonth: 7, lunarDay: 13, name: 'Vía Đại Thế Chí Bồ Tát', type: 'bodhisattva', description: 'Đản sinh Bồ Tát Đại Thế Chí.', icon: Sparkles },
-  { lunarMonth: 7, lunarDay: 15, name: 'Vu Lan Báo Hiếu (Rằm Tháng Bảy)', type: 'holiday', teachingSlug: 'vu-lan-bao-hieu', description: 'Tháng báo hiếu — siêu độ vong linh, đốt Ngôi Nhà Nhỏ.', icon: Moon },
+  { lunarMonth: 7, lunarDay: 15, name: 'Vu Lan Báo Hiếu (Rằm Tháng Bảy)', type: 'holiday', description: 'Tháng báo hiếu — siêu độ vong linh, đốt Ngôi Nhà Nhỏ.', icon: Moon },
   { lunarMonth: 7, lunarDay: 30, name: 'Vía Địa Tạng Vương Bồ Tát', type: 'bodhisattva', description: 'Đản sinh Bồ Tát Địa Tạng — đại nguyện độ thoát chúng sinh.', icon: Flame },
   { lunarMonth: 9, lunarDay: 9, name: 'Vía Diêm Vương (Ngày Trùng Cửu)', type: 'holiday', description: 'Dâng lễ, siêu độ vong linh và cầu nguyện gia tiên.', icon: Flame },
-  { lunarMonth: 9, lunarDay: 19, name: 'Vía Quán Thế Âm Xuất Gia', type: 'bodhisattva', teachingSlug: 'quan-the-am-xuat-gia', description: 'Kỷ niệm Bồ Tát Quán Thế Âm xuất gia tu hành.', icon: Flower2 },
+  { lunarMonth: 9, lunarDay: 19, name: 'Vía Quán Thế Âm Xuất Gia', type: 'bodhisattva', description: 'Kỷ niệm Bồ Tát Quán Thế Âm xuất gia tu hành.', icon: Flower2 },
   { lunarMonth: 9, lunarDay: 30, name: 'Vía Phật Dược Sư', type: 'buddha', description: 'Cầu sức khỏe, tiêu trừ nghiệp bệnh thân tâm.', icon: Sparkles },
-  { lunarMonth: 11, lunarDay: 17, name: 'Vía Phật A Di Đà', type: 'buddha', teachingSlug: 'phat-a-di-da', description: 'Niệm hồng danh A Di Đà nhiều nhất trong năm.', icon: Sparkles },
+  { lunarMonth: 11, lunarDay: 17, name: 'Vía Phật A Di Đà', type: 'buddha', description: 'Niệm hồng danh A Di Đà nhiều nhất trong năm.', icon: Sparkles },
   { lunarMonth: 12, lunarDay: 8, name: 'Ngày Phóng Sinh / Sư Phụ Khai Thị', type: 'teacher', description: 'Ngày đặc biệt tu tập — quảng độ chúng sinh.', icon: Flower2 },
   { lunarMonth: 12, lunarDay: 23, name: 'Tiễn Ông Táo', type: 'holiday', description: 'Sám hối, niệm kinh tiễn Thần Bếp về trời.', icon: Flame },
 ];
@@ -102,14 +107,15 @@ const TYPE_STYLE: Record<SpecialDay['type'], { bg: string; text: string; border:
 /* ── LotusIcon SVG ────────────────────────────────────────────── */
 const LotusMarker = ({ type }: { type: SpecialDay['type'] }) => {
   const colors: Record<SpecialDay['type'], string> = {
-    buddha: '#F59E0B',
-    bodhisattva: '#F43F5E',
-    teacher: '#D4AF37',
-    fast: '#10B981',
-    holiday: '#A855F7',
-    normal: '#3B82F6',
+    buddha: '#D97706',   // amber-600 — Phật đản, ấm trầm
+    bodhisattva: '#E11D48', // rose-600
+    teacher: '#CA9500',  // vàng gold dịu, không lóa
+    fast: '#059669',     // emerald-600
+    holiday: '#9333EA',  // purple-600
+    normal: '#2563EB',   // blue-600
   };
-  const fill = colors[type] || '#D4AF37';
+  const fill = colors[type] || '#CA9500';
+
   return (
     <svg viewBox="0 0 20 20" className="w-3 h-3 drop-shadow-sm" fill={fill}>
       <path d="M10 2c-1 2-3 3-3 5s2 3 3 3 3-1 3-3-2-3-3-5z" opacity="0.9" />
@@ -147,19 +153,6 @@ async function solarToLunar(year: number, month: number, day: number): Promise<L
   return { lunarDay: day, lunarMonth: month, lunarYear: year, isLeapMonth: false };
 }
 
-/* ── Rich Text Helper (Strapi Blocks) ────────────────────────── */
-const extractText = (val: any): string => {
-  if (!val) return '';
-  if (typeof val === 'string') return val;
-  if (Array.isArray(val)) {
-    return val.map(node => {
-      if (node.children) return extractText(node.children);
-      if (node.text) return node.text;
-      return '';
-    }).join(' ');
-  }
-  return '';
-};
 
 /* ── Tháng Can Chi ────────────────────────────────────────────── */
 const CAN = ['Giáp', 'Ất', 'Bính', 'Đinh', 'Mậu', 'Kỷ', 'Canh', 'Tân', 'Nhâm', 'Quý'];
@@ -331,13 +324,23 @@ function DayDrawer({ detail, onClose }: { detail: DayDetail | null; onClose: () 
                           Số biến Lễ Phật Đại Sám Hối Văn (khuyến nghị): {m.reciteCount} lần
                         </p>
                       )}
-                      {m.teachingSlug && (
-                        <a
-                          href={`/teachings/${m.teachingSlug}`}
-                          className={`mt-3 inline-flex items-center gap-1.5 text-xs font-medium ${style.text} hover:underline`}
-                        >
-                          <LinkIcon /> Xem bài khai thị liên quan →
-                        </a>
+
+                      {/* Blog liên quan từ admin */}
+                      {m.relatedBlogs && m.relatedBlogs.length > 0 && (
+                        <div className="mt-4 pt-3 border-t border-white/10">
+                          <p className={`text-xs font-semibold mb-2 ${style.text}`}>📚 Khai Thị Blog Liên Quan:</p>
+                          <div className="flex flex-col gap-1.5">
+                            {m.relatedBlogs.map((blog) => (
+                              <a
+                                key={blog.id}
+                                href={`/blog/${blog.slug}`}
+                                className={`text-xs font-medium ${style.text} hover:underline inline-flex items-center gap-1.5 transition-colors`}
+                              >
+                                <BookOpen className="w-3 h-3" /> {blog.title}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
@@ -386,8 +389,8 @@ export default function LunarCalendarPage() {
     const today = new Date();
     solarToLunar(today.getFullYear(), today.getMonth() + 1, today.getDate()).then(setTodayLunar);
 
-    // Lấy sự kiện từ CMS
-    fetchLunarEvents().then(events => {
+    // Lấy sự kiện từ CMS qua route handler (server-side, có token, deep populate)
+    fetch('/api/lunar-events').then(r => r.json()).then((events: import('@/lib/api/lunar-calendar').LunarEvent[]) => {
       const getIcon = (t: string) => {
         if (t === 'buddha') return Sparkles;
         if (t === 'bodhisattva') return Flower2;
@@ -404,8 +407,9 @@ export default function LunarCalendarPage() {
         name: e.title,
         type: e.eventType || 'normal',
         reciteCount: e.reciteCount,
-        description: extractText(e.todoList) || extractText(e.teachings) || 'Tự giác thực hành theo lời Phật dạy',
-        icon: getIcon(e.eventType)
+        description: 'Tự giác thực hành theo lời Phật dạy',
+        icon: getIcon(e.eventType),
+        relatedBlogs: e.relatedBlogs ? e.relatedBlogs.map(b => ({ id: b.id, title: b.title, slug: b.slug })) : []
       }));
       console.log("[LunarCalendar] Events loaded:", mapped.length);
       console.table(mapped);
@@ -665,13 +669,18 @@ export default function LunarCalendarPage() {
                   <h3 className="text-sm font-bold text-foreground">Khai Thị Theo Ngày Vía</h3>
                 </div>
                 <div className="space-y-1.5">
-                  {SPECIAL_DAYS.filter((s) => s.teachingSlug).slice(0, 5).map((s) => (
-                    <a key={s.teachingSlug} href={`/teachings/${s.teachingSlug}`}
-                      className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group py-1">
-                      <s.icon className="w-3.5 h-3.5" />
-                      <span className="group-hover:underline line-clamp-1">{s.name}</span>
-                    </a>
+                  {adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).slice(0, 5).map((s, idx) => (
+                    s.relatedBlogs!.slice(0, 1).map((blog) => (
+                      <a key={`${idx}-${blog.id}`} href={`/blog/${blog.slug}`}
+                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group py-1">
+                        <s.icon className="w-3.5 h-3.5" />
+                        <span className="group-hover:underline line-clamp-1">{s.name} — {blog.title}</span>
+                      </a>
+                    ))
                   ))}
+                  {adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).length === 0 && (
+                    <p className="text-xs text-muted-foreground/60">Chưa có khai thị liên kết.</p>
+                  )}
                 </div>
               </div>
             </div>

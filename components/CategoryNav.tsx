@@ -164,7 +164,7 @@ export default function CategoryNav({ onClose }: { onClose?: () => void }) {
       <div className="container mx-auto flex h-[580px]">
 
         {/* SIDEBAR (Left) - Using a solid subtle background */}
-        <aside className="w-[320px] shrink-0 border-r border-border/50 overflow-y-auto custom-scrollbar bg-[#f8f9fa] dark:bg-[#151515] py-8 px-4">
+        <aside className="w-[400px] shrink-0 border-r border-border/50 overflow-y-auto custom-scrollbar bg-[#f8f9fa] dark:bg-[#151515] py-8 px-4">
           <div className="space-y-1.5">
             {tree.map((root) => {
               const Icon = getIconForCategory(root.name, root.slug)

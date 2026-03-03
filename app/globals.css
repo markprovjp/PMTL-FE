@@ -6,112 +6,121 @@
 
 @layer base {
   :root {
-    --background: 30 100% 98%;
-    --foreground: 30 40% 12%;
+    /* ── Light Mode: Kem ngà ấm, không chói ── */
+    /* Nền kem ngà đậm hơn một chút: giảm lightness từ 98% → 94% */
+    --background: 38 45% 94%;
+    --foreground: 28 35% 15%;
 
-    --card: 30 60% 96%;
-    --card-foreground: 30 40% 12%;
+    --card: 38 30% 97%;
+    --card-foreground: 28 35% 15%;
 
-    --popover: 30 60% 96%;
-    --popover-foreground: 30 40% 12%;
+    --popover: 38 30% 97%;
+    --popover-foreground: 28 35% 15%;
 
-    --primary: 43 90% 38%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary/Gold — giữ nguyên #FFD038 (hsl ~46 100% 61%) */
+    --primary: 46 100% 55%;
+    --primary-foreground: 0 0% 8%;
 
-    --secondary: 30 40% 94%;
-    --secondary-foreground: 30 30% 20%;
+    --secondary: 38 25% 90%;
+    --secondary-foreground: 28 25% 25%;
 
-    --muted: 30 30% 94%;
-    --muted-foreground: 30 20% 45%;
+    --muted: 38 20% 88%;
+    --muted-foreground: 28 18% 42%;
 
-    --accent: 43 70% 35%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 46 100% 50%;
+    --accent-foreground: 0 0% 8%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 63% 38%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 30 30% 90%;
-    --input: 30 30% 90%;
-    --ring: 43 90% 38%;
+    --border: 38 20% 84%;
+    --input: 38 20% 84%;
+    --ring: 46 100% 55%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 30 80% 97%;
-    --sidebar-foreground: 30 40% 20%;
-    --sidebar-primary: 43 90% 38%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 30 40% 94%;
-    --sidebar-accent-foreground: 30 40% 20%;
-    --sidebar-border: 30 30% 90%;
-    --sidebar-ring: 43 90% 38%;
+    --sidebar-background: 38 40% 93%;
+    --sidebar-foreground: 28 30% 22%;
+    --sidebar-primary: 46 100% 55%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 38 25% 89%;
+    --sidebar-accent-foreground: 28 30% 22%;
+    --sidebar-border: 38 20% 84%;
+    --sidebar-ring: 46 100% 55%;
 
     /* Custom tokens */
-    --gold: 43 90% 38%;
-    --gold-dim: 43 55% 32%;
-    --gold-glow: 43 80% 50%;
-    --cream: 30 100% 98%;
-    --zen-dark: 0 0% 10%;
-    --zen-surface: 30 60% 95%;
-    --zen-border: 30 30% 88%;
+    --gold: 46 100% 46%;          /* #FFD038 giảm lightness để không lóa trên nền sáng */
+    --gold-dim: 44 90% 40%;
+    --gold-glow: 46 100% 60%;
+    --cream: 38 45% 94%;
+    --zen-dark: 28 35% 12%;
+    --zen-surface: 38 30% 92%;
+    --zen-border: 38 20% 82%;
 
     --font-display: "Playfair Display", Georgia, serif;
     --font-body: "Be Vietnam Pro", system-ui, sans-serif;
 
-    --shadow-gold: 0 4px 30px -8px hsl(43 90% 38% / 0.15);
-    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.08);
+    --shadow-gold: 0 4px 30px -8px hsl(46 100% 50% / 0.18);
+    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.07);
   }
 
   .dark {
-    --background: 0 0% 10%;
-    --foreground: 0 0% 88%;
+    /* ── Dark Mode: Nâu đất áo Phật tử (ca sa Bắc Tông) ── */
+    /* Màu nâu áo Phật tử Việt Nam: hsl(25, 35%, X%)       */
+    /* Nền rất sẫm: như nâu đất tối                         */
+    --background: 24 28% 8%;
+    --foreground: 35 25% 88%;
 
-    --card: 0 0% 13%;
-    --card-foreground: 0 0% 88%;
+    --card: 24 25% 11%;
+    --card-foreground: 35 25% 88%;
 
-    --popover: 0 0% 13%;
-    --popover-foreground: 0 0% 88%;
+    --popover: 24 25% 11%;
+    --popover-foreground: 35 25% 88%;
 
-    --primary: 46 66% 52%;
-    --primary-foreground: 0 0% 10%;
+    /* Gold trong dark mode — giảm lightness, không bị lóa */
+    --primary: 46 95% 52%;
+    --primary-foreground: 0 0% 8%;
 
-    --secondary: 0 0% 16%;
-    --secondary-foreground: 0 0% 70%;
+    --secondary: 24 22% 15%;
+    --secondary-foreground: 35 20% 65%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 50%;
+    --muted: 24 20% 17%;
+    --muted-foreground: 35 15% 50%;
 
-    --accent: 46 50% 42%;
-    --accent-foreground: 0 0% 95%;
+    --accent: 46 90% 48%;
+    --accent-foreground: 0 0% 8%;
 
-    --destructive: 0 63% 31%;
+    --destructive: 0 60% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 46 66% 52%;
+    /* Border: nâu trung, đủ tương phản nhưng không gắt */
+    --border: 24 20% 20%;
+    --input: 24 20% 20%;
+    --ring: 46 95% 52%;
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 70%;
-    --sidebar-primary: 46 66% 52%;
-    --sidebar-primary-foreground: 0 0% 10%;
-    --sidebar-accent: 0 0% 16%;
-    --sidebar-accent-foreground: 0 0% 70%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 46 66% 52%;
+    --sidebar-background: 24 30% 6%;
+    --sidebar-foreground: 35 20% 65%;
+    --sidebar-primary: 46 95% 52%;
+    --sidebar-primary-foreground: 0 0% 8%;
+    --sidebar-accent: 24 22% 14%;
+    --sidebar-accent-foreground: 35 20% 65%;
+    --sidebar-border: 24 20% 18%;
+    --sidebar-ring: 46 95% 52%;
 
     /* Custom tokens */
-    --gold: 46 66% 52%;
-    --gold-dim: 46 40% 38%;
-    --gold-glow: 46 80% 62%;
-    --cream: 0 0% 88%;
-    --zen-dark: 0 0% 10%;
-    --zen-surface: 0 0% 13%;
-    --zen-border: 0 0% 22%;
+    --gold: 46 95% 52%;            /* Vàng hơi dịu hơn trong dark mode */
+    --gold-dim: 44 85% 44%;
+    --gold-glow: 46 95% 66%;
+    --cream: 35 25% 85%;
+    --zen-dark: 24 28% 6%;
+    --zen-surface: 24 25% 12%;
+    --zen-border: 24 20% 22%;
 
-    --shadow-gold: 0 4px 30px -8px hsl(46 66% 52% / 0.15);
-    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.5);
+    --shadow-gold: 0 4px 30px -8px hsl(46 95% 52% / 0.20);
+    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.55);
   }
 }
+
 
 @layer base {
   * {
@@ -200,4 +209,20 @@
       transparent
     );
   }
+
+  /* Scrollbar vàng mảnh cho sidebar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--gold) / 0.2);
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--gold) / 0.5);
+  }
 }
+

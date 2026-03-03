@@ -78,35 +78,14 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
     // Note: If language is removed from schema, this will be ignored by Strapi or throw error
   }
 
-  try {
-    console.log('[Blog] Starting getPosts')
-    console.log('[Blog]   Options:', { page, pageSize, search, tagSlugs, language, revalidate })
-    console.log('[Blog]   Populate fields:', POPULATE_LIST)
-
-    const result = await strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
-      sort: ['publishedAt:desc'],
-      filters,
-      pagination: { page, pageSize },
-      populate: POPULATE_LIST,
-      noCache: options.noCache || revalidate === 0,
-      next: { revalidate, tags: ['blog-posts'] },
-    })
-
-    console.log('[Blog] getPosts completed successfully')
-    console.log('[Blog]   Data items:', result.data?.length ?? 0)
-    console.log('[Blog]   Total:', result.meta?.pagination?.total ?? 'unknown')
-    console.log('[Blog]   Pagination:', result.meta?.pagination)
-
-    return result
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    const stack = err instanceof Error ? err.stack : ''
-    console.error('[Blog] getPosts FAILED')
-    console.error('[Blog]   Error:', msg)
-    console.error('[Blog]   Stack:', stack)
-    console.error('[Blog]   Full error:', err)
-    throw err
-  }
+  return strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
+    sort: ['publishedAt:desc'],
+    filters,
+    pagination: { page, pageSize },
+    populate: POPULATE_LIST,
+    noCache: options.noCache || revalidate === 0,
+    next: { revalidate, tags: ['blog-posts'] },
+  })
 }
 
 /** Get a single blog post by slug */

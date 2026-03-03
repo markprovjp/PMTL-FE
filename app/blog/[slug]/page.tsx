@@ -117,7 +117,7 @@ export default async function BlogPostPage({ params }: Props) {
     <div className="min-h-screen bg-background selection:bg-gold/20 selection:text-gold">
       <Header />
       <ViewTracker documentId={post.documentId} slug={post.slug} />
-      <main className="py-24">
+      <main className="py-5">
         <div className="container mx-auto px-6 ">
 
           <Breadcrumbs
@@ -185,13 +185,13 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* ── Thumbnail ── */}
           {thumbnailUrl && !youtubeId && (
-            <div className="rounded-xl overflow-hidden mb-10 aspect-video bg-secondary">
+            <div className="rounded-xl overflow-hidden mb-10 bg-secondary/30">
               <Image
                 src={thumbnailUrl}
                 alt={post.thumbnail?.alternativeText ?? post.title}
-                width={800}
-                height={450}
-                className="w-full h-full object-cover"
+                width={post.thumbnail?.width ?? 1200}
+                height={post.thumbnail?.height ?? 800}
+                className="w-full h-auto"
                 priority
               />
             </div>

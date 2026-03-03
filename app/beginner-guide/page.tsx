@@ -1,4 +1,4 @@
-import { getBeginnerGuides } from "@/lib/api/guides";
+import { getBeginnerGuides, getBeginnerGuideFiles } from "@/lib/api/guides";
 import BeginnerGuideClient from "./BeginnerGuideClient";
 
 export const metadata = {
@@ -7,6 +7,10 @@ export const metadata = {
 };
 
 export default async function BeginnerGuidePage() {
-  const guides = await getBeginnerGuides();
-  return <BeginnerGuideClient initialGuides={guides} />;
+  // Fetch song song cả 2 nguồn dữ liệu
+  const [guides, guideFiles] = await Promise.all([
+    getBeginnerGuides(),
+    getBeginnerGuideFiles(),
+  ]);
+  return <BeginnerGuideClient initialGuides={guides} initialGuideFiles={guideFiles} />;
 }

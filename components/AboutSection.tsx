@@ -6,41 +6,76 @@ import { ChevronDownIcon } from "@/components/icons/ZenIcons";
 
 const sections = [
   {
+    id: "quan-the-am",
+    question: "1. Quán Thế Âm Bồ Tát Là Ai?",
+    answer: `Quán Thế Âm Bồ Tát — còn gọi là Quan Âm, Quán Tự Tại — là vị Bồ Tát của Đại Từ Đại Bi, phổ cứu nhân gian khó khăn, sở hữu vô lượng trí tuệ và thần thông.
+
+Ngài đã thành Phật từ vô lượng kiếp trước, hiệu là "Chánh Pháp Minh Như Lai", nhưng vì tình thương chúng sinh mà hiện thân Bồ Tát trở lại. Cùng Văn Thù, Phổ Hiền, Địa Tạng — Ngài là một trong "Tứ Đại Bồ Tát".
+
+Tại Tây Phương Cực Lạc, Ngài đồng hành cùng Phật A Di Đà và Bồ Tát Đại Thế Chí — ba vị hợp thành "Tây Phương Tam Thánh". Ngài có mối nhân duyên sâu sắc với chúng sinh Ta Bà: hữu cảm tức ứng, không nguyện không theo — đó là ý nghĩa câu "Gia gia A Di Đà, hộ hộ Quán Thế Âm".
+
+Trải qua lịch sử, Ngài đã hóa thân vô số — từ Lưu Tát Ha (Đông Tấn), Đại Hòa Thượng Bảo Chí Công (Nam Triều) cho đến Tăng Già Đại Sư đời Đường. Mỗi hóa thân đều mang theo thần thông và kỳ tích chấn động.`,
+  },
+  {
     id: "lu-master",
-    question: "1. Giới Thiệu Trưởng Ban Đài Loan",
-    answer: `Trưởng Ban Đài Loan Lư Quân Hoành là người thành phố Giang Môn, tỉnh Quảng Đông, Trung Quốc. Năm 2015, tháng 1 tại sân vận động Rajamangala ở Kuala Lumpur (Malaysia) đã tổ chức đại pháp hội với hơn mười vạn người tham dự; tháng 4 tại Singapore tổ chức pháp hội, chấn động thế giới.
+    question: "2. Giới Thiệu Sư Phụ Lư Quân Hoành",
+    answer: `Trong thế kỷ 21, vị Đại Đức được mệnh danh là hóa thân của Quán Thế Âm Bồ Tát chính là Đài Trưởng Lư Quân Hoành — Đài Phát Thanh Đông Phương, Sydney, Úc.
 
-Lư Quân Hoành vì quảng bá Phật pháp, hoằng dương văn hóa Trung Hoa, tăng tiến hòa bình thế giới, nhiều năm qua không ngừng đi khắp thế giới tổ chức pháp hội quy mô lớn, cứu độ chúng sinh.
+Ngài có pháp nhãn thần thông: chỉ cần biết năm sinh, cầm tinh và giới tính, không bị giới hạn bởi không gian và thời gian, Ngài có thể nhìn thấy Đồ Đằng, biết kiếp trước kiếp này, nhân-quả báo ứng — giúp người hiểu nhân quả như bóng với hình, từ đó hành thiện bỏ ác, thay đổi vận mệnh.
 
-Từ năm 2012 đến nay, Sư phụ đã nhiều lần được các quốc gia mời đến diễn giảng, bao gồm Liên Hợp Quốc, Quốc hội Hoa Kỳ cùng các trường đại học trên thế giới, và đã nhận được nhiều giải thưởng.
+Từ năm 2012 đến nay, Sư Phụ đã được mời diễn giảng tại Liên Hợp Quốc, Quốc hội Hoa Kỳ và nhiều trường đại học trên thế giới. Năm 2015, Đại Pháp Hội tại Malaysia và Singapore quy tụ hơn mười vạn người tu học.
 
-Sư phụ từng được trao “Giải thưởng Hòa bình Thế giới (Phật giáo)” cùng nhiều vinh dự khác. Sách Pháp Môn Tâm Linh do Sư phụ sáng lập đã được xuất bản hơn 10.000.000 quyển, lưu thông khắp thế giới, độ hóa vô số hữu duyên.`,
+Sách Pháp Môn Tâm Linh đã xuất bản hơn 10.000.000 quyển, lưu thông khắp thế giới — cứu người không cần hồi báo, Ngài là hiện thân sống động của tinh thần Đại Từ Đại Bi.`,
   },
   {
-    id: "three-dharmas",
-    question: "2. Khéo Dùng Ba Đại Pháp Bảo",
-    answer: `**Tụng Kinh**
-Tâm niệm Đại Bi, tâm lượng rộng lớn; tâm niệm Tâm Kinh, khai mở trí huệ. Chú Đại Bi tăng cường năng lượng, tiêu trừ tai nạn; Tâm Kinh khai mở trí huệ, tăng trưởng công đức. Kinh văn là lời khai thị của chư Phật Bồ Tát, có thể hóa giải các loại vấn đề trong đời sống. Tụng kinh khiến thân tâm thanh tịnh, trang nghiêm mỹ hảo.
+    id: "phap-mon",
+    question: "3. Pháp Môn Tâm Linh Là Gì?",
+    answer: `Pháp Môn Tâm Linh là tâm nguyện từ bi của Quán Thế Âm Bồ Tát dành cho chúng sinh thời hiện đại — thuộc Phật Giáo Đại Thừa, phù hợp với căn cơ con người ngày nay.
 
-**Phát Nguyện**
-Nguyện lực có thể cải biến vận mệnh, uy lực của nguyện lực đến từ tâm chân thành. Khi một người nguyện lực kiên cố, phát tâm chân chính, liền có thể đạt được gia trì và bảo hộ của chư Phật Bồ Tát. Phát nguyện không chỉ cần chân thành, mà còn phải lượng sức mà hành.
+Pháp Môn dạy chúng ta trả nghiệp bằng cách thực hành Ngũ Đại Pháp Bảo, giúp:
+• Thoát khỏi đau khổ, bệnh tật, phiền não
+• Hóa giải mâu thuẫn, nghiệt chướng oan gia
+• Nâng cao trí tuệ và phúc đức bản thân
+• Siêu độ người thân đã khuất
 
-**Phóng Sinh**
-Phóng sinh là bố thí, là hành thiện, là từ bi; vì cứu độ sinh mạng, công đức không thể nghĩ bàn. Phóng sinh không những tiêu tai kéo dài thọ mạng, cát tường như ý, mà còn bồi dưỡng tâm từ bi của chính mình, tích lũy công đức phúc báo.`,
+Nhờ hiệu quả linh nghiệm nhanh chóng, chỉ trong 5 năm ngắn ngủi đã có hơn 10 triệu tín đồ trên toàn thế giới theo tu học — một con số chưa từng có trong lịch sử Phật giáo hiện đại.`,
   },
   {
-    id: "why-chant",
-    question: "3. Vì Sao Phải Tụng Kinh?",
-    answer: `Đừng để tâm linh chờ đợi thêm một phút nào nữa! Con cần kinh văn mỗi ngày để tăng trưởng năng lượng, cải thiện đời sống, thay đổi hoàn cảnh sinh hoạt. Vì trưởng bối, vì gia đình, vì con cái, vì tiền đồ, cần phải chăm chỉ tu hành, tinh tấn không ngừng, mới có thể đạt được hạnh phúc chân chính.
+    id: "five-dharmas",
+    question: "4. Ngũ Đại Pháp Bảo Tu Học",
+    answer: `**Niệm Kinh** — Tụng Chú Đại Bi, Tâm Kinh, Chuẩn Đề Thần Chú, Lễ Phật Đại Sám Hối Văn mỗi ngày. Kinh văn là lời khai thị của chư Phật, tiêu nghiệp chướng, tăng năng lượng, khai mở trí huệ.
 
-Tụng kinh có thể tiêu tai giải nạn! Tụng kinh có thể sám hối nghiệp chướng, khiến tâm được thanh tịnh, khiến gia đình hòa thuận.
+**Phát Nguyện** — Lập nguyện chân thành, kiên cố. Nguyện lực có thể cải biến vận mệnh, thu hút gia trì của chư Phật Bồ Tát.
 
-Tụng kinh khiến tâm an tịnh, xa lìa phiền não! Tâm thanh tịnh thì thân an lạc, xuất sinh trí huệ, chuyển họa thành phúc, sở cầu như nguyện.`,
+**Phóng Sinh** — Cứu sinh mạng bị giam cầm, bồi dưỡng tâm từ bi, tích lũy công đức phúc báo, tiêu tai kéo dài thọ mạng.
+
+**Đọc Bạch Thoại Phật Pháp** — Học hiểu giáo lý qua ngôn ngữ đời thường của Sư Phụ, thực hành đúng pháp, tránh tà kiến.
+
+**Đại Sám Hối (Ngôi Nhà Nhỏ)** — Viết và đốt kinh văn siêu độ oan gia trái chủ, hóa giải nghiệp lực nhiều kiếp, thanh lọc thân tâm.`,
   },
 ];
 
+// Render chuỗi text có **bold** thành JSX
+function renderAnswer(text: string) {
+  return text.split('\n\n').map((para, i) => {
+    // Tách phần bold khỏi phần thường
+    const parts = para.split(/(\*\*[^*]+\*\*)/g);
+    return (
+      <p key={i} className="text-muted-foreground leading-loose text-sm mb-3 last:mb-0 whitespace-pre-line">
+        {parts.map((part, j) =>
+          part.startsWith('**') && part.endsWith('**') ? (
+            <strong key={j} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
+          ) : (
+            <span key={j}>{part}</span>
+          )
+        )}
+      </p>
+    );
+  });
+}
+
 const AboutSection = () => {
-  const [openId, setOpenId] = useState<string | null>("lu-master");
+  const [openId, setOpenId] = useState<string | null>("quan-the-am");
 
   return (
     <section className="py-20">
@@ -108,11 +143,7 @@ const AboutSection = () => {
                       className="overflow-hidden"
                     >
                       <div className="px-5 pb-5 border-t border-border pt-4">
-                        {sec.answer.split("\n\n").map((para, i) => (
-                          <p key={i} className="text-muted-foreground leading-loose text-sm mb-3 last:mb-0 whitespace-pre-line">
-                            {para}
-                          </p>
-                        ))}
+                        {renderAnswer(sec.answer)}
                       </div>
                     </motion.div>
                   )}

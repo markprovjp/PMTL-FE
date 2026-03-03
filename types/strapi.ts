@@ -168,6 +168,20 @@ export interface BeginnerGuide {
   updatedAt: string
 }
 
+/** Hướng Dẫn Sơ Học File — tài liệu PDF/file có thể download hoặc xem preview */
+export interface BeginnerGuideFile {
+  id: number
+  documentId: string
+  name: string
+  description: string | null
+  order: number
+  files: StrapiMedia[] | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+
 // ─── Homepage Dynamic Content ────────────────────────────────
 
 export interface HeroSlide {

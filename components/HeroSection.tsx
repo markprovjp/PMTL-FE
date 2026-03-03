@@ -50,15 +50,6 @@ const HeroSection = ({ slides, stats }: HeroSectionProps) => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Decorative Ornaments */}
-      <div className="absolute inset-0 pointer-events-none select-none overflow-hidden mix-blend-overlay opacity-30">
-        <svg viewBox="0 0 100 100" className="absolute -top-10 -right-10 w-96 h-96 text-gold animate-[spin_120s_linear_infinite]" fill="none" stroke="currentColor">
-          <circle cx="50" cy="50" r="45" strokeWidth="0.5" strokeDasharray="2 4" />
-          <circle cx="50" cy="50" r="35" strokeWidth="0.5" />
-          <path d="M50 15 L50 85 M15 50 L85 50" strokeWidth="0.5" strokeDasharray="1 3" />
-        </svg>
-      </div>
-
       {/* Main Content Container */}
       <div className="relative z-10 container mx-auto px-6 pt-20 pb-32 flex flex-col lg:flex-row items-center justify-between gap-12">
         {/* Left Column: Text & Search */}

@@ -66,11 +66,6 @@ export async function strapiFetch<T>(
 
   const token = getServerToken()
 
-  console.log(`[Strapi] Fetching ${path}`)
-  console.log(`[Strapi]   URL: ${url}`)
-  console.log(`[Strapi]   Auth: ${token ? 'Bearer token present' : 'NO TOKEN'}`)
-  console.log(`[Strapi]   Cache: ${noCache ? 'no-store' : `revalidate=${next?.revalidate ?? 3600}`}`)
-
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   }
@@ -87,62 +82,34 @@ export async function strapiFetch<T>(
       cache: noCache ? 'no-store' : undefined,
     })
 
-    console.log(`[Strapi] Response status: ${res.status} ${res.statusText}`)
-      console.log(`[Strapi]   Content-Type: ${res.headers.get('content-type')}`)
-      console.log(`[Strapi]   Content-Length: ${res.headers.get('content-length')} bytes`)
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}))
+      const errMsg = err?.error?.message ?? res.statusText
+      console.error(`[Strapi ${res.status}] ${path}: ${errMsg}`)
+      throw new StrapiAPIError(res.status, errMsg, path)
+    }
 
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        const errMsg = err?.error?.message ?? res.statusText
-        console.error(`[Strapi ERROR] Failed to fetch ${path}`)
-        console.error(`[Strapi ERROR]   Status: ${res.status}`)
-        console.error(`[Strapi ERROR]   Message: ${errMsg}`)
-        console.error(`[Strapi ERROR]   Raw error:`, err)
-        throw new StrapiAPIError(res.status, errMsg, path)
-      }
+    const json = await res.json()
 
-      const json = await res.json()
-      
-      // Extract response structure info
-      const responseKeys = Object.keys(json)
-      const hasData = Array.isArray(json.data)
-      const hasResults = Array.isArray(json.results)
-      const dataLength = hasData ? json.data.length : hasResults ? json.results.length : 0
-      
-      console.log(`[Strapi] Parsed response for ${path}`)
-      console.log(`[Strapi]   Keys: [${responseKeys.join(', ')}]`)
-      console.log(`[Strapi]   Has data array: ${hasData} (length: ${hasData ? json.data.length : 'N/A'})`)
-      console.log(`[Strapi]   Has results array: ${hasResults} (length: ${hasResults ? json.results.length : 'N/A'})`)
-      console.log(`[Strapi]   Has meta: ${!!json.meta}`)
-      console.log(`[Strapi]   Has pagination: ${!!(json.pagination || json.meta?.pagination)}`)
+    if (isStrapiError(json)) {
+      const errMsg = json.error?.message ?? 'Unknown error'
+      console.error(`[Strapi ${json.error?.status}] ${path}: ${errMsg}`)
+      throw new StrapiAPIError(json.error.status, errMsg, path)
+    }
 
-      if (isStrapiError(json)) {
-        const errMsg = json.error?.message ?? 'Unknown error'
-        console.error(`[Strapi ERROR] Received error response for ${path}`)
-        console.error(`[Strapi ERROR]   Status: ${json.error?.status}`)
-        console.error(`[Strapi ERROR]   Message: ${errMsg}`)
-        throw new StrapiAPIError(json.error.status, errMsg, path)
-      }
+    // Normalize non-standard Strapi response: {results, pagination} → {data, meta}
+    if (json && typeof json === 'object' && Array.isArray(json.results) && !Array.isArray(json.data)) {
+      return {
+        data: json.results,
+        meta: { pagination: json.pagination ?? {} },
+      } as T
+    }
 
-      // Normalize non-standard Strapi response: {results, pagination} → {data, meta}
-      if (json && typeof json === 'object' && Array.isArray(json.results) && !Array.isArray(json.data)) {
-        console.log(`[Strapi] Normalizing ${path}: Converting from {results, pagination} to {data, meta}`)
-        console.log(`[Strapi]   Results count: ${json.results.length}`)
-        console.log(`[Strapi]   Pagination:`, json.pagination)
-        return {
-          data: json.results,
-          meta: { pagination: json.pagination ?? {} },
-        } as T
-      }
-
-      console.log(`[Strapi] Successfully fetched ${path} (${dataLength} items)`)
-      return json as T
+    return json as T
   } catch (error) {
     if (error instanceof StrapiAPIError) throw error
     const msg = error instanceof Error ? error.message : String(error)
-    console.error(`[Strapi FATAL] Error fetching ${path}`)
-    console.error(`[Strapi FATAL]   Message: ${msg}`)
-    console.error(`[Strapi FATAL]   Full error:`, error)
+    console.error(`[Strapi FATAL] ${path}: ${msg}`)
     throw new StrapiAPIError(500, msg, path)
   }
 }

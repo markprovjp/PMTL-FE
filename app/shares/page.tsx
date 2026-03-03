@@ -4,11 +4,14 @@
 // ─────────────────────────────────────────────────────────────
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight, MoreHorizontal, CheckCircle2, Info, Pin, ImageIcon, Globe } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import StickyBanner from '@/components/StickyBanner';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { PAGINATION, getPaginationRange } from '@/lib/config/pagination';
+import { cn } from '@/lib/utils';
 import {
   fetchPosts,
   likePost,
@@ -20,7 +23,6 @@ import {
   type CommunityPost,
   type CommunityComment,
 } from '@/lib/api/community';
-import { CheckCircle2, Info, Pin, ImageIcon, Globe } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const CATEGORIES = ['Tất cả', 'Sức Khoẻ', 'Gia Đình', 'Sự Nghiệp', 'Hôn Nhân', 'Tâm Linh', 'Thi Cử', 'Kinh Doanh', 'Mất Ngủ', 'Mối Quan Hệ'];
@@ -69,6 +71,47 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
     <path d="M10 1.5l2.47 5.01 5.53.8-4 3.9.94 5.49L10 14.26l-4.94 2.44.94-5.49-4-3.9 5.53-.8L10 1.5z" />
   </svg>
 );
+
+/* ── Share Pagination ─────────────────────────────────────── */
+interface SharesPaginationProps {
+  currentPage: number
+  totalPages: number
+  onPageChange: (page: number) => void
+}
+const SharesPagination = ({ currentPage, totalPages, onPageChange }: SharesPaginationProps) => {
+  if (totalPages <= 1) return null
+  const range = getPaginationRange(currentPage, totalPages)
+  return (
+    <nav className="flex items-center justify-center gap-1 mt-10" aria-label="Phân trang chia sẻ">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage <= 1}
+        className={cn('inline-flex h-9 items-center gap-1.5 px-3 rounded-lg border text-sm font-medium transition-all', currentPage <= 1 ? 'border-border/40 text-muted-foreground/40 cursor-not-allowed' : 'border-border text-muted-foreground hover:border-gold/50 hover:text-gold hover:bg-gold/5')}
+      >
+        <ChevronLeft className="h-4 w-4" />
+        <span className="hidden sm:inline">Trước</span>
+      </button>
+      {range.map((item, idx) => item === 'ellipsis' ? (
+        <span key={`e-${idx}`} className="flex h-9 w-9 items-center justify-center text-muted-foreground/60"><MoreHorizontal className="h-4 w-4" /></span>
+      ) : (
+        <button
+          key={item}
+          onClick={() => item !== currentPage && onPageChange(item)}
+          className={cn('inline-flex h-9 w-9 items-center justify-center rounded-lg border text-sm font-medium transition-all', item === currentPage ? 'border-gold bg-gold/10 text-gold font-semibold cursor-default' : 'border-border/60 text-muted-foreground hover:border-gold/40 hover:text-gold hover:bg-gold/5')}
+        >{item}</button>
+      ))}
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        className={cn('inline-flex h-9 items-center gap-1.5 px-3 rounded-lg border text-sm font-medium transition-all', currentPage >= totalPages ? 'border-border/40 text-muted-foreground/40 cursor-not-allowed' : 'border-border text-muted-foreground hover:border-gold/50 hover:text-gold hover:bg-gold/5')}
+      >
+        <span className="hidden sm:inline">Sau</span>
+        <ChevronRight className="h-4 w-4" />
+      </button>
+      <span className="ml-3 text-xs text-muted-foreground/60 hidden md:block">Trang {currentPage}/{totalPages}</span>
+    </nav>
+  )
+}
 
 /* ── Format helpers ──────────────────────────────────────────── */
 function fmt(n: number) {
@@ -718,6 +761,8 @@ export default function SharesPage() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('Tất cả');
@@ -737,14 +782,21 @@ export default function SharesPage() {
     } catch { }
   }, []);
 
-  const load = useCallback(async (q?: string, cat?: string, s?: string) => {
+  const load = useCallback(async (q?: string, cat?: string, s?: string, page = 1) => {
     setLoading(true);
     try {
-      const { posts: p, total: t } = await fetchPosts({ search: q ?? search, category: cat ?? category, sort: s ?? sort });
+      const { posts: p, total: t } = await fetchPosts({
+        search: q ?? search,
+        category: cat ?? category,
+        sort: s ?? sort,
+        page,
+        pageSize: PAGINATION.BLOG_PAGE_SIZE,
+      });
       setPosts(p);
       setTotal(t);
+      setTotalPages(Math.ceil(t / PAGINATION.BLOG_PAGE_SIZE) || 1);
+      setCurrentPage(page);
     } catch {
-      // Nếu API chưa có data / lỗi, giữ nguyên state rỗng
       setPosts([]);
     } finally {
       setLoading(false);
@@ -756,17 +808,22 @@ export default function SharesPage() {
   const handleSearch = (val: string) => {
     setSearch(val);
     clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => load(val, category, sort), 400);
+    searchTimeout.current = setTimeout(() => load(val, category, sort, 1), 400);
   };
 
   const handleCategory = (cat: string) => {
     setCategory(cat);
-    load(search, cat, sort);
+    load(search, cat, sort, 1);
   };
 
   const handleSort = (s: string) => {
     setSort(s);
-    load(search, category, s);
+    load(search, category, s, 1);
+  };
+
+  const handlePageChange = (page: number) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    load(search, category, sort, page);
   };
 
   const handleLike = async (id: string | number) => {
@@ -914,20 +971,28 @@ export default function SharesPage() {
               ))}
             </div>
           ) : regular.length > 0 ? (
-            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-              {regular.map((post, i) => (
-                <motion.div
-                  key={post.id}
-                  className="break-inside-avoid mb-5"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-40px' }}
-                  transition={{ duration: 0.4, delay: (i % 4) * 0.06 }}
-                >
-                  <PostCard post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
-                </motion.div>
-              ))}
-            </div>
+            <>
+              <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+                {regular.map((post, i) => (
+                  <motion.div
+                    key={post.id}
+                    className="break-inside-avoid mb-5"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: '-40px' }}
+                    transition={{ duration: 0.4, delay: (i % 4) * 0.06 }}
+                  >
+                    <PostCard post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
+                  </motion.div>
+                ))}
+              </div>
+              {/* Phân trang */}
+              <SharesPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           ) : (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
               <QuoteIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground/20" />

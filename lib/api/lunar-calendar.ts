@@ -1,4 +1,13 @@
-import { STRAPI_API } from "@/lib/strapi-client";
+import { strapiFetch } from "@/lib/strapi";
+import type { StrapiList } from "@/types/strapi";
+
+export interface BlogPostPreview {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  thumbnail?: { url: string };
+}
 
 export interface LunarEvent {
   id: number;
@@ -10,34 +19,24 @@ export interface LunarEvent {
   solarDate: string | null;
   eventType: 'buddha' | 'bodhisattva' | 'teacher' | 'fast' | 'holiday' | 'normal';
   reciteCount: number;
-  teachings: unknown; // rich text
-  todoList: unknown; // rich text
+  relatedBlogs?: BlogPostPreview[]; // Khai thị blog liên quan
 }
 
 export async function fetchLunarEvents(): Promise<LunarEvent[]> {
   try {
-    // Disable cache to ensure we get latest events after publish
-    const res = await fetch(`${STRAPI_API}/api/lunar-events?pagination[limit]=100`, {
+    // Deep populate: chỉ định rõ fields bên trong relatedBlogs
+    // Dùng object syntax thay vì array để Strapi trả về title + slug (không chỉ ID)
+    const res = await strapiFetch<StrapiList<LunarEvent>>('/lunar-events', {
+      pagination: { page: 1, pageSize: 100 },
+      populate: {
+        relatedBlogs: {
+          fields: ['id', 'title', 'slug'],
+        }
+      },
       next: { revalidate: 0 }
     });
-    if (!res.ok) {
-      console.error("[LunarAPI] Fetch failed", res.status);
-      return [];
-    }
-    const json = await res.json();
-    console.log("[LunarAPI] Received from Strapi:", json);
 
-    if (!json.data) return [];
-
-    return json.data.map((item: { id: number, documentId: string, attributes?: unknown, [key: string]: unknown }) => {
-      // Strapi v5 often has a flatter structure, but we check both for compatibility
-      const attrs = (item.attributes as any) || item;
-      return {
-        ...attrs,
-        id: item.id,
-        documentId: item.documentId,
-      };
-    });
+    return res.data ?? [];
   } catch (err) {
     console.error("[LunarAPI] Error:", err);
     return [];
