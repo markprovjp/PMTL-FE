@@ -10,6 +10,8 @@ export const PAGINATION = {
   SEARCH_PAGE_SIZE: 20,
   /** Số bài mặc định cho trang category */
   CATEGORY_PAGE_SIZE: 24,
+  /** Số bài tối đa hiển thị cho Khai thị liên kết (không phân trang router, chỉ giới hạn hiển thị) */
+  RELATED_BLOGS_LIMIT: 3,
   /** Số trang tối đa hiển thị trong pagination bar (không tính prev/next) */
   MAX_VISIBLE_PAGES: 5,
   /** Số trang hiển thị ở đầu và cuối trước khi dùng ellipsis */

@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner"
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://phapmontamlinh.vn'),
   title: {
     default: 'Pháp Môn Tâm Linh | Hộ Trì Phật Pháp',
     template: '%s | Pháp Môn Tâm Linh',
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'vi_VN',
   },
+  icons: {
+    icon: '/images/PMTL-LOGO.png',
+    shortcut: '/images/PMTL-LOGO.png',
+    apple: '/images/PMTL-LOGO.png',
+  },
 }
 
 export default function RootLayout({
@@ -32,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" suppressHydrationWarning>
-      <body className="min-h-screen bg-background antialiased">
+      <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
         <Providers>
           {children}
           <Toaster position="top-center" />

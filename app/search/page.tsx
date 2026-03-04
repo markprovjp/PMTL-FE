@@ -5,7 +5,7 @@
 //  Phân trang: state-based (client component) — mỗi trang 20 bài
 // ─────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -115,6 +115,41 @@ export default function SearchPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const isInitialized = useRef(false);
+
+  // Restore search state from session storage on mount
+  useEffect(() => {
+    try {
+      const savedQuery = sessionStorage.getItem("pmtl_search_query");
+      const savedCat = sessionStorage.getItem("pmtl_search_category");
+      const savedTags = sessionStorage.getItem("pmtl_search_tags");
+      const savedTime = sessionStorage.getItem("pmtl_search_time");
+
+      if (savedQuery) setQuery(savedQuery);
+      if (savedCat) setActiveCategory(savedCat);
+      if (savedTags) setActiveTags(JSON.parse(savedTags));
+      if (savedTime) setActiveTime(savedTime);
+    } catch {
+      console.error("Error restoring search state");
+    } finally {
+      // Đánh dấu đã khôi phục xong để bắt đầu cho phép fetch
+      isInitialized.current = true;
+    }
+  }, []);
+
+  // Save search state whenever it changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("pmtl_search_query", query);
+      if (activeCategory) sessionStorage.setItem("pmtl_search_category", activeCategory);
+      else sessionStorage.removeItem("pmtl_search_category");
+
+      sessionStorage.setItem("pmtl_search_tags", JSON.stringify(activeTags));
+      sessionStorage.setItem("pmtl_search_time", activeTime);
+    } catch {
+      // Ignore sessionStorage errors (e.g., incognito mode)
+    }
+  }, [query, activeCategory, activeTags, activeTime]);
 
   // Tải danh mục và tags một lần khi mount
   useEffect(() => {
@@ -159,7 +194,10 @@ export default function SearchPage() {
 
   // Re-fetch khi filter đổi, reset về trang 1
   useEffect(() => {
-    fetchResults(1);
+    // Chỉ fetch khi đã khôi phục trạng thái từ session storage xong
+    if (isInitialized.current) {
+      fetchResults(1);
+    }
   }, [fetchResults]);
 
   const handlePageChange = (page: number) => {
@@ -294,7 +332,7 @@ export default function SearchPage() {
                 )}
               </div>
 
-              {loading ? (
+              {(loading && results.length === 0) ? (
                 // Skeleton loading
                 [1, 2, 3, 4].map(i => (
                   <div key={i} className="p-5 rounded-2xl bg-card border border-border/30 animate-pulse">
@@ -307,39 +345,41 @@ export default function SearchPage() {
                   </div>
                 ))
               ) : results.length > 0 ? (
-                results.map((r, i) => (
-                  <motion.div
-                    key={r.documentId}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.03, 0.25), duration: 0.3 }}
-                  >
-                    <Link
-                      href={`/blog/${r.slug}`}
-                      className="block p-5 rounded-2xl bg-card border border-border/50 hover:border-gold/40 hover:shadow-md hover:shadow-gold/5 transition-all group"
+                <div className={cn("space-y-4 transition-opacity", loading && "opacity-40 pointer-events-none")}>
+                  {results.map((r, i) => (
+                    <motion.div
+                      key={r.documentId}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: Math.min(i * 0.03, 0.25), duration: 0.3 }}
                     >
-                      <div className="flex items-center gap-2 mb-3">
-                        {r.featured && <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-500">Nổi bật</span>}
-                        {r.source ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-gold font-mono">{r.source}</span>
-                        ) : (
-                          <span className="text-[11px] text-muted-foreground">{new Date(r.publishedAt || r.createdAt).toLocaleDateString("vi-VN")}</span>
-                        )}
-                        <span className="ml-auto text-[11px] text-muted-foreground">{r.views.toLocaleString('vi-VN')} lượt xem</span>
-                      </div>
+                      <Link
+                        href={`/blog/${r.slug}`}
+                        className="block p-5 rounded-2xl bg-card border border-border/50 hover:border-gold/40 hover:shadow-md hover:shadow-gold/5 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          {r.featured && <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-500">Nổi bật</span>}
+                          {r.source ? (
+                            <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-gold font-mono">{r.source}</span>
+                          ) : (
+                            <span className="text-[11px] text-muted-foreground">{new Date(r.publishedAt || r.createdAt).toLocaleDateString("vi-VN")}</span>
+                          )}
+                          <span className="ml-auto text-[11px] text-muted-foreground">{r.views.toLocaleString('vi-VN')} lượt xem</span>
+                        </div>
 
-                      <h3 className="text-base md:text-lg font-display text-foreground mb-2 group-hover:text-gold transition-colors">{r.title}</h3>
+                        <h3 className="text-base md:text-lg font-display text-foreground mb-2 group-hover:text-gold transition-colors">{r.title}</h3>
 
-                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4">
-                        {r.content.replace(/<[^>]*>/g, '').substring(0, 180)}...
-                      </p>
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 mb-4">
+                          {r.content.replace(/<[^>]*>/g, '').substring(0, 180)}...
+                        </p>
 
-                      <div className="flex items-center gap-1.5 text-xs font-medium text-gold/70 group-hover:text-gold transition-colors">
-                        Xem chi tiết <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))
+                        <div className="flex items-center gap-1.5 text-xs font-medium text-gold/70 group-hover:text-gold transition-colors">
+                          Xem chi tiết <ArrowRightIcon className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
               ) : (
                 <div className="text-center py-16 px-4">
                   <div className="w-16 h-16 bg-secondary/50 rounded-full flex items-center justify-center mx-auto mb-4">

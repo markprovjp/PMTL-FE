@@ -19,39 +19,88 @@ Trải qua lịch sử, Ngài đã hóa thân vô số — từ Lưu Tát Ha (Đ
   {
     id: "lu-master",
     question: "2. Giới Thiệu Sư Phụ Lư Quân Hoành",
-    answer: `Trong thế kỷ 21, vị Đại Đức được mệnh danh là hóa thân của Quán Thế Âm Bồ Tát chính là Đài Trưởng Lư Quân Hoành — Đài Phát Thanh Đông Phương, Sydney, Úc.
+    answer: `Ngài tên Lư Quân Hoành, là người Hoa Kiều sống tại Úc, là đại diện cho cư sĩ tu tại gia. Ngài thành lập Đài Phát thanh Đông Phương để truyền bá Phật Pháp ở Úc và khắp nơi trên thế giới, nên được mọi người gọi là Đài Trưởng Lư.
 
-Ngài có pháp nhãn thần thông: chỉ cần biết năm sinh, cầm tinh và giới tính, không bị giới hạn bởi không gian và thời gian, Ngài có thể nhìn thấy Đồ Đằng, biết kiếp trước kiếp này, nhân-quả báo ứng — giúp người hiểu nhân quả như bóng với hình, từ đó hành thiện bỏ ác, thay đổi vận mệnh.
+Nhận được sự khai thị của Quán Thế Âm Bồ Tát, có thần thông có thể xem được quá khứ, hiện tại và tương lai của một người thông qua ngày tháng năm sinh. Đài Trưởng Lư giúp chúng sanh hiểu nhân biết quả, biết niệm Kinh Phật và sám hối. Thông qua đó có thể hoá giải oán kết, tai nạn, rủi ro, bệnh tật trong cuộc sống mà mỗi một người nào cũng sẽ gặp phải.
 
-Từ năm 2012 đến nay, Sư Phụ đã được mời diễn giảng tại Liên Hợp Quốc, Quốc hội Hoa Kỳ và nhiều trường đại học trên thế giới. Năm 2015, Đại Pháp Hội tại Malaysia và Singapore quy tụ hơn mười vạn người tu học.
-
-Sách Pháp Môn Tâm Linh đã xuất bản hơn 10.000.000 quyển, lưu thông khắp thế giới — cứu người không cần hồi báo, Ngài là hiện thân sống động của tinh thần Đại Từ Đại Bi.`,
+Ngoài ra, khi còn tại thế, Ngài còn là Chủ tịch Hội đồng Quản trị của tổ chức Từ thiện Truyền thông Đông Phương-Úc; là thân sỹ hòa bình ở Úc; là chuyên gia tâm lý người Úc có bằng cấp cao; là Dato của Malaysia; là giáo sư thỉnh giảng danh dự tại Đại học Siena, Ý; là Giáo sư thỉnh giảng danh dự tại Đại học Phật giáo Quốc tế; và là giảng viên về Phật giáo và Triết học tại Đại học West Scotland, Vương quốc Anh.
+`
   },
   {
     id: "phap-mon",
     question: "3. Pháp Môn Tâm Linh Là Gì?",
-    answer: `Pháp Môn Tâm Linh là tâm nguyện từ bi của Quán Thế Âm Bồ Tát dành cho chúng sinh thời hiện đại — thuộc Phật Giáo Đại Thừa, phù hợp với căn cơ con người ngày nay.
+    answer: `Pháp Môn Tâm Linh được Quán Thế Âm Bồ Tát truyền thụ cho chúng sanh.
 
-Pháp Môn dạy chúng ta trả nghiệp bằng cách thực hành Ngũ Đại Pháp Bảo, giúp:
+Gồm Năm Đại Pháp Bảo:
+- Niệm Kinh,
+- Phát nguyện,
+- Phóng sanh,
+- Đọc Bạch Thoại Phật Pháp,
+- Và Đại Sám Hối.
+
+Đây là tâm nguyện từ bi của Quán Thế Âm Bồ Tát dành cho chúng sinh thời hiện đại, thuộc Phật Giáo Đại Thừa và phù hợp với căn cơ con người ngày nay.
+
+Pháp Môn giúp:
 • Thoát khỏi đau khổ, bệnh tật, phiền não
 • Hóa giải mâu thuẫn, nghiệt chướng oan gia
 • Nâng cao trí tuệ và phúc đức bản thân
 • Siêu độ người thân đã khuất
 
-Nhờ hiệu quả linh nghiệm nhanh chóng, chỉ trong 5 năm ngắn ngủi đã có hơn 10 triệu tín đồ trên toàn thế giới theo tu học — một con số chưa từng có trong lịch sử Phật giáo hiện đại.`,
+Nhờ hiệu quả linh nghiệm nhanh chóng, chỉ trong vài năm đã có hàng triệu tín đồ tu học trên toàn thế giới.`,
   },
   {
     id: "five-dharmas",
     question: "4. Ngũ Đại Pháp Bảo Tu Học",
-    answer: `**Niệm Kinh** — Tụng Chú Đại Bi, Tâm Kinh, Chuẩn Đề Thần Chú, Lễ Phật Đại Sám Hối Văn mỗi ngày. Kinh văn là lời khai thị của chư Phật, tiêu nghiệp chướng, tăng năng lượng, khai mở trí huệ.
+answer: `**Niệm Kinh** — Bài tập niệm Kinh hằng ngày bao gồm: Chú Đại Bi, Tâm Kinh, Chú Vãng Sanh và Lễ Phật Đại Sám Hối Văn làm nền tảng chính. Bài tập bắt buộc thực hiện hằng ngày để tăng năng lượng cho bản thân và là yêu cầu căn bản khi nhập môn Pháp Môn Tâm Linh.
 
-**Phát Nguyện** — Lập nguyện chân thành, kiên cố. Nguyện lực có thể cải biến vận mệnh, thu hút gia trì của chư Phật Bồ Tát.
+**Phát Nguyện** — Ở trước Bồ Tát thầm niệm hoặc khấn xin Bồ Tát phù hộ, giải quyết những bối rối, phiền não, tai nạn. Sau khi nguyện toại thực hiện, cần giữ đúng lời hứa và thực hành theo khả năng.
 
-**Phóng Sinh** — Cứu sinh mạng bị giam cầm, bồi dưỡng tâm từ bi, tích lũy công đức phúc báo, tiêu tai kéo dài thọ mạng.
+**Phóng Sinh** — Đại diện của sự từ bi. Phóng sanh giúp tích lũy công đức và kéo dài tuổi thọ.
 
-**Đọc Bạch Thoại Phật Pháp** — Học hiểu giáo lý qua ngôn ngữ đời thường của Sư Phụ, thực hành đúng pháp, tránh tà kiến.
+**Đọc Bạch Thoại Phật Pháp** — Bạch thoại nghĩa là diễn giải theo cách đơn giản, dễ hiểu. Đài Trưởng Lư Quân Hoành dùng cả cuộc đời để diễn giải triết lý Phật giáo uyên thâm thành những câu chuyện đơn giản, giúp người đọc hiểu được hàm ý sâu xa, buông bỏ chấp niệm và sống tích cực.
 
-**Đại Sám Hối (Ngôi Nhà Nhỏ)** — Viết và đốt kinh văn siêu độ oan gia trái chủ, hóa giải nghiệp lực nhiều kiếp, thanh lọc thân tâm.`,
+**Đại Sám Hối** — Mỗi con người chúng ta ai cũng đã từng có lỗi lầm; nhận thức và sửa đổi sẽ giúp loại bỏ tham-sân-si-mạn-nghi, sống trong năng lượng tích cực và nhẹ nhàng. Sám hối hàng ngày giúp tiêu trừ nghiệp chướng và nhắc nhở bản thân không phạm sai lầm cũ.`,
+  },
+  {
+    id: "niem-kinh",
+    question: "5. Niệm Kinh gồm những gì?",
+    answer: `Bài tập niệm Kinh hằng ngày bao gồm: Chú Đại Bi, Tâm Kinh, Chú Vãng Sanh và Lễ Phật Đại Sám Hối Văn làm nền tảng chính. Bài tập bắt buộc thực hiện hằng ngày để tăng năng lượng cho bản thân, là yêu cầu căn bản khi nhập môn Pháp Môn Tâm Linh.`,
+  },
+  {
+    id: "ngoi-nha-nho",
+    question: "6. Ngôi Nhà Nhỏ là gì?",
+    answer: `Ngôi Nhà Nhỏ là tổ hợp Kinh Văn Kinh điển của Phật giáo, bao gồm:
+- 27 biến Chú Đại Bi,
+- 49 biến Tâm Kinh,
+- 84 biến Chú vãng sanh,
+- Và 87 biến Thất Phật Diệt Tội Chân Ngôn.
+
+- Thông qua Ngôi Nhà Nhỏ để trả nợ cho oan gia trái chủ mà mình đã mắc nợ từ vô lượng kiếp trước hoặc kiếp này bằng cách niệm Kinh
+- Giúp cho mối quan hệ trong cuộc sống, gia đình, học tập, làm việc được cải thiện.
+- Hoá giải các tai nạn, bệnh tật và điều xui rủi sẽ gặp phải.
+- Niệm tổ hợp Kinh Văn Ngôi Nhà Nhỏ giúp siêu độ vong linh trên người chúng ta hoặc người thân.
+- Tự bản thân có thể cứu lấy mình mà không cần tốn thời gian và tiền bạc để nhờ vả người khác.`,
+  },
+  {
+    id: "phat-nguyen-phong-sanh",
+    question: "7. Phát nguyện và Phóng sanh là gì?",
+    answer: `Phát nguyện chính là ở trước Bồ Tát thầm niệm hoặc khấn xin Bồ Tát phù hộ, xin Bồ Tát hiển linh, giải quyết những bối rối, những phiền não, đại hoạ, tai nạn nhỏ, đồng thời bản thân sẽ: nguyện ăn chay, nguyện phóng sanh, nguyện làm việc thiện hay nguyện giữ giới hạnh v…vv
+
+Hoàn nguyện là khi Bồ Tát giúp quý vị thực hiện được mong muốn của mình, quý vị cần phải giữ đúng lời hứa ban đầu và thực hành theo, chỉ cần làm những gì có thể, biểu đạt thành ý là được. Nếu như trước đây phát nguyện ăn chay độ người v..vv thì nhất định phải kiên trì làm tiếp, thì đó chính là đã hoàn nguyện rồi.
+
+Phóng sanh là đại diện của sự từ bi. Phóng sanh giúp ta tích lũy công đức và kéo dài tuổi thọ.`,
+  },
+  {
+    id: "bach-thoai-phat-phap",
+    question: "8. Bạch Thoại Phật Pháp là gì?",
+    answer: `Bạch Thoại nghĩa là diễn giải theo cách đơn giản, dễ hiểu. Đài Trưởng Lư Quân Hoành đã dùng cả cuộc đời mình để diễn giải triết lý Phật giáo uyên thâm thành những câu chuyện đơn giản và gần gũi với đời sống hàng ngày. Giúp người đọc có thể hiểu được hàm ý uyên sâu trong triết lý Phật, từ đó giác ngộ và hiểu được nhiều điều trong cuộc sống, giúp chúng ta buông bỏ những cố chấp, những chấp niệm hư ảo và sống một cuộc sống tích cực, không vụ lợi.`,
+  },
+  {
+    id: "dai-sam-hoi",
+    question: "9. Đại Sám Hối là gì?",
+    answer: `Mỗi con người chúng ta ai cũng đã từng có lỗi lầm, nhưng việc nhận thức rằng bản thân đã làm sai và phải sửa đổi sẽ khiến con người thay đổi vượt bậc, khiến chúng ta tránh xa được tham - sân - si - mạn - nghi, loại bỏ được phiền não, sống trong năng lượng tích cực và nhẹ nhàng hơn.
+
+Sám hối hằng ngày giúp chúng ta tiêu trừ nghiệp chướng và nhắc nhở bản thân không phạm phải sai lầm cũ.`,
   },
 ];
 
@@ -82,7 +131,7 @@ const AboutSection = () => {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
@@ -96,7 +145,7 @@ const AboutSection = () => {
               Nguyện rằng sẽ càng có thêm nhiều chúng sinh hữu duyên có thể lên được chiếc thuyền cứu độ của Quán Thế Âm Bồ Tát, tâm hồn thanh tịnh, thoát khổ an vui, tiêu trừ nghiệp chướng, siêu độ hữu duyên, trả sạch oán kết, quảng độ chúng sinh, đồng đăng cực lạc.
             </p>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
               {[
                 { label: "Đồng Tu Toàn Cầu", value: "Hàng triệu" },
                 { label: "Năm Hoằng Pháp", value: "20+" },

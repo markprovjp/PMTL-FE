@@ -51,7 +51,7 @@ interface SpecialDay {
   type: 'buddha' | 'bodhisattva' | 'teacher' | 'fast' | 'holiday' | 'normal';
   description: string;
   icon: LucideIcon;
-  reciteCount?: number;
+
   solarDate?: string;
   isRecurringLunar?: boolean;
   relatedBlogs?: BlogLink[]; // Khai thị blog liên quan từ admin
@@ -185,13 +185,16 @@ function DayCell({ solarDay, solarMonth, solarYear, isToday, isCurrentMonth, all
       setLunar(l);
       // Tìm ngày đặc biệt
       const found = allEvents.filter((s) => {
-        // Nếu là sự kiện Dương lịch (cố định theo ngày tháng năm)
-        if (s.solarDate && !s.isRecurringLunar) {
+        // Neu co solarDate thi LUON uu tien match theo duong lich (bat ke isRecurringLunar)
+        if (s.solarDate) {
           const solarStr = `${solarYear}-${solarMonth.toString().padStart(2, '0')}-${solarDay.toString().padStart(2, '0')}`;
           return s.solarDate.startsWith(solarStr);
         }
-        // Tiếp theo mới xét đến sự kiện Âm lịch (lặp lại hàng năm)
-        return s.lunarMonth === l.lunarMonth && s.lunarDay === l.lunarDay;
+        // Su kien am lich lap lai hang nam (khong co solarDate co dinh)
+        if (s.isRecurringLunar) {
+          return s.lunarMonth === l.lunarMonth && s.lunarDay === l.lunarDay;
+        }
+        return false;
       });
       // Ngày trai
       if (FAST_DAYS_LUNAR.includes(l.lunarDay)) {
@@ -216,7 +219,7 @@ function DayCell({ solarDay, solarMonth, solarYear, isToday, isCurrentMonth, all
       `}
     >
       {/* Solar day number */}
-      <span className={`font-semibold text-sm leading-none mb-0.5 ${isToday ? 'text-gold' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'}`}>
+      <span className={` text-sm leading-none mb-0.5 ${isToday ? 'text-gold' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'}`}>
         {solarDay}
       </span>
 
@@ -319,16 +322,10 @@ function DayDrawer({ detail, onClose }: { detail: DayDetail | null; onClose: () 
                       <p className="text-xs text-muted-foreground leading-relaxed">
                         {m.description}
                       </p>
-                      {m.reciteCount && m.reciteCount > 0 && (
-                        <p className={`text-xs mt-2 font-bold ${style.text}`}>
-                          Số biến Lễ Phật Đại Sám Hối Văn (khuyến nghị): {m.reciteCount} lần
-                        </p>
-                      )}
-
-                      {/* Blog liên quan từ admin */}
+                      {/* Blog lien quan tu admin */}
                       {m.relatedBlogs && m.relatedBlogs.length > 0 && (
                         <div className="mt-4 pt-3 border-t border-white/10">
-                          <p className={`text-xs font-semibold mb-2 ${style.text}`}>📚 Khai Thị Blog Liên Quan:</p>
+                          <p className={`text-xs font-semibold mb-2 ${style.text}`}>Khai Thị Liên Kết:</p>
                           <div className="flex flex-col gap-1.5">
                             {m.relatedBlogs.map((blog) => (
                               <a
@@ -390,31 +387,35 @@ export default function LunarCalendarPage() {
     solarToLunar(today.getFullYear(), today.getMonth() + 1, today.getDate()).then(setTodayLunar);
 
     // Lấy sự kiện từ CMS qua route handler (server-side, có token, deep populate)
-    fetch('/api/lunar-events').then(r => r.json()).then((events: import('@/lib/api/lunar-calendar').LunarEvent[]) => {
-      const getIcon = (t: string) => {
-        if (t === 'buddha') return Sparkles;
-        if (t === 'bodhisattva') return Flower2;
-        if (t === 'teacher') return ScrollText;
-        if (t === 'fast') return Leaf;
-        return PartyPopper;
-      };
+    fetch('/api/lunar-events')
+      .then(r => r.json())
+      .then((events: import('@/lib/api/lunar-calendar').LunarEvent[]) => {
+        const getIcon = (t: string) => {
+          if (t === 'buddha') return Sparkles;
+          if (t === 'bodhisattva') return Flower2;
+          if (t === 'teacher') return ScrollText;
+          if (t === 'fast') return Leaf;
+          return PartyPopper;
+        };
 
-      const mapped: SpecialDay[] = events.map(e => ({
-        lunarMonth: e.lunarMonth || 1,
-        lunarDay: e.lunarDay || 1,
-        solarDate: e.solarDate || undefined,
-        isRecurringLunar: e.isRecurringLunar,
-        name: e.title,
-        type: e.eventType || 'normal',
-        reciteCount: e.reciteCount,
-        description: 'Tự giác thực hành theo lời Phật dạy',
-        icon: getIcon(e.eventType),
-        relatedBlogs: e.relatedBlogs ? e.relatedBlogs.map(b => ({ id: b.id, title: b.title, slug: b.slug })) : []
-      }));
-      console.log("[LunarCalendar] Events loaded:", mapped.length);
-      console.table(mapped);
-      setAdminEvents(mapped);
-    });
+        const mapped: SpecialDay[] = events.map(e => ({
+          lunarMonth: e.lunarMonth || 1,
+          lunarDay: e.lunarDay || 1,
+          solarDate: e.solarDate || undefined,
+          isRecurringLunar: e.isRecurringLunar,
+          name: e.title,
+          type: e.eventType || 'normal',
+          description: 'Tu tập theo hướng dẫn của sư phụ.',
+          icon: getIcon(e.eventType),
+          relatedBlogs: e.relatedBlogs
+            ? e.relatedBlogs.map(b => ({ id: b.id, title: b.title, slug: b.slug }))
+            : [],
+        }));
+        setAdminEvents(mapped);
+      })
+      .catch(err => {
+        console.error('[lunar-calendar] Fetch error:', err);
+      });
   }, []);
 
   // Build upcoming events (next 60 days)
@@ -428,11 +429,14 @@ export default function LunarCalendarPage() {
         const y = d.getFullYear(), m = d.getMonth() + 1, day = d.getDate();
         const lunar = await solarToLunar(y, m, day);
         const found = allEvents.filter((s) => {
-          if (s.solarDate && !s.isRecurringLunar) {
+          if (s.solarDate) {
             const solarStr = `${y}-${m.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
             return s.solarDate.startsWith(solarStr);
           }
-          return s.lunarMonth === lunar.lunarMonth && s.lunarDay === lunar.lunarDay && s.type !== 'fast';
+          if (s.isRecurringLunar) {
+            return s.lunarMonth === lunar.lunarMonth && s.lunarDay === lunar.lunarDay && s.type !== 'fast';
+          }
+          return false;
         });
         if (found.length > 0) {
           result.push({ date: `${day}/${m}/${y}`, items: found });
@@ -490,11 +494,14 @@ export default function LunarCalendarPage() {
   const handleCellClick = async (day: number, month: number, year: number) => {
     const lunar = await solarToLunar(year, month, day);
     const markers = allEvents.filter((s) => {
-      if (s.solarDate && !s.isRecurringLunar) {
+      if (s.solarDate) {
         const solarStr = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
         return s.solarDate.startsWith(solarStr);
       }
-      return s.lunarMonth === lunar.lunarMonth && s.lunarDay === lunar.lunarDay;
+      if (s.isRecurringLunar) {
+        return s.lunarMonth === lunar.lunarMonth && s.lunarDay === lunar.lunarDay;
+      }
+      return false;
     });
     if (FAST_DAYS_LUNAR.includes(lunar.lunarDay)) {
       markers.push({ lunarMonth: lunar.lunarMonth, lunarDay: lunar.lunarDay, name: `Ngày ${lunar.lunarDay === 1 ? 'Mùng 1' : lunar.lunarDay === 15 ? 'Rằm' : `${lunar.lunarDay}`} — Ngày Trai`, type: 'fast', description: 'Ăn chay, niệm kinh gấp đôi, phóng sinh nếu có thể.', icon: Leaf });
@@ -552,7 +559,7 @@ export default function LunarCalendarPage() {
                 </button>
 
                 <div className="text-center">
-                  <h2 className="font-display text-xl text-foreground">
+                  <h2 className="text-xl text-foreground">
                     {MONTH_NAMES[viewMonth - 1]} · <span className="text-gold">{viewYear}</span>
                   </h2>
                   <p className="text-[11px] text-muted-foreground/60">Năm {yearCanChi(viewYear)}</p>
@@ -670,10 +677,10 @@ export default function LunarCalendarPage() {
                 </div>
                 <div className="space-y-1.5">
                   {adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).slice(0, 5).map((s, idx) => (
-                    s.relatedBlogs!.slice(0, 1).map((blog) => (
+                    s.relatedBlogs!.map((blog) => (
                       <a key={`${idx}-${blog.id}`} href={`/blog/${blog.slug}`}
                         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group py-1">
-                        <s.icon className="w-3.5 h-3.5" />
+                        <s.icon className="w-3.5 h-3.5 flex-shrink-0" />
                         <span className="group-hover:underline line-clamp-1">{s.name} — {blog.title}</span>
                       </a>
                     ))

@@ -31,7 +31,36 @@ import {
   FALLBACK_STICKY_BANNER,
 } from "@/lib/api/homepage";
 
-export const dynamic = 'force-dynamic'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Pháp Môn Tâm Linh — Trang Chủ | Hộ Trì Phật Pháp',
+  description: 'Trung tâm chia sẻ lời khai thị, hướng dẫn tu tập niệm kinh, phóng sinh và các hoạt động Phật sự theo truyền bá của Sư Phụ Lư Quân Hoành. Hành trình tìm về sự thanh tịnh và giải thoát.',
+  keywords: ['Pháp Môn Tâm Linh', 'Niệm Kinh', 'Sư Phụ Lư Quân Hoành', 'Bạch Thoại Phật Pháp', 'Khai Thị'],
+  openGraph: {
+    title: 'Pháp Môn Tâm Linh — Trang Chủ | Hộ Trì Phật Pháp',
+    description: 'Trung tâm chia sẻ lời khai thị, hướng dẫn tu tập niệm kinh và các hoạt động Phật sự.',
+    url: 'https://phapmontamlinh.vn',
+    siteName: 'Pháp Môn Tâm Linh',
+    images: [
+      {
+        url: '/images/PMTL-LOGO.png',
+        width: 1200,
+        height: 630,
+        alt: 'Pháp Môn Tâm Linh Logo',
+      },
+    ],
+    locale: 'vi_VN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Pháp Môn Tâm Linh — Trang Chủ',
+    description: 'Trung tâm chia sẻ lời khai thị và hướng dẫn tu tập Phật pháp.',
+    images: ['/images/PMTL-LOGO.png'],
+  },
+}
+
 
 export default async function HomePage() {
   // Fetch dữ liệu trang chủ từ CMS — fallback nếu CMS chưa có data

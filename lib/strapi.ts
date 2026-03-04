@@ -30,6 +30,8 @@ export interface FetchOptions {
   sort?: string | string[]
   /** Pagination */
   pagination?: { page?: number; pageSize?: number }
+  /** Draft & publish status */
+  status?: 'published' | 'draft'
   /** Next.js fetch config for ISR */
   next?: NextFetchRequestConfig
   /** Force no-cache (for dynamic / real-time data) */
@@ -40,9 +42,9 @@ export interface FetchOptions {
  * Build full Strapi API URL with query params
  */
 export function buildStrapiUrl(path: string, options: Omit<FetchOptions, 'next' | 'noCache'> = {}): string {
-  const { populate = '*', fields, filters, sort, pagination } = options
+  const { populate = '*', fields, filters, sort, pagination, status } = options
   const query = qs.stringify(
-    { populate, fields, filters, sort, pagination },
+    { populate, fields, filters, sort, pagination, status },
     { encodeValuesOnly: true, skipNulls: true }
   )
   return `${STRAPI_URL}/api${path}${query ? `?${query}` : ''}`
@@ -63,6 +65,7 @@ export async function strapiFetch<T>(
 ): Promise<T> {
   const { next, noCache, ...queryOptions } = options
   const url = buildStrapiUrl(path, queryOptions)
+
 
   const token = getServerToken()
 
@@ -90,6 +93,7 @@ export async function strapiFetch<T>(
     }
 
     const json = await res.json()
+
 
     if (isStrapiError(json)) {
       const errMsg = json.error?.message ?? 'Unknown error'

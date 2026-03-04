@@ -1,196 +1,499 @@
 'use client'
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Header from "@/components/Header";
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import StickyBanner from '@/components/StickyBanner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { BookOpen, Download, Headphones, Globe, ChevronRight } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
-import { PlayIcon, CloseIcon, BookIcon } from "@/components/icons/ZenIcons";
+// ── Types ────────────────────────────────────────────────────
+interface Book {
+  id: string
+  titleVi: string
+  titleCn: string
+  description?: string
+  color: string
+  readUrl?: string
+  pdfUrl?: string
+  audioUrl?: string
+}
 
-const DownloadIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" strokeLinecap="round" strokeLinejoin="round" />
-    <polyline points="7 10 12 15 17 10" strokeLinecap="round" strokeLinejoin="round" />
-    <line x1="12" y1="15" x2="12" y2="3" strokeLinecap="round" />
-  </svg>
-);
+interface ShelfGroup {
+  label: string
+  books: Book[]
+}
 
-const ExternalLinkIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
-    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" strokeLinecap="round" strokeLinejoin="round" />
-    <polyline points="15 3 21 3 21 9" strokeLinecap="round" strokeLinejoin="round" />
-    <line x1="10" y1="14" x2="21" y2="3" strokeLinecap="round" />
-  </svg>
-);
+interface Shelf {
+  id: string
+  title: string
+  description: string
+  groups: ShelfGroup[]
+}
 
-const volumes = [
-  { id: 1, title: "Bạch Thoại Phật Pháp - Tập 1", chinese: "白话佛法（第一册）", description: "Tập đầu tiên giới thiệu nền tảng của Pháp Môn Tâm Linh: Nhân quả, nghiệp lực và con đường tu học cơ bản.", chapters: ["Tâm là gì?", "Nhân quả là gì?", "Tại sao phải niệm Kinh?", "Phật Bồ Tát và chúng sinh", "Sám hối và nghiệp chướng", "Từ bi tâm trong đời thường", "Buông xả và vô thường", "Thiện nghiệp và ác nghiệp", "Cầu nguyện đúng pháp", "Trí tuệ Bát Nhã", "Tâm bình thế giới bình", "Thực hành hàng ngày", "Phúc đức và công đức", "Kết duyên lành với Phật Bồ Tát", "Nguyện lực và phát nguyện", "Lời kết và hướng dẫn tu tiếp"], pdfUrl: "https://xlch.org/download/bach-thoai-1", audioUrl: "https://xlch.org/audio/bach-thoai-1", color: "from-amber-900/60 to-amber-800/40" },
-  { id: 2, title: "Bạch Thoại Phật Pháp - Tập 2", chinese: "白话佛法（第二册）", description: "Tập 2 đi sâu vào phương pháp niệm Kinh và ý nghĩa của từng bộ kinh chú.", chapters: ["Ý nghĩa của Chú Đại Bi", "Cách niệm đúng pháp", "Tâm Kinh và Bát Nhã", "Lễ Phật Đại Sám Hối Văn", "Mười chú nhỏ và công dụng", "Giải Kết Chú và tình cảm", "Chuẩn Đề Thần Chú học nghiệp", "Kiên trì và nghị lực tu học", "Cảm ứng đạo giao", "Năng lượng niệm Kinh", "Thời gian và số lượng niệm", "Tâm thành kính khi niệm", "Hồi hướng công đức", "Kết quả sau khi tu học", "Những chú ý khi niệm kinh", "Nhật ký tu học hàng ngày"], pdfUrl: "https://xlch.org/download/bach-thoai-2", audioUrl: "https://xlch.org/audio/bach-thoai-2", color: "from-rose-900/60 to-rose-800/40" },
-  { id: 3, title: "Bạch Thoại Phật Pháp - Tập 3", chinese: "白话佛法（第三册）", description: "Tập 3 giảng giải về Phát Nguyện, Phóng Sinh và cách tích lũy phước đức.", chapters: ["Phát Nguyện là gì?", "Cách lập nguyện đúng pháp", "Sức mạnh của nguyện lực", "Phóng Sinh và tinh thần từ bi", "Nghi thức phóng sinh chi tiết", "Loài vật phóng sinh và ý nghĩa", "Địa điểm và thời gian phóng sinh", "Hồi hướng sau phóng sinh", "Phướng đức tích lũy", "Nhân quả trong phóng sinh", "Các điều cần tránh", "Phóng sinh ở nước ngoài", "Kết quả phóng sinh thực tế", "Câu chuyện linh nghiệm phóng sinh", "Tinh thần giải thoát chúng sinh", "Tổng kết và thực hành"], pdfUrl: "https://xlch.org/download/bach-thoai-3", audioUrl: "https://xlch.org/audio/bach-thoai-3", color: "from-emerald-900/60 to-emerald-800/40" },
-  { id: 4, title: "Bạch Thoại Phật Pháp - Tập 4", chinese: "白话佛法（第四册）", description: "Tập 4 chuyên về Đại Sám Hối và Siêu Độ qua Ngôi Nhà Nhỏ.", chapters: ["Ý nghĩa sám hối trong Phật pháp", "Lễ Phật Đại Sám Hối Văn chi tiết", "Ba mươi lăm vị Phật sám hối", "Oán kết nhiều kiếp và cách hóa giải", "Ngôi Nhà Nhỏ là gì?", "Cách viết và niệm Ngôi Nhà Nhỏ", "Số lượng Ngôi Nhà Nhỏ cần thiết", "Siêu độ người thân đã khuất", "Nghiệp báo và nhân duyên", "Câu chuyện siêu độ thực tế", "Phương pháp đốt Ngôi Nhà Nhỏ", "Cúng dường trong siêu độ", "Tự siêu độ bản thân", "Siêu độ thai nhi và sảy thai", "Thời gian và kết quả siêu độ", "Hướng dẫn tu tiếp sau siêu độ"], pdfUrl: "https://xlch.org/download/bach-thoai-4", audioUrl: "https://xlch.org/audio/bach-thoai-4", color: "from-purple-900/60 to-purple-800/40" },
-  { id: 5, title: "Bạch Thoại Phật Pháp - Tập 5", chinese: "白话佛法（第五册）", description: "Tập 5 đi sâu vào ứng dụng Phật pháp trong sức khỏe và chữa bệnh.", chapters: ["Nghiệp chướng và bệnh tật", "Bệnh từ tâm", "Niệm Kinh trị bệnh", "Ung thư và nghiệp lực nặng", "Tiểu đường và nghiệp khẩu", "Tim mạch và oán kết", "Bệnh tâm thần và linh can thiệp", "Phóng sinh chữa bệnh", "Tâm từ bi và sức khỏe", "Ăn chay và giảm sát nghiệp", "Chia sẻ thực tế chữa lành bệnh", "Kết hợp y tế và tâm linh", "Chăm sóc người bệnh đúng pháp", "Khi bệnh không thuyên giảm", "Vượt qua nỗi sợ bệnh", "Sức khỏe là phước đức"], pdfUrl: "https://xlch.org/download/bach-thoai-5", audioUrl: "https://xlch.org/audio/bach-thoai-5", color: "from-blue-900/60 to-blue-800/40" },
-  { id: 6, title: "Bạch Thoại Phật Pháp - Tập 6", chinese: "白话佛法（第六册）", description: "Tập 6 tập trung vào hôn nhân, gia đình và mối quan hệ.", chapters: ["Hôn nhân và nghiệp duyên", "Oán kết vợ chồng là gì?", "Kinh Giải Kết Chú cho gia đình", "Tại sao vợ chồng bất hòa?", "Phương pháp hòa giải gia đình", "Ngoại tình và nghiệp báo", "Ly hôn và cách xử lý đúng pháp", "Mối quan hệ với cha mẹ", "Hiếu đạo trong Phật giáo", "Con cái và thiện căn", "Dạy con theo Phật pháp", "Cầu con đúng pháp", "Thai giáo tâm linh", "Trẻ em khó nuôi và nghiệp chướng", "Gia đình hạnh phúc là phước đức", "Xây dựng gia đình học Phật"], pdfUrl: "https://xlch.org/download/bach-thoai-6", audioUrl: "https://xlch.org/audio/bach-thoai-6", color: "from-pink-900/60 to-pink-800/40" },
-  { id: 7, title: "Bạch Thoại Phật Pháp - Tập 7", chinese: "白话佛法（第七册）", description: "Tập 7 giảng về sự nghiệp, tài vận và ứng dụng Phật pháp trong công việc.", chapters: ["Sự nghiệp và vận mệnh", "Tại sao có người giàu người nghèo?", "Phước đức và tài lộc", "Cầu tài theo Phật pháp", "Kinh doanh đúng đạo đức", "Giải hạn năm tuổi xấu", "Sao La Hầu và cách hóa giải", "Tích đức cho sự nghiệp", "Học tập và trí tuệ", "Chuẩn Đề Thần Chú thi cử", "Nợ nần và cách giải quyết", "Phá sản và bài học nghiệp", "Vực dậy sau thất bại", "Thành công và biết đủ", "Chia sẻ sự nghiệp vượng", "Tâm thái trong công việc"], pdfUrl: "https://xlch.org/download/bach-thoai-7", audioUrl: "https://xlch.org/audio/bach-thoai-7", color: "from-orange-900/60 to-orange-800/40" },
-  { id: 8, title: "Bạch Thoại Phật Pháp - Tập 8", chinese: "白话佛法（第八册）", description: "Tập 8 đề cập đến huyền học, giải mộng và các hiện tượng tâm linh.", chapters: ["Giải mộng theo Phật pháp", "Mộng thấy người đã khuất", "Mộng thấy Bồ Tát ý nghĩa gì?", "Mộng xấu và cách hóa giải", "Huyền học và đồ tướng", "Đọc bản đồ vận mệnh", "Tiền kiếp và nhân duyên", "Tướng số trong Phật pháp", "Phong thủy đúng đắn", "Bàn thờ và trường năng lượng", "Điều bất thường trong nhà", "Cô hồn và cách xử lý", "Năng lượng âm và dương", "Bảo vệ bản thân tâm linh", "Hộ thân thần chú", "Tổng hợp huyền học Phật giáo"], pdfUrl: "https://xlch.org/download/bach-thoai-8", audioUrl: "https://xlch.org/audio/bach-thoai-8", color: "from-indigo-900/60 to-indigo-800/40" },
-  { id: 9, title: "Bạch Thoại Phật Pháp - Tập 9", chinese: "白话佛法（第九册）", description: "Tập 9 hướng đến việc độ người và hoằng pháp.", chapters: ["Độ người là công đức lớn", "Phương pháp giới thiệu Phật pháp", "Khi người thân không tin", "Kiên nhẫn trong độ người", "Hiện thân nói pháp", "Chia sẻ trải nghiệm thực tế", "Mạng xã hội và hoằng pháp", "Độ người trong gia đình", "Độ đồng nghiệp và bạn bè", "Tâm không vụ lợi khi độ người", "Kết quả độ người và công đức", "Những trở ngại khi độ người", "Cách vượt qua từ chối", "Bổn phận của người tu học", "Lan tỏa ánh sáng Phật pháp", "Nguyện độ vô lượng chúng sinh"], pdfUrl: "https://xlch.org/download/bach-thoai-9", audioUrl: "https://xlch.org/audio/bach-thoai-9", color: "from-teal-900/60 to-teal-800/40" },
-  { id: 10, title: "Bạch Thoại Phật Pháp - Tập 10", chinese: "白话佛法（第十册）", description: "Tập 10 chuyên sâu về tu tâm, đức hạnh và rèn luyện phẩm chất.", chapters: ["Đạo đức của người tu học", "Từ bi trong hành động", "Nhẫn nhục và kiên nhẫn", "Hỷ xả và buông bỏ", "Trí tuệ Bát Nhã ứng dụng", "Tâm từ bi với muôn loài", "Không phán xét người khác", "Lời nói thiện lành", "Hành động và công đức", "Tâm thái trước thành bại", "Vô ngã và tự tại", "Không tham, sân, si", "Giữ giới luật Phật giáo", "Ăn chay và tâm từ bi", "Tập thiền định", "Sống đời sống giác ngộ"], pdfUrl: "https://xlch.org/download/bach-thoai-10", audioUrl: "https://xlch.org/audio/bach-thoai-10", color: "from-cyan-900/60 to-cyan-800/40" },
-  { id: 11, title: "Bạch Thoại Phật Pháp - Tập 11", chinese: "白话佛法（第十一册）", description: "Tập 11 giới thiệu về pháp hội, lễ bái và hoạt động cộng đồng.", chapters: ["Pháp hội là gì?", "Lợi ích tham gia pháp hội", "Trang phục và lễ nghi", "Về pháp hội thế giới", "Quán Âm Đường và cộng đồng", "Đồng tu và hỗ trợ lẫn nhau", "Niệm kinh trong tập thể", "Phóng sinh tập thể", "Công đức trong pháp hội", "Ký sự pháp hội Melbourne", "Ký sự pháp hội Đài Loan", "Ký sự pháp hội Singapore", "Ký sự pháp hội New York", "Ký sự pháp hội Hà Nội", "Sức mạnh của cộng đồng tu học", "Tương lai của Pháp Môn Tâm Linh"], pdfUrl: "https://xlch.org/download/bach-thoai-11", audioUrl: "https://xlch.org/audio/bach-thoai-11", color: "from-lime-900/60 to-lime-800/40" },
-  { id: 12, title: "Bạch Thoại Phật Pháp - Tập 12", chinese: "白话佛法（第十二册）", description: "Tập 12 — tập cuối — tổng kết toàn bộ hành trình tu học và hướng về tương lai.", chapters: ["Nhìn lại hành trình tu học", "Tổng kết Năm Đại Pháp Bảo", "Bước tiến tiếp theo", "Vô thường và giá trị sự sống", "Cái chết và tái sinh", "Cực Lạc thế giới", "Chuẩn bị cho sự ra đi", "Trợ niệm người lâm chung", "Gia đình và sự tiếp nối", "Bổ sung và hoàn thiện tu học", "Những lời dạy cuối cùng", "Tâm nguyện của Sư Phụ", "Cảm ơn và tri ân", "Gieo hạt tốt lành", "Đồng đăng Cực Lạc", "Namo Amitabha (Nam Mô A Di Đà Phật)"], pdfUrl: "https://xlch.org/download/bach-thoai-12", audioUrl: "https://xlch.org/audio/bach-thoai-12", color: "from-yellow-900/60 to-yellow-800/40" },
-];
+// ── Color palettes per shelf ─────────────────────────────────
+const C = {
+  amber:   'from-amber-800/80 to-amber-700/60 border-amber-600/30',
+  orange:  'from-orange-800/80 to-orange-700/60 border-orange-600/30',
+  teal:    'from-teal-800/80 to-teal-700/60 border-teal-600/30',
+  jade:    'from-emerald-800/80 to-emerald-700/60 border-emerald-600/30',
+  rose:    'from-rose-800/80 to-rose-700/60 border-rose-600/30',
+  pink:    'from-pink-800/80 to-pink-700/60 border-pink-600/30',
+  purple:  'from-purple-800/80 to-purple-700/60 border-purple-600/30',
+  indigo:  'from-indigo-800/80 to-indigo-700/60 border-indigo-600/30',
+  blue:    'from-blue-800/80 to-blue-700/60 border-blue-600/30',
+  sky:     'from-sky-800/80 to-sky-700/60 border-sky-600/30',
+  green:   'from-green-800/80 to-green-700/60 border-green-600/30',
+  red:     'from-red-800/80 to-red-700/60 border-red-600/30',
+}
 
-const resourceLinks = [
-  { label: "Tải toàn bộ 12 tập (PDF)", href: "https://xlch.org/download", icon: "pdf" },
-  { label: "Audio niệm kinh tổng hợp", href: "https://xlch.org/audio", icon: "audio" },
-  { label: "Hướng dẫn tu học sơ học", href: "https://xlch.org/guide", icon: "guide" },
-  { label: "Mẫu Ngôi Nhà Nhỏ (PDF)", href: "https://xlch.org/ngoinha", icon: "pdf" },
-  { label: "Kinh văn thường dụng", href: "https://xlch.org/kinh", icon: "audio" },
-  { label: "Website Toàn Cầu XLFM", href: "https://xinlingfamen.info", icon: "external" },
-];
+// ── Data ─────────────────────────────────────────────────────
+const shelves: Shelf[] = [
+  {
+    id: 'nhap-mon',
+    title: 'Kệ 1 — Nhập Môn',
+    description: 'Vạn sự khởi đầu nan. Nếu bạn là người mới, đang bỡ ngỡ chưa biết bắt đầu từ đâu, hãy ghé kệ này đầu tiên. Tại đây có tấm bản đồ chỉ đường tỉ mỉ từ cách niệm câu kinh đầu tiên, nghi thức lập bàn thờ, cho đến cách dùng Ngôi Nhà Nhỏ để trả nợ nghiệp.',
+    groups: [
+      {
+        label: '',
+        books: [
+          { id: 'nm-1', titleVi: 'Cẩm Nang Nhập Môn Pháp Môn Tâm Linh', titleCn: '心灵法门入门手册', color: C.amber, description: 'Tài liệu nhập môn toàn diện giới thiệu Pháp Môn Tâm Linh, hướng dẫn từng bước từ cơ bản đến nâng cao.', pdfUrl: '#', readUrl: '#' },
+          { id: 'nm-2', titleVi: 'Phật Giáo Niệm Tụng Hợp Tập', titleCn: '经文念诵集', color: C.amber, description: 'Tổng hợp các bài kinh văn cần thiết cho việc tu học hàng ngày.', pdfUrl: '#', readUrl: '#' },
+          { id: 'nm-3', titleVi: 'Kim Chỉ Nam Tụng Niệm Ngôi Nhà Nhỏ', titleCn: '小房子念诵指南', color: C.amber, description: 'Hướng dẫn chi tiết cách viết và niệm Ngôi Nhà Nhỏ để siêu độ oan gia trái chủ.', pdfUrl: '#', readUrl: '#' },
+          { id: 'nm-4', titleVi: 'Tuyển Tập Khai Thị Về Việc Thiết Lập Bàn Thờ Phật', titleCn: '设佛台开示合集', color: C.orange },
+          { id: 'nm-5', titleVi: 'Phật Học Vấn Đáp 175 Câu', titleCn: '佛学问答175问', color: C.orange },
+          { id: 'nm-6', titleVi: 'Cẩm Nang Hướng Dẫn Hoằng Pháp Độ Nhân', titleCn: '弘法度人辅导手册', color: C.orange },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'bach-thoai',
+    title: 'Kệ 2 — Bạch Thoại Phật Pháp',
+    description: 'Đừng ngại Phật pháp cao siêu khó hiểu. Bộ sách này chính là chìa khóa vạn năng, nơi Sư phụ dùng lời lẽ đời thường, dung dị nhất để giảng giải những triết lý thâm sâu. Đọc để hiểu thấu lẽ đời, khai mở trí tuệ và học cách sửa tính sửa nết để đời bớt khổ.',
+    groups: [
+      {
+        label: 'Bộ Sách Bạch Thoại (12 Tập)',
+        books: [
+          { id: 'bt-1',  titleVi: 'Bạch Thoại Phật Pháp Tập 1',  titleCn: '白话佛法（第一册）',  color: C.teal },
+          { id: 'bt-2',  titleVi: 'Bạch Thoại Phật Pháp Tập 2',  titleCn: '白话佛法（第二册）',  color: C.teal },
+          { id: 'bt-3',  titleVi: 'Bạch Thoại Phật Pháp Tập 3',  titleCn: '白话佛法（第三册）',  color: C.teal },
+          { id: 'bt-4',  titleVi: 'Bạch Thoại Phật Pháp Tập 4',  titleCn: '白话佛法（第四册）',  color: C.jade },
+          { id: 'bt-5',  titleVi: 'Bạch Thoại Phật Pháp Tập 5',  titleCn: '白话佛法（第五册）',  color: C.jade },
+          { id: 'bt-6',  titleVi: 'Bạch Thoại Phật Pháp Tập 6',  titleCn: '白话佛法（第六册）',  color: C.jade },
+          { id: 'bt-7',  titleVi: 'Bạch Thoại Phật Pháp Tập 7',  titleCn: '白话佛法（第七册）',  color: C.teal },
+          { id: 'bt-8',  titleVi: 'Bạch Thoại Phật Pháp Tập 8',  titleCn: '白话佛法（第八册）',  color: C.teal },
+          { id: 'bt-9',  titleVi: 'Bạch Thoại Phật Pháp Tập 9',  titleCn: '白话佛法（第九册）',  color: C.teal },
+          { id: 'bt-10', titleVi: 'Bạch Thoại Phật Pháp Tập 10', titleCn: '白话佛法（第十册）',  color: C.jade },
+          { id: 'bt-11', titleVi: 'Bạch Thoại Phật Pháp Tập 11', titleCn: '白话佛法（第十一册）', color: C.jade },
+          { id: 'bt-12', titleVi: 'Bạch Thoại Phật Pháp Tập 12', titleCn: '白话佛法（第十二册）', color: C.jade },
+        ],
+      },
+      {
+        label: 'Bản Phát Thanh và Bài Giảng Video',
+        books: [
+          { id: 'bt-13', titleVi: 'Bạch Thoại Phật Pháp Bản Phát Thanh Tập 1', titleCn: '白话佛法广播讲座1', color: C.sky },
+          { id: 'bt-14', titleVi: 'Bạch Thoại Phật Pháp Bản Phát Thanh Tập 2', titleCn: '白话佛法广播讲座2', color: C.sky },
+          { id: 'bt-15', titleVi: 'Bài Giảng Khai Thị Quyển 1', titleCn: '视频开示第一册', color: C.blue, pdfUrl: '#', readUrl: '#' },
+          { id: 'bt-16', titleVi: 'Bài Giảng Khai Thị Quyển 2', titleCn: '视频开示第二册', color: C.blue, pdfUrl: '#', readUrl: '#' },
+          { id: 'bt-17', titleVi: 'Bài Giảng Khai Thị Quyển 3', titleCn: '视频开示第三册', color: C.blue, pdfUrl: '#', readUrl: '#' },
+          { id: 'bt-18', titleVi: 'Bài Giảng Khai Thị Quyển 4', titleCn: '视频开示第四册', color: C.blue, pdfUrl: '#', readUrl: '#' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'doi-song',
+    title: 'Kệ 3 — Phật Pháp & Đời Sống',
+    description: 'Cơm áo gạo tiền, bệnh tật ốm đau, vợ chồng lục đục... là những nỗi khổ rất thật của người tại gia. Kệ sách này đi thẳng vào vấn đề nóng bỏng các bạn đang gặp, cùng những minh chứng người thật việc thật để có thêm niềm tin thay đổi vận mệnh.',
+    groups: [
+      {
+        label: '',
+        books: [
+          { id: 'ds-1', titleVi: 'Chuyên Đề Bách Khoa Bệnh Tật', titleCn: '疾病百科', color: C.rose },
+          { id: 'ds-2', titleVi: 'Các Ca Bệnh Thực Tế Quyển 1', titleCn: '疾病实例1', color: C.rose },
+          { id: 'ds-3', titleVi: 'Các Ca Bệnh Thực Tế Quyển 2', titleCn: '疾病实例2', color: C.rose },
+          { id: 'ds-4', titleVi: 'Chuyên Đề Hôn Nhân & Tình Cảm Quyển 1', titleCn: '婚姻情感1', color: C.pink },
+          { id: 'ds-5', titleVi: 'Chuyên Đề Hôn Nhân & Tình Cảm Quyển 2', titleCn: '婚姻情感2', color: C.pink },
+          { id: 'ds-6', titleVi: 'Sách Ảnh Ăn Chay, Giữ Giới Sát Sinh, Phóng Sinh', titleCn: '吃素戒杀放生图册', color: C.pink },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'nhan-qua',
+    title: 'Kệ 4 — Nhân Quả Ba Đời',
+    description: 'Kệ sách này vén màn những bí mật về phong thủy nhà cửa, về các cõi giới vô hình và quy luật nhân quả ba đời. Đọc để giải mã những thắc mắc "Tại sao mình khổ?", để thấu hiểu nguồn gốc vận mệnh và sống tự tại.',
+    groups: [
+      {
+        label: '',
+        books: [
+          { id: 'nq-1', titleVi: 'Nhất Mệnh Nhị Vận Tam Phong Thủy', titleCn: '一命二运三风水', color: C.purple },
+          { id: 'nq-2', titleVi: 'Thế Giới Đồ Đằng', titleCn: '图腾世界', color: C.purple },
+          { id: 'nq-3', titleVi: 'Thiên Địa Nhân', titleCn: '天地人', color: C.purple },
+          { id: 'nq-4', titleVi: 'Phật Tử Thiên Địa Du Ký Quyển 1', titleCn: '佛子天地游记（上）', color: C.indigo, pdfUrl: '#', readUrl: '#' },
+          { id: 'nq-5', titleVi: 'Phật Tử Thiên Địa Du Ký Quyển 2', titleCn: '佛子天地游记（下）', color: C.indigo, pdfUrl: '#', readUrl: '#' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'phat-ngon',
+    title: 'Kệ 5 — Phật Ngôn & Thiền Ngữ',
+    description: 'Đây là những liều vitamin cho tâm hồn giữa cuộc sống bộn bề. Chỉ cần vài phút lật giở những lời khai thị ngắn gọn hay những câu thiền ngữ nhẹ nhàng cũng đủ để bạn thấy lòng mình lắng lại và tìm lại sự thanh tịnh vốn có.',
+    groups: [
+      {
+        label: 'Phật Ngôn Phật Ngữ (14 Tập)',
+        books: [
+          ...Array.from({ length: 14 }, (_, i) => ({
+            id: `pn-${i + 1}`,
+            titleVi: `Phật Ngôn Phật Ngữ Tập ${i + 1}`,
+            titleCn: `佛言佛语${i + 1 > 1 ? i + 1 : '小册子'}`,
+            color: C.blue,
+          })),
+        ],
+      },
+      {
+        label: 'Phật Ngôn Kệ Ngữ (4 Tập)',
+        books: [
+          { id: 'pnk-1', titleVi: 'Phật Ngôn Kệ Ngữ Tập 1', titleCn: '佛言偈語第一冊', color: C.sky },
+          { id: 'pnk-2', titleVi: 'Phật Ngôn Kệ Ngữ Tập 2', titleCn: '佛言偈語第二冊', color: C.sky },
+          { id: 'pnk-3', titleVi: 'Phật Ngôn Kệ Ngữ Tập 3', titleCn: '佛言偈語第三冊', color: C.sky },
+          { id: 'pnk-4', titleVi: 'Phật Ngôn Kệ Ngữ Tập 4', titleCn: '佛言偈語第四册', color: C.sky },
+        ],
+      },
+      {
+        label: 'Thiền Ngữ & Đệ Tử Khai Thị',
+        books: [
+          { id: 'tn-1', titleVi: 'Thiền Ngữ Tâm Linh Quyển 1', titleCn: '心灵禅语', color: C.indigo },
+          { id: 'tn-2', titleVi: 'Thiền Ngữ Tâm Linh Quyển 2', titleCn: '心灵禅语第二册', color: C.indigo },
+          { id: 'dt-1', titleVi: 'Đệ Tử Khai Thị Tập 1', titleCn: '弟子开示1', color: C.purple },
+          { id: 'dt-2', titleVi: 'Đệ Tử Khai Thị Tập 2', titleCn: '弟子开示2', color: C.purple },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'kien-thuc',
+    title: 'Kệ 6 — Kiến Thức & Lý Luận',
+    description: 'Muốn xây nhà cao, móng phải vững. Kệ sách này dành cho những ai muốn đi sâu tìm hiểu, tra cứu các thuật ngữ và củng cố nền tảng lý luận Phật học. Một kho tàng tri thức giúp con đường tu tập thêm vững vàng, tránh lạc lối vào mê tín dị đoan.',
+    groups: [
+      {
+        label: '',
+        books: [
+          { id: 'kt-1', titleVi: 'Quan Niệm Mới về Phật Pháp', titleCn: '佛法新概念', color: C.green },
+          { id: 'kt-2', titleVi: 'Không Gian Mới của Phật Pháp', titleCn: '佛法新空间', color: C.green },
+          { id: 'kt-3', titleVi: 'Khai Thị Kiến Thức Phật Học Thường Thức Quyển 1', titleCn: '佛学常识开示集锦1', color: C.jade },
+          { id: 'kt-4', titleVi: 'Khai Thị Kiến Thức Phật Học Thường Thức Quyển 2', titleCn: '佛学常识开示集锦2', color: C.jade },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'hoang-phap',
+    title: 'Kệ 7 — Dấu Chân Hoằng Pháp',
+    description: 'Nơi đây lưu giữ những khoảnh khắc lịch sử trang nghiêm của các Pháp hội và những giọt nước mắt hạnh phúc của hàng triệu đồng tu khi được cứu độ. Đọc để thấy mình không cô đơn trên con đường này.',
+    groups: [
+      {
+        label: '',
+        books: [
+          { id: 'hp-1', titleVi: 'Dấu Chân Hoằng Pháp 2014 — Tập Trên', titleCn: '弘法足迹2014（上）', color: C.red },
+          { id: 'hp-2', titleVi: 'Dấu Chân Hoằng Pháp 2014 — Tập Giữa', titleCn: '弘法足迹2014（中）', color: C.red },
+          { id: 'hp-3', titleVi: 'Dấu Chân Hoằng Pháp 2014 — Tập Dưới', titleCn: '弘法足迹2014（下）', color: C.red },
+          { id: 'hp-4', titleVi: 'Pháp Hội Cảm Ngộ Chia Sẻ Quyển 1', titleCn: '法会感悟分享第一册', color: C.orange },
+        ],
+      },
+    ],
+  },
+]
 
+// ── Book Cover Component ──────────────────────────────────────
+function BookCover({
+  book,
+  index,
+  onClick,
+}: {
+  book: Book
+  index: number
+  onClick: () => void
+}) {
+  const hasContent = !!(book.readUrl || book.pdfUrl || book.audioUrl)
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: Math.min(index * 0.04, 0.4) }}
+      whileHover={{ y: -6, rotateY: 4 }}
+      onClick={onClick}
+      className="group relative aspect-[3/4] cursor-pointer"
+      style={{ perspective: '900px' }}
+      title={book.titleVi}
+    >
+      {/* Shadow */}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4/5 h-3 bg-black/30 blur-md rounded-full translate-y-2 group-hover:translate-y-3 group-hover:w-full transition-all duration-300" />
+
+      {/* Cover */}
+      <div
+        className={`relative h-full rounded-md border overflow-hidden bg-gradient-to-br ${book.color} transition-shadow duration-300 group-hover:shadow-xl`}
+      >
+        {/* Spine */}
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-black/20" />
+        {/* Gloss */}
+        <div className="absolute left-1 top-0 bottom-0 w-0.5 bg-white/10" />
+
+        {/* Content */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-3 text-center gap-2">
+          <div className="w-7 h-7 rounded bg-white/15 flex items-center justify-center shrink-0">
+            <BookOpen className="w-3.5 h-3.5 text-white/80" />
+          </div>
+          <h3 className="text-xs md:text-sm font-display text-white leading-tight drop-shadow line-clamp-4">
+            {book.titleVi}
+          </h3>
+          <p className="text-[10px] text-white/50 leading-tight">{book.titleCn}</p>
+        </div>
+
+        {/* Coming Soon badge */}
+        {!hasContent && (
+          <div className="absolute top-2 right-2">
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white/60 font-medium">
+              Sắp có
+            </span>
+          </div>
+        )}
+
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 transition-colors duration-300" />
+      </div>
+    </motion.button>
+  )
+}
+
+// ── Book Detail Dialog ────────────────────────────────────────
+function BookDetailDialog({
+  book,
+  onClose,
+}: {
+  book: Book | null
+  onClose: () => void
+}) {
+  if (!book) return null
+
+  const hasContent = !!(book.readUrl || book.pdfUrl || book.audioUrl)
+
+  return (
+    <Dialog open={!!book} onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="font-display text-xl leading-tight pr-4">
+            {book.titleVi}
+          </DialogTitle>
+          <p className="text-sm text-muted-foreground mt-0.5">{book.titleCn}</p>
+        </DialogHeader>
+
+        <Separator />
+
+        {book.description && (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {book.description}
+          </p>
+        )}
+
+        {hasContent ? (
+          <div className="grid grid-cols-1 gap-3 pt-1">
+            {book.readUrl && (
+              <a href={book.readUrl} target="_blank" rel="noopener noreferrer">
+                <Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+                  <BookOpen className="w-4 h-4" />
+                  Đọc Online
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              </a>
+            )}
+            {book.pdfUrl && (
+              <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full gap-2">
+                  <Download className="w-4 h-4" />
+                  Tải E-book PDF
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              </a>
+            )}
+            {book.audioUrl && (
+              <a href={book.audioUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full gap-2">
+                  <Headphones className="w-4 h-4" />
+                  Nghe Sách Audio
+                  <ChevronRight className="w-4 h-4 ml-auto" />
+                </Button>
+              </a>
+            )}
+          </div>
+        ) : (
+          <div className="rounded-lg border border-dashed bg-muted/30 p-6 text-center">
+            <p className="text-sm text-muted-foreground font-medium mb-1">Bản dịch tiếng Việt đang được chuẩn bị</p>
+            <p className="text-xs text-muted-foreground/70">
+              Bạn có thể truy cập phiên bản tiếng Trung tại website gốc.
+            </p>
+            <a
+              href="https://xlch.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 mt-4 text-xs text-amber-500 hover:text-amber-600 font-medium transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              Truy cập xlch.org
+            </a>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Shelf Section ─────────────────────────────────────────────
+function ShelfSection({
+  shelf,
+  onBookClick,
+}: {
+  shelf: Shelf
+  onBookClick: (book: Book) => void
+}) {
+  return (
+    <section className="py-12 border-t border-border/50 first:border-t-0">
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-8"
+      >
+        <div className="flex items-start gap-3">
+          <div className="w-1 h-10 bg-gradient-to-b from-amber-500 to-amber-600 rounded mt-0.5 shrink-0" />
+          <div>
+            <h2 className="text-2xl md:text-3xl font-display text-foreground">{shelf.title}</h2>
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed max-w-2xl">{shelf.description}</p>
+          </div>
+        </div>
+      </motion.div>
+
+      {shelf.groups.map((group, gi) => (
+        <div key={gi} className={gi > 0 ? 'mt-10' : ''}>
+          {group.label && (
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+              {group.label}
+            </p>
+          )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            {group.books.map((book, bi) => (
+              <BookCover
+                key={book.id}
+                book={book}
+                index={bi}
+                onClick={() => onBookClick(book)}
+              />
+            ))}
+          </div>
+        </div>
+      ))}
+    </section>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────
 export default function LibraryPage() {
-  const [selectedVolume, setSelectedVolume] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [activeChapter, setActiveChapter] = useState<number>(0);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null)
 
-  const selected = volumes.find((v) => v.id === selectedVolume);
+  const totalBooks = shelves.reduce(
+    (acc, s) => acc + s.groups.reduce((a, g) => a + g.books.length, 0),
+    0
+  )
 
   return (
     <div className="min-h-screen bg-background">
+      <StickyBanner />
       <Header />
       <main className="py-16">
         <div className="container mx-auto px-6">
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-4">
-            <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">白话佛法</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Thư Viện Bạch Thoại Phật Pháp</h1>
-            <p className="text-muted-foreground text-lg">12 tập kinh điển — Trí tuệ Phật pháp ứng dụng trong đời sống</p>
-          </motion.div>
-
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="flex flex-wrap justify-center gap-2 mb-12">
-            {resourceLinks.map((link) => (
-              <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:border-gold/40 text-sm text-muted-foreground hover:text-gold transition-all">
-                <DownloadIcon className="w-3.5 h-3.5" />
-                {link.label}
-              </a>
-            ))}
-          </motion.div>
-
-          <div className="flex flex-col lg:flex-row gap-8">
-            <div className={`${selected ? "lg:w-5/12" : "w-full"} transition-all duration-500`}>
-              <div className={`grid ${selected ? "grid-cols-2 md:grid-cols-3" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4`}>
-                {volumes.map((vol, i) => (
-                  <motion.button key={vol.id} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }} whileHover={{ y: -10, rotateY: 8, scale: 1.02 }} onClick={() => { setSelectedVolume(vol.id === selectedVolume ? null : vol.id); setActiveChapter(0); setIsPlaying(false); }} className={`relative aspect-[3/4] rounded-xl border-2 transition-all overflow-hidden group cursor-pointer ${selectedVolume === vol.id ? "border-gold shadow-gold shadow-lg" : "border-border hover:border-gold/40"}`} style={{ perspective: "800px", transformStyle: "preserve-3d" }}>
-                    <div className={`absolute inset-0 bg-gradient-to-br ${vol.color}`} />
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-white/10 to-transparent" />
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                      <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center mb-3">
-                        <BookIcon className="w-5 h-5 text-amber-300" />
-                      </div>
-                      <span className="font-display text-base text-white leading-tight drop-shadow">Tập {vol.id}</span>
-                      <span className="text-xs text-white/60 mt-1">{vol.chapters.length} chương</span>
-                      <span className="text-xs text-white/40 mt-0.5">白话佛法</span>
-                    </div>
-                    {selectedVolume === vol.id && (
-                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gold flex items-center justify-center">
-                        <svg viewBox="0 0 12 12" fill="white" className="w-3 h-3"><polyline points="2 6 5 9 10 3" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-gold/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </motion.button>
-                ))}
-              </div>
+          {/* ── Page Header ───────────────────────────────── */}
+          <div className="flex flex-col items-center text-center mb-16">
+            <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">
+              心灵法门
+            </p>
+            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">
+              Thư Viện Pháp Bảo
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-xl">
+              {totalBooks} đầu sách — Miễn phí, không kinh doanh Phật pháp
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mt-6">
+              {shelves.map((s) => (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:border-amber-500/40 hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-muted-foreground"
+                >
+                  {s.title.split('—')[1]?.trim() ?? s.title}
+                </a>
+              ))}
             </div>
-
-            <AnimatePresence>
-              {selected && (
-                <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 50 }} transition={{ type: "spring", damping: 20, stiffness: 200 }} className="lg:w-7/12 bg-card border border-border rounded-xl overflow-hidden flex flex-col max-h-[80vh] lg:sticky lg:top-24">
-                  <div className="flex items-start justify-between p-5 border-b border-border bg-secondary/30">
-                    <div className="flex-1 min-w-0 pr-4">
-                      <h2 className="font-display text-xl text-foreground leading-tight">{selected.title}</h2>
-                      <p className="text-xs text-muted-foreground mt-0.5">{selected.chinese}</p>
-                    </div>
-                    <button onClick={() => setSelectedVolume(null)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors shrink-0">
-                      <CloseIcon className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-secondary/10">
-                    <a href={selected.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-gold hover:bg-primary/20 transition-colors text-xs font-medium">
-                      <DownloadIcon className="w-3.5 h-3.5" />Tải PDF
-                    </a>
-                    <a href={selected.audioUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-xs font-medium text-muted-foreground hover:text-foreground">
-                      <ExternalLinkIcon className="w-3.5 h-3.5" />Nghe Online
-                    </a>
-                    <a href="https://xlch.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary hover:bg-secondary/80 transition-colors text-xs font-medium text-muted-foreground hover:text-foreground">
-                      <ExternalLinkIcon className="w-3.5 h-3.5" />Website Gốc
-                    </a>
-                  </div>
-
-                  <div className="px-5 py-4 border-b border-border">
-                    <p className="text-sm text-muted-foreground leading-relaxed">{selected.description}</p>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto">
-                    <div className="px-5 py-3 border-b border-border bg-secondary/20">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Mục Lục — {selected.chapters.length} Chương</p>
-                    </div>
-                    <div className="p-3 space-y-1">
-                      {selected.chapters.map((chapter, i) => (
-                        <button key={i} onClick={() => setActiveChapter(i)} className={`w-full flex items-center gap-3 p-3 rounded-lg transition-colors group text-left ${activeChapter === i ? "bg-primary/10 text-gold" : "hover:bg-secondary text-muted-foreground hover:text-foreground"}`}>
-                          <span className={`text-xs w-6 text-center shrink-0 ${activeChapter === i ? "text-gold" : "text-muted-foreground/50"}`}>{i + 1}</span>
-                          <span className="text-sm flex-1">{chapter}</span>
-                          {activeChapter === i && <PlayIcon className="w-3.5 h-3.5 text-gold shrink-0" />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-border p-4 bg-secondary/30">
-                    <p className="text-xs text-muted-foreground mb-3 truncate">Đang xem: <span className="text-foreground">Chương {activeChapter + 1} — {selected.chapters[activeChapter]}</span></p>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => setActiveChapter(Math.max(0, activeChapter - 1))} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="19 20 9 12 19 4" strokeLinecap="round" strokeLinejoin="round" /><line x1="5" y1="19" x2="5" y2="5" strokeLinecap="round" /></svg>
-                      </button>
-                      <button onClick={() => setIsPlaying(!isPlaying)} className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center hover:bg-primary/90 transition-colors shrink-0">
-                        {isPlaying ? (
-                          <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
-                        ) : (
-                          <PlayIcon className="w-4 h-4 ml-0.5" />
-                        )}
-                      </button>
-                      <button onClick={() => setActiveChapter(Math.min(selected.chapters.length - 1, activeChapter + 1))} className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center hover:bg-secondary/80 transition-colors">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="5 4 15 12 5 20" strokeLinecap="round" strokeLinejoin="round" /><line x1="19" y1="5" x2="19" y2="19" strokeLinecap="round" /></svg>
-                      </button>
-                      <div className="flex-1 min-w-0">
-                        <div className="w-full h-1.5 bg-border rounded-full overflow-hidden">
-                          <motion.div className="h-full bg-gradient-to-r from-gold to-amber-400 rounded-full" animate={{ width: isPlaying ? "60%" : "30%" }} transition={{ duration: 2, ease: "linear" }} />
-                        </div>
-                      </div>
-                      <span className="text-xs text-muted-foreground shrink-0">24:18</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
+          {/* ── Shelves ───────────────────────────────────── */}
+          {shelves.map((shelf) => (
+            <div key={shelf.id} id={shelf.id}>
+              <ShelfSection shelf={shelf} onBookClick={setSelectedBook} />
+            </div>
+          ))}
+
+          {/* ── Download CTA ──────────────────────────────── */}
           <div className="mt-16 p-8 rounded-2xl bg-card border border-border text-center">
-            <h3 className="font-display text-2xl text-foreground mb-3">Tải Miễn Phí Toàn Bộ 12 Tập</h3>
-            <p className="text-muted-foreground mb-6 max-w-lg mx-auto text-sm">Tất cả sách, audio và tài liệu Pháp Môn Tâm Linh đều miễn phí. Không bao giờ dùng Phật pháp để kinh doanh.</p>
+            <h3 className="font-display text-2xl text-foreground mb-2">
+              Tất Cả Tài Liệu Đều Miễn Phí
+            </h3>
+            <p className="text-muted-foreground mb-6 max-w-lg mx-auto text-sm">
+              Sách, audio và kinh văn Pháp Môn Tâm Linh không bao giờ được dùng để kinh doanh. Hãy tự do tải về và chia sẻ.
+            </p>
             <div className="flex flex-wrap justify-center gap-3">
-              <a href="https://xlch.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-colors font-medium">
-                <DownloadIcon className="w-4 h-4" />Tải tất cả tài liệu
+              <a
+                href="https://xlch.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white transition-colors font-medium text-sm"
+              >
+                <Globe className="w-4 h-4" />
+                Website Gốc xlch.org
               </a>
-              <a href="https://xinlingfamen.info" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium">
-                <ExternalLinkIcon className="w-4 h-4" />Website Toàn Cầu
+              <a
+                href="https://xinlingfamen.info"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors font-medium text-sm"
+              >
+                <Globe className="w-4 h-4" />
+                Website Toàn Cầu
               </a>
             </div>
           </div>
         </div>
       </main>
+
       <Footer />
       <StickyBanner />
+
+      {/* ── Book Detail Dialog ────────────────────────────── */}
+      <BookDetailDialog book={selectedBook} onClose={() => setSelectedBook(null)} />
     </div>
-  );
+  )
 }

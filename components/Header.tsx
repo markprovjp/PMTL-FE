@@ -21,17 +21,18 @@ const ChevronDown = () => (
   </svg>
 );
 
-const NavDropdown = ({ label, items, isOpen, onToggle, onClose }: {
+const NavDropdown = ({ label, items, isOpen, onToggle, onClose, columns = 1 }: {
   label: string;
   items: { label: string; href: string }[];
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
+  columns?: number;
 }) => (
   <div className="relative group">
     <button
       onClick={onToggle}
-      className={`px-2 lg:px-3 py-2.5 text-xs font-medium tracking-wide transition-colors flex items-center gap-1.5 ${isOpen ? "text-gold" : "text-muted-foreground hover:text-gold"}`}
+      className={`px-2 lg:px-2.5 py-2.5 text-xs font-medium tracking-wide transition-colors flex items-center gap-1 ${isOpen ? "text-gold" : "text-muted-foreground hover:text-gold"}`}
     >
       {label}
       <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}><ChevronDown /></motion.span>
@@ -41,23 +42,44 @@ const NavDropdown = ({ label, items, isOpen, onToggle, onClose }: {
         <>
           <div className="fixed inset-0 z-30" onClick={onClose} />
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute left-0 mt-1 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-40"
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            transition={{ duration: 0.12 }}
+            className={`absolute left-0 top-full mt-0.5 bg-card border border-border rounded-lg shadow-lg z-40 overflow-hidden ${columns > 1 ? `w-80` : 'w-56'}`}
           >
-            <div className="p-1">
-              {items.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  className="block px-4 py-2 text-xs text-muted-foreground hover:text-gold hover:bg-secondary rounded-lg transition-colors"
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className={columns > 1 ? `grid grid-cols-${columns} gap-0` : ''}>
+              {columns === 1 ? (
+                <div className="p-1.5 space-y-0.5">
+                  {items.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      className="block px-3 py-1.5 text-xs text-muted-foreground hover:text-gold hover:bg-secondary/60 rounded transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <>
+                  {Array.from({ length: columns }).map((_, col) => (
+                    <div key={col} className="p-2 border-r border-border last:border-r-0">
+                      {items.slice(col * Math.ceil(items.length / columns), (col + 1) * Math.ceil(items.length / columns)).map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={onClose}
+                          className="block px-2 py-1 text-xs text-muted-foreground hover:text-gold hover:bg-secondary/50 rounded transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </motion.div>
         </>
@@ -76,6 +98,7 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
       label: "Tu Học",
       items: [
         { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
+        { label: "Niệm Kinh Online", href: "/niem-kinh" },
         { label: "Kinh Bài Tập Hằng Ngày", href: "/daily-recitation" },
         { label: "Hỏi Đáp Phật Học", href: "/qa" },
         { label: "Thư Viện Kinh Sách", href: "/library" },
@@ -109,7 +132,6 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
             width={160}
             height={50}
             className="h-10 w-auto object-contain"
-            unoptimized
           />
         </Link>
         <button onClick={onClose} className="p-2 text-muted-foreground hover:text-foreground">
@@ -122,7 +144,7 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
             <Link href="/profile" onClick={onClose} className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gold/20 flex items-center justify-center overflow-hidden">
                 {user.avatar_url ? (
-                  <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                  <Image src={user.avatar_url} alt="Avatar" width={36} height={36} className="w-full h-full object-cover" />
                 ) : (
                   <span className="font-display text-sm text-gold">{(user.fullName || user.username)[0].toUpperCase()}</span>
                 )}
@@ -151,9 +173,11 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
         <Link href="/lunar-calendar" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Lịch Tu Học
         </Link>
-
+        <Link href="/niem-kinh" onClick={onClose} className="block py-3 px-2 text-base font-display text-gold border-b border-border/50">
+          Niệm Kinh
+        </Link>
         <Link href="/shares" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Diễn Đàn Đồng Tu
+          Diễn Đàn
         </Link>
 
         {sections.map((s) => (
@@ -211,6 +235,7 @@ const Header = () => {
   const groups = {
     tuHoc: [
       { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
+      { label: "Niệm Kinh Online", href: "/niem-kinh" },
       { label: "Kinh Bài Tập Hằng Ngày", href: "/daily-recitation" },
       { label: "Hỏi Đáp Phật Học", href: "/qa" },
       { label: "Thư Viện Kinh Sách", href: "/library" },
@@ -226,36 +251,39 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50">
       <div className="relative z-[60] bg-background/95 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-6 flex items-center justify-between h-16">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+        <div className="container mx-auto px-3 lg:px-6 flex items-center justify-between h-16 gap-2">
+          <div className="flex items-center gap-3 min-w-0">
+            <Link href="/" className="flex items-center hover:opacity-80 transition-opacity flex-shrink-0">
               <Image
                 src="/images/logoo.png"
                 alt="Phap Mon Tam Linh"
-                width={200}
-                height={60}
-                className="h-12 w-auto object-contain"
-                unoptimized
+                width={160}
+                height={48}
+                className="h-10 w-auto object-contain"
                 priority
               />
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1">
-              <Link href="/" className="px-2 lg:px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors">
+            <nav className="hidden lg:flex items-center gap-0.5">
+              <Link href="/" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
                 Trang Chủ
               </Link>
 
-              <Link href="/blog" className="px-2 lg:px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors">
-                Khai Thị (Blog)
+              <Link href="/blog" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+                Khai Thị
               </Link>
 
-              <Link href="/lunar-calendar" className="px-2 lg:px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors">
-                Lịch Tu Học
+              <Link href="/lunar-calendar" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+                Lịch Tu
               </Link>
 
-              <Link href="/shares" className="px-2 lg:px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors">
-                Diễn Đàn Đồng Tu
+              <Link href="/niem-kinh" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+                Niệm Kinh
+              </Link>
+
+              <Link href="/shares" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+                Diễn Đàn
               </Link>
 
               <NavDropdown
@@ -264,15 +292,8 @@ const Header = () => {
                 isOpen={activeDropdown === 'tuHoc'}
                 onToggle={() => setActiveDropdown(activeDropdown === 'tuHoc' ? null : 'tuHoc')}
                 onClose={() => setActiveDropdown(null)}
+                columns={2}
               />
-
-              <button
-                onClick={() => { setCategoryOpen(!categoryOpen); setActiveDropdown(null); }}
-                className={`px-2 lg:px-3 py-2.5 text-xs font-medium tracking-wide transition-colors flex items-center gap-1.5 ${categoryOpen ? "text-gold" : "text-muted-foreground hover:text-gold"}`}
-              >
-                Khai Thị
-                <motion.span animate={{ rotate: categoryOpen ? 180 : 0 }} transition={{ duration: 0.2 }}><ChevronDown /></motion.span>
-              </button>
 
               <NavDropdown
                 label="Cộng Đồng"
@@ -282,30 +303,34 @@ const Header = () => {
                 onClose={() => setActiveDropdown(null)}
               />
 
-              <Link href="/donations" className="px-2 lg:px-3 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors">
-                Hộ Trì
-              </Link>
+              <button
+                onClick={() => { setCategoryOpen(!categoryOpen); setActiveDropdown(null); }}
+                className={`px-2 py-2.5 text-xs font-medium tracking-wide transition-colors flex items-center gap-1 whitespace-nowrap ${categoryOpen ? "text-gold" : "text-muted-foreground hover:text-gold"}`}
+              >
+                Chủ Đề
+                <motion.span animate={{ rotate: categoryOpen ? 180 : 0 }} transition={{ duration: 0.2 }}><ChevronDown /></motion.span>
+              </button>
             </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Link href="/search" className="p-2 text-muted-foreground hover:text-gold transition-colors">
+            <Link href="/search" className="p-1.5 text-muted-foreground hover:text-gold transition-colors flex-shrink-0">
               <SearchIcon />
             </Link>
 
             {!loading && (
               user ? (
-                <div className="relative hidden md:block">
-                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gold/30 hover:border-gold/60 transition-all">
-                    <div className="w-5 h-5 rounded-full bg-gold/20 flex items-center justify-center overflow-hidden shrink-0">
+                <div className="relative hidden md:block flex-shrink-0">
+                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gold/30 hover:border-gold/60 transition-all">
+                    <div className="w-4 h-4 rounded-full bg-gold/20 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {user.avatar_url ? (
-                        <img src={user.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                        <Image src={user.avatar_url} alt="Avatar" width={16} height={16} className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-xs text-gold font-bold">{(user.fullName || user.username)[0].toUpperCase()}</span>
+                        <span className="text-[10px] text-gold font-bold">{(user.fullName || user.username)[0].toUpperCase()}</span>
                       )}
                     </div>
-                    <span className="text-xs text-foreground max-w-24 truncate">{user.fullName || user.username}</span>
+                    <span className="text-xs text-foreground max-w-20 truncate hidden lg:inline">{user.fullName || user.username}</span>
                     <ChevronDown />
                   </button>
                   <AnimatePresence>

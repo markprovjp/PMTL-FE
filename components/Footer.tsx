@@ -87,7 +87,6 @@ const Footer = () => (
               width={160}
               height={50}
               className="h-12 w-auto object-contain"
-              unoptimized
             />
           </Link>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-xs">

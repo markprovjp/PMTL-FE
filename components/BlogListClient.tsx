@@ -14,7 +14,9 @@ import { ArrowRightIcon, SearchIcon } from '@/components/icons/ZenIcons'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import type { BlogPost, Category } from '@/types/strapi'
 import BlogPagination from '@/components/BlogPagination'
-import { Loader2, SlidersHorizontal, X, ExternalLink, ChevronDown } from 'lucide-react'
+import { Loader2, SlidersHorizontal, X, ExternalLink, ChevronDown, Check } from 'lucide-react'
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const EXTERNAL_LINKS = [
   { label: 'Website Toàn Cầu (心灵法门)', href: 'https://xinlingfamen.info' },
@@ -118,8 +120,47 @@ export default function BlogListClient({
         )}
       </div>
 
-      {/* Category pills */}
-      <div>
+      {/* Category Accordion (dành riêng desktop) / Pills (dành riêng mobile) */}
+      <div className="hidden lg:block">
+        <Accordion type="single" collapsible defaultValue="categories" className="w-full">
+          <AccordionItem value="categories" className="border-b-0">
+            <AccordionTrigger className="text-xs text-muted-foreground font-medium uppercase tracking-wider py-2 hover:no-underline hover:text-gold transition-colors">
+              Danh Mục
+            </AccordionTrigger>
+            <AccordionContent className="pt-2 pb-0">
+              <ScrollArea className="h-[280px] pr-4 -mr-4">
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => { updateParam('category', null); onClose?.() }}
+                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${currentCategory === ''
+                      ? 'bg-primary/10 text-gold font-medium'
+                      : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                      }`}
+                  >
+                    Tất cả
+                    {currentCategory === '' && <Check className="w-4 h-4" />}
+                  </button>
+                  {categories.map((cat) => (
+                    <button
+                      key={cat.id}
+                      onClick={() => handleCategoryClick(cat.slug)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${currentCategory === cat.slug
+                        ? 'bg-primary/10 text-gold font-medium'
+                        : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
+                        }`}
+                    >
+                      {cat.name}
+                      {currentCategory === cat.slug && <Check className="w-4 h-4" />}
+                    </button>
+                  ))}
+                </div>
+              </ScrollArea>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+
+      <div className="lg:hidden">
         <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wider">Danh Mục</p>
         <div className="flex flex-wrap gap-2">
           <button
@@ -340,8 +381,8 @@ export default function BlogListClient({
                   viewport={{ once: true }}
                   transition={{ delay: Math.min(i * 0.04, 0.3) }}
                   className={`rounded-2xl bg-card border transition-all group overflow-hidden ${post.featured
-                      ? 'border-gold/40 shadow-sm shadow-gold/5'
-                      : 'border-border hover:border-gold/30'
+                    ? 'border-gold/40 shadow-sm shadow-gold/5'
+                    : 'border-border hover:border-gold/30'
                     }`}
                 >
                   <Link href={`/blog/${post.slug}`} className="block">
