@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import Providers from './providers'
 import { Toaster } from "@/components/ui/sonner"
 import './globals.css'
@@ -18,6 +19,12 @@ export const metadata: Metadata = {
     'Tu tập',
     'Quán Âm Đường',
   ],
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Pháp Môn Tâm Linh',
+  },
   openGraph: {
     title: 'Pháp Môn Tâm Linh',
     description: 'Hộ trì Phật pháp, tu học tâm linh',
@@ -43,6 +50,13 @@ export default function RootLayout({
           {children}
           <Toaster position="top-center" />
         </Providers>
+        <Script id="sw-register" strategy="afterInteractive">{`
+          if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+              navigator.serviceWorker.register('/sw.js').catch(function() {});
+            });
+          }
+        `}</Script>
       </body>
     </html>
   )

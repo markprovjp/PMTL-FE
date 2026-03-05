@@ -105,7 +105,7 @@ interface Props {
 const DEFAULT_PRESETS: number[] = []; // Presets lấy từ BE (recommendedPresets), không dùng hardcode
 
 export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props) {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressMap>({});
   const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'offline'>('saved');
@@ -145,12 +145,10 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
 
   // ── Init: backend-first if logged in, otherwise localStorage ──
   useEffect(() => {
-    if (token) {
-      // Logged in: fetch from backend, do NOT pollute localStorage
+    if (user) {
+      // Đã đăng nhập: fetch từ backend (cookie được gửi tự động same-origin)
       setSaveStatus('saving');
-      fetch(`/api/practice-log?date=${isoDate}&planSlug=${planSlug}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      fetch(`/api/practice-log?date=${isoDate}&planSlug=${planSlug}`)
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
           if (data?.itemsProgress) {
@@ -162,18 +160,18 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
           setSaveStatus('offline');
         });
     } else {
-      // Guest: load from localStorage
+      // Khách: load từ localStorage
       const local = loadLocalProgress(isoDate, planSlug);
       setProgress(local);
       setSaveStatus('saved');
     }
-  }, [isoDate, planSlug, token]);
+  }, [isoDate, planSlug, user]);
 
   // ── Online/offline detection ───────────────────────────────
   useEffect(() => {
     const onOnline = () => {
       setIsOnline(true);
-      if (token) syncToBackend(progress);
+      if (user) syncToBackend(progress);
     };
     const onOffline = () => setIsOnline(false);
     window.addEventListener('online', onOnline);
@@ -188,15 +186,12 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
   // ── Autosave ──────────────────────────────────────────────
   const syncToBackend = useCallback(
     async (prog: ProgressMap) => {
-      if (!token) return;
+      if (!user) return;
       setSaveStatus('saving');
       try {
         const res = await fetch('/api/practice-log', {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ date: isoDate, planSlug, itemsProgress: prog }),
         });
         setSaveStatus(res.ok ? 'saved' : 'unsaved');
@@ -204,13 +199,13 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
         setSaveStatus('offline');
       }
     },
-    [token, isoDate, planSlug]
+    [user, isoDate, planSlug]
   );
 
   const scheduleAutosave = useCallback(
     (prog: ProgressMap) => {
-      if (token) {
-        // Logged in: debounce sync to backend only
+      if (user) {
+        // Đã đăng nhập: debounce sync lên backend
         setSaveStatus('unsaved');
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
@@ -221,12 +216,12 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
           }
         }, 1500);
       } else {
-        // Guest: save to localStorage immediately
+        // Khách: lưu localStorage ngay lập tức
         saveLocalProgress(isoDate, planSlug, prog);
         setSaveStatus('saved');
       }
     },
-    [isoDate, planSlug, token, syncToBackend]
+    [isoDate, planSlug, user, syncToBackend]
   );
 
   // ── Progress mutators ────────────────────────────────────

@@ -14,23 +14,22 @@ function CallbackHandler() {
 
   useEffect(() => {
     const access_token = searchParams.get('access_token')
-    const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
     const handleGoogleAuth = async () => {
       try {
-        const res = await fetch(`${STRAPI_URL}/api/auth/google/callback?access_token=${access_token}`)
+        // Gọi server-side route để trao đổi token → set httpOnly cookie
+        const res = await fetch(`/api/auth/google-callback?access_token=${encodeURIComponent(access_token ?? '')}`)
         const data = await res.json()
 
-        if (!res.ok) throw new Error(data.error?.message || 'Authentication failed')
+        if (!res.ok) throw new Error(data.error || 'Authentication failed')
 
-        if (data.jwt && data.user) {
-          login(data.jwt, data.user)
+        if (data.user) {
+          login(data.user)
           router.push('/')
         } else {
           throw new Error('No user data returned from server')
         }
       } catch (err) {
-        console.error('Auth error:', err)
         setError(err instanceof Error ? err.message : 'An error occurred during login')
       }
     }

@@ -4,37 +4,35 @@
 //  ⚠️  QUAN TRỌNG: File này dành cho 'use client' components.
 //  KHÔNG import STRAPI_API_TOKEN ở đây.
 //  KHÔNG gọi strapiFetch() từ file này.
+//
+//  Auth: JWT được lưu trong httpOnly cookie — không truy cập từ JS.
+//  Các endpoint cần auth phải proxy qua /api/... routes.
 // ═══════════════════════════════════════════════════════════════
 
 const API = process.env.NEXT_PUBLIC_STRAPI_API_URL ?? 'http://localhost:1337'
 
-// ─── Auth helpers ─────────────────────────────────────────────
+// ─── Auth helpers (backward compat — không còn dùng localStorage) ─────
 
-/** Lấy JWT token xác thực người dùng từ localStorage (client only) */
-export function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null
-  return localStorage.getItem('auth_token')
+/** @deprecated JWT nằm trong httpOnly cookie, không thể đọc từ JS */
+export function getAuthToken(): null {
+  return null
 }
 
-/** Build Authorization header cho client-side requests */
+/** Luôn trả {} — dùng httpOnly cookie thay vì Authorization header */
 export function buildAuthHeaders(): HeadersInit {
-  const token = getAuthToken()
-  return token ? { Authorization: `Bearer ${token}` } : {}
+  return {}
 }
 
-/** Build JSON headers với auth */
+/** Build JSON content-type header */
 export function buildJsonHeaders(): HeadersInit {
-  return {
-    'Content-Type': 'application/json',
-    ...buildAuthHeaders(),
-  }
+  return { 'Content-Type': 'application/json' }
 }
 
 // ─── Base fetch ───────────────────────────────────────────────
 
 /**
  * Gọi API Strapi từ phía client (browser).
- * Không có token server, chỉ được gọi các endpoint Public.
+ * Chỉ dùng cho các endpoint Public. Endpoint cần auth phải proxy qua /api/...
  * @example
  *   const data = await clientFetch('/blog-posts', { page: 1 })
  */
@@ -47,7 +45,7 @@ export async function clientFetch<T = unknown>(
     if (v !== undefined && v !== null) qs.set(k, String(v))
   })
   const url = `${API}/api${path}${qs.toString() ? `?${qs}` : ''}`
-  const res = await fetch(url, { headers: buildAuthHeaders() })
+  const res = await fetch(url)
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
     throw new Error(err?.error?.message ?? `API Error ${res.status}: ${path}`)
@@ -58,11 +56,11 @@ export async function clientFetch<T = unknown>(
 // ─── Upload ───────────────────────────────────────────────────
 
 /**
- * Upload file lên Strapi Media Library.
- * Trả về id của file vừa upload (dùng trong relations).
+ * Upload file lên Strapi Media Library (public endpoint).
+ * Dùng cho community post images — không cần auth.
+ * Để upload avatar, dùng uploadAvatarFile() từ lib/api/user.ts
  * @example
  *   const fileId = await uploadFile(file)
- *   await submitPost({ ..., cover_image: fileId })
  */
 export async function uploadFile(file: File): Promise<{
   id: number
@@ -76,7 +74,6 @@ export async function uploadFile(file: File): Promise<{
   const res = await fetch(`${API}/api/upload`, {
     method: 'POST',
     body: formData,
-    headers: buildAuthHeaders(),
   })
   if (!res.ok) throw new Error('Upload file thất bại')
   const json = await res.json()
@@ -107,7 +104,6 @@ export async function uploadMultipleFiles(files: File[]): Promise<Array<{
 export async function likeItem(endpoint: string, id: string | number): Promise<number> {
   const res = await fetch(`${API}/api/${endpoint}/like/${id}`, {
     method: 'POST',
-    headers: buildAuthHeaders(),
   })
   if (!res.ok) throw new Error('Không thể thích')
   const json = await res.json()

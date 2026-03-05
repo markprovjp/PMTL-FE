@@ -6,8 +6,6 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
-
 const EyeIcon = ({ open }: { open: boolean }) =>
   open ? (
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -74,21 +72,21 @@ const LoginForm = () => {
     setLoading(true)
 
     try {
-      const res = await fetch(`${STRAPI_URL}/api/auth/local`, {
+      const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier: email, password }),
+        body: JSON.stringify({ email, password }),
       })
 
       const data = await res.json()
 
       if (!res.ok) {
-        setErrors({ submit: data.error?.message || 'Đăng nhập thất bại' })
+        setErrors({ submit: data.error || 'Đăng nhập thất bại' })
         setLoading(false)
         return
       }
 
-      login(data.jwt, data.user)
+      login(data.user)
       setSuccess(true)
       setTimeout(() => router.push('/'), 1500)
     } catch {
@@ -212,7 +210,7 @@ const RegisterForm = () => {
     setLoading(true)
 
     try {
-      const res = await fetch(`${STRAPI_URL}/api/auth/local/register`, {
+      const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -225,12 +223,12 @@ const RegisterForm = () => {
       const data = await res.json()
 
       if (!res.ok) {
-        setErrors({ submit: data.error?.message || 'Đăng ký thất bại' })
+        setErrors({ submit: data.error || 'Đăng ký thất bại' })
         setLoading(false)
         return
       }
 
-      login(data.jwt, data.user)
+      login(data.user)
       setSuccess(true)
       setTimeout(() => router.push('/'), 2000)
     } catch {

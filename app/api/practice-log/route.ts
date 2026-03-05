@@ -4,21 +4,21 @@
 //  GET  /api/practice-log?date=YYYY-MM-DD&planSlug=...
 //  PUT  /api/practice-log  body: { date, planSlug, itemsProgress }
 //
-//  Proxy đến Strapi với user JWT (lấy từ Authorization header)
+//  Proxy đến Strapi — đọc JWT từ httpOnly cookie (không dùng Authorization header)
 // ─────────────────────────────────────────────────────────────
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server';
 import { STRAPI_URL } from '@/lib/strapi';
 
 export const dynamic = 'force-dynamic';
 
-function getUserJwt(req: NextRequest): string | null {
-  const auth = req.headers.get('Authorization') ?? req.headers.get('authorization');
-  if (auth?.startsWith('Bearer ')) return auth.slice(7);
-  return null;
+async function getUserJwt(): Promise<string | null> {
+  const cookieStore = await cookies()
+  return cookieStore.get('auth_token')?.value ?? null
 }
 
 export async function GET(req: NextRequest) {
-  const jwt = getUserJwt(req);
+  const jwt = await getUserJwt();
   if (!jwt) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { searchParams } = req.nextUrl;
@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
-  const jwt = getUserJwt(req);
+  const jwt = await getUserJwt();
   if (!jwt) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   try {

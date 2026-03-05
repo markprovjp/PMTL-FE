@@ -1,12 +1,10 @@
 'use client'
 // ─────────────────────────────────────────────────────────────
 //  contexts/AuthContext.tsx
-//  Global auth state — reads JWT from localStorage, calls Strapi /users/me
+//  Global auth state — JWT lưu trong httpOnly cookie server-side.
+//  Client chỉ lưu thông tin user (không lưu JWT).
 // ─────────────────────────────────────────────────────────────
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
-
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
-const TOKEN_KEY = 'auth_token'
 
 export interface AuthUser {
   id: number
@@ -28,9 +26,10 @@ export interface AuthUser {
 
 interface AuthContextValue {
   user: AuthUser | null
-  token: string | null
+  /** Luôn null — JWT được lưu trong httpOnly cookie, không truy cập từ JS */
+  token: null
   loading: boolean
-  login: (jwt: string, user: AuthUser) => void
+  login: (user: AuthUser) => void
   logout: () => void
   refetch: () => Promise<void>
 }
@@ -46,67 +45,40 @@ const AuthContext = createContext<AuthContextValue>({
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
-  const [token, setToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const fetchMe = useCallback(async (jwt: string) => {
+  // Khôi phục session qua /api/auth/me — đọc httpOnly cookie phía server
+  const fetchMe = useCallback(async () => {
     try {
-      // Populate các trường mở rộng khi lấy thông tin user
-      const res = await fetch(
-        `${STRAPI_URL}/api/users/me?populate=*`,
-        { headers: { Authorization: `Bearer ${jwt}` } }
-      )
-      if (!res.ok) throw new Error('token invalid')
+      const res = await fetch('/api/auth/me')
+      if (!res.ok) { setUser(null); return }
       const data = await res.json()
-
-      // CHUẨN HÓA DỮ LIỆU: Nếu avatar_url trả về từ Strapi là Media Object, lấy url
-      if (data.avatar_url && typeof data.avatar_url === 'object') {
-        data.avatar_url = data.avatar_url.url.startsWith('http')
-          ? data.avatar_url.url
-          : `${STRAPI_URL}${data.avatar_url.url}`;
-      }
-
       setUser(data)
-      setToken(jwt)
     } catch {
-      localStorage.removeItem(TOKEN_KEY)
       setUser(null)
-      setToken(null)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // On mount — restore session from localStorage
-  useEffect(() => {
-    const stored = localStorage.getItem(TOKEN_KEY)
-    if (stored) {
-      fetchMe(stored)
-    } else {
-      setLoading(false)
-    }
-  }, [fetchMe])
+  useEffect(() => { fetchMe() }, [fetchMe])
 
-  const login = useCallback((jwt: string, userData: AuthUser) => {
-    localStorage.setItem(TOKEN_KEY, jwt)
-    setToken(jwt)
+  const login = useCallback((userData: AuthUser) => {
     setUser(userData)
-    fetchMe(jwt)
-  }, [fetchMe])
+  }, [])
 
+  // Xóa cookie ngay lập tức qua API route, reset state đồng thời
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    setToken(null)
     setUser(null)
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => { })
   }, [])
 
   const refetch = useCallback(async () => {
-    const stored = localStorage.getItem(TOKEN_KEY)
-    if (stored) await fetchMe(stored)
+    await fetchMe()
   }, [fetchMe])
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, refetch }}>
+    <AuthContext.Provider value={{ user, token: null, loading, login, logout, refetch }}>
       {children}
     </AuthContext.Provider>
   )

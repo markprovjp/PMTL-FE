@@ -1,14 +1,38 @@
 'use server'
 
 import { getPosts, GetPostsOptions, getAllTags, getCategories } from '@/lib/api/blog'
+import { searchBlogPostsViaMeilisearch } from '@/lib/meilisearch'
 import { revalidatePath, unstable_cache } from 'next/cache'
 
+/**
+ * Search posts via Meilisearch (faster, typo-tolerant)
+ * Falls back to Strapi if Meilisearch unavailable
+ */
 export async function searchPostsAndCategories(options: GetPostsOptions) {
-  // Enforce zero cache for search queries (user-facing dynamic search)
-  const res = await getPosts({ ...options, revalidate: 0 })
-  return {
-    data: res.data ?? [],
-    meta: res.meta,
+  try {
+    // Try Meilisearch first (fast, typo-tolerant)
+    const res = await searchBlogPostsViaMeilisearch(options.search || '', {
+      page: options.page,
+      pageSize: options.pageSize,
+      categorySlug: options.categorySlug,
+      tagSlugs: options.tagSlugs,
+      dateFrom: options.dateFrom,
+      dateTo: options.dateTo,
+    })
+
+    return {
+      data: res.data ?? [],
+      meta: res.meta,
+    }
+  } catch (error) {
+    console.warn('[Search] Meilisearch failed, falling back to Strapi:', error)
+
+    // Fallback to Strapi database search if Meilisearch is down
+    const res = await getPosts({ ...options, revalidate: 0 })
+    return {
+      data: res.data ?? [],
+      meta: res.meta,
+    }
   }
 }
 
