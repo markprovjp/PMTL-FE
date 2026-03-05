@@ -14,7 +14,6 @@ import type {
   VideoItem,
   AwardItem,
   GallerySlide,
-  SearchCategoryItem,
   StickyBannerConfig,
 } from '@/types/strapi'
 
@@ -36,7 +35,6 @@ export async function getHomepageSettings(): Promise<SiteSetting | null> {
         'awards',
         'gallerySlides',
         'gallerySlides.image',
-        'searchCategories',
         'stickyBanner'
       ],
       next: { revalidate: 300, tags: ['homepage-settings'] },
@@ -54,6 +52,17 @@ export async function getHomepageSettings(): Promise<SiteSetting | null> {
           src: getStrapiMediaUrl(slide.image?.url) ?? slide.src ?? '/images/hero-bg.jpg',
         }))
       }
+      if (res.data.featuredVideos) {
+        res.data.featuredVideos = res.data.featuredVideos.map((video: any) => ({
+          id: video.videoId || video.id || '',
+          title: video.title || '',
+          subtitle: video.subtitle || '',
+          description: video.description || '',
+          youtubeId: video.youtubeId || '',
+          duration: video.duration || '00:00',
+          category: video.category || 'Video',
+        }))
+      }
       if (res.data.phapBao) {
         res.data.phapBao = res.data.phapBao.map((item: any) => ({
           ...item,
@@ -66,12 +75,7 @@ export async function getHomepageSettings(): Promise<SiteSetting | null> {
           link: item.link || '#',
         }))
       }
-      if (res.data.searchCategories) {
-        res.data.searchCategories = res.data.searchCategories.map((item: any) => ({
-          ...item,
-          link: item.link || '#',
-        }))
-      }
+
       if (res.data.stickyBanner) {
         res.data.stickyBanner.buttonLink = res.data.stickyBanner.buttonLink || '#';
       }
@@ -127,9 +131,9 @@ export const FALLBACK_ACTION_CARDS: ActionCardItem[] = [
 ]
 
 export const FALLBACK_VIDEOS: VideoItem[] = [
-  { id: "intro", title: "Giới Thiệu Pháp Môn Tâm Linh", subtitle: "心灵法门 介绍", description: "Tổng quan về 5 Đại Pháp Bảo và con đường tu tập theo Quán Thế Âm Bồ Tát truyền thụ.", youtubeId: "Nf4fBFHlVVE", duration: "12:35", category: "Giới Thiệu" },
-  { id: "master-life", title: "Sơ Lược Cuộc Đời Sư Phụ Lư Quân Hoành", subtitle: "卢军宏台长生平简介", description: "Hành trình từ người cư sĩ bình thường đến vị Đài Trưởng được Quán Âm Bồ Tát khai thị.", youtubeId: "hG7jKcHW4sY", duration: "18:20", category: "Về Sư Phụ" },
-  { id: "impermanence", title: "Nhân Sinh Một Kiếp Vô Thường", subtitle: "人生一世无常", description: "Nguyện rằng chúng sinh hữu duyên lên được thuyền cứu độ của Quán Thế Âm Bồ Tát, thoát khổ an vui.", youtubeId: "P5z4FKz8H0Y", duration: "25:10", category: "Khai Thị" },
+  { id: "intro", title: "Giới Thiệu Pháp Môn Tâm Linh", subtitle: "心灵法门 介绍", description: "Tổng quan về 5 Đại Pháp Bảo và con đường tu tập theo Quán Thế Âm Bồ Tát truyền thụ.", youtubeId: "I__6Zi4xlIQ", duration: "12:35", category: "Giới Thiệu" },
+  { id: "master-life", title: "Sơ Lược Cuộc Đời Sư Phụ Lư Quân Hoành", subtitle: "卢军宏台长生平简介", description: "Hành trình từ người cư sĩ bình thường đến vị Đài Trưởng được Quán Âm Bồ Tát khai thị.", youtubeId: "6-0etr8-QhA", duration: "18:20", category: "Về Sư Phụ" },
+  { id: "impermanence", title: "Nhân Sinh Một Kiếp Vô Thường", subtitle: "人生一世无常", description: "Nguyện rằng chúng sinh hữu duyên lên được thuyền cứu độ của Quán Thế Âm Bồ Tát, thoát khổ an vui.", youtubeId: "dwtoP8WGKb4", duration: "25:10", category: "Khai Thị" },
 ]
 
 export const FALLBACK_AWARDS: AwardItem[] = [
@@ -145,30 +149,7 @@ export const FALLBACK_GALLERY: GallerySlide[] = [
   { src: "/images/hero-bg.jpg", caption: "Gieo duyên Phật pháp — Lan tỏa ánh sáng trí tuệ", subcap: "Cùng nhau lên Tứ Thánh" },
 ]
 
-export const FALLBACK_SEARCH_CATEGORIES: SearchCategoryItem[] = [
-  { id: 1, title: "Phật Học Vấn Đáp", iconName: "MessageCircleQuestion", link: "/qa" },
-  { id: 2, title: "Hỏi Đáp Huyền Nghệ", iconName: "Sparkles", link: "/qa" },
-  { id: 3, title: "Bàn Thờ Phật Nhỏ", iconName: "Lamp", link: "/qa" },
-  { id: 4, title: "Sảy Thai & Phá Thai", iconName: "Baby", link: "/qa" },
-  { id: 5, title: "Tình Cảm Gia Đình", iconName: "Users", link: "/qa" },
-  { id: 6, title: "Giới Luật", iconName: "Scale", link: "/qa" },
-  { id: 7, title: "Học Tập", iconName: "GraduationCap", link: "/qa" },
-  { id: 8, title: "Phản Hồi Thính Giả", iconName: "Radio", link: "/qa" },
-  { id: 9, title: "Phong Thủy", iconName: "Compass", link: "/qa" },
-  { id: 10, title: "Niệm Kinh", iconName: "BookOpen", link: "/library" },
-  { id: 11, title: "Siêu Độ", iconName: "Star", link: "/qa" },
-  { id: 12, title: "Sự Nghiệp", iconName: "Briefcase", link: "/qa" },
-  { id: 13, title: "Ăn Chay", iconName: "Leaf", link: "/qa" },
-  { id: 14, title: "Bệnh Tật", iconName: "HeartPulse", link: "/qa" },
-  { id: 15, title: "Tu Tâm", iconName: "Flower2", link: "/qa" },
-  { id: 16, title: "Ngôi Nhà Nhỏ", iconName: "Home", link: "/qa" },
-  { id: 17, title: "Độ Người", iconName: "Waves", link: "/qa" },
-  { id: 18, title: "Giải Mộng", iconName: "Moon", link: "/qa" },
-  { id: 19, title: "Phóng Sinh", iconName: "Bird", link: "/qa" },
-  { id: 20, title: "Bàn Thờ Phật", iconName: "Flame", link: "/qa" },
-  { id: 21, title: "Phát Nguyện", iconName: "Gift", link: "/qa" },
-  { id: 22, title: "Khác", iconName: "Search", link: "/qa" },
-]
+
 
 export const FALLBACK_STICKY_BANNER: StickyBannerConfig = {
   title: "Thỉnh Kinh Văn & Máy Niệm Kinh Miễn Phí",

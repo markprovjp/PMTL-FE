@@ -238,13 +238,6 @@ export interface GallerySlide {
   subcap: string
 }
 
-export interface SearchCategoryItem {
-  id: number
-  title: string
-  iconName: string // tên Lucide icon
-  link: string
-}
-
 export interface StickyBannerConfig {
   title: string
   subtitle: string
@@ -292,7 +285,6 @@ export interface SiteSetting {
   featuredVideos: VideoItem[] | null
   awards: AwardItem[] | null
   gallerySlides: GallerySlide[] | null
-  searchCategories: SearchCategoryItem[] | null
   stickyBanner: StickyBannerConfig | null
   createdAt: string
   updatedAt: string

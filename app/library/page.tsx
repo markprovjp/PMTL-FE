@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
+import PdfPreview, { type PreviewableFile } from '@/components/PdfPreview'
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { BookOpen, Download, Headphones, Globe, ChevronRight } from 'lucide-react'
+import { BookOpen, Download, Headphones, Globe, ChevronRight, X } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 // ── Types ────────────────────────────────────────────────────
@@ -288,9 +289,44 @@ function BookDetailDialog({
   book: Book | null
   onClose: () => void
 }) {
+  const [previewFile, setPreviewFile] = useState<PreviewableFile | null>(null)
+
   if (!book) return null
 
   const hasContent = !!(book.readUrl || book.pdfUrl || book.audioUrl)
+
+  const handlePreview = (url: string, name: string) => {
+    setPreviewFile({
+      id: book.id,
+      name: name,
+      url: url,
+      mime: 'application/pdf',
+      size: 0,
+      ext: '.pdf',
+    })
+  }
+
+  // Preview modal
+  if (previewFile) {
+    return (
+      <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl overflow-hidden bg-card border border-border">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-secondary/30">
+            <h3 className="font-medium text-foreground">{previewFile.name}</h3>
+            <button
+              onClick={() => setPreviewFile(null)}
+              className="p-1.5 hover:bg-secondary rounded transition-colors"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+          <div className="flex-1 overflow-auto">
+            <PdfPreview file={previewFile} lazyLoad={false} />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Dialog open={!!book} onOpenChange={(open) => { if (!open) onClose() }}>
@@ -313,22 +349,35 @@ function BookDetailDialog({
         {hasContent ? (
           <div className="grid grid-cols-1 gap-3 pt-1">
             {book.readUrl && (
-              <a href={book.readUrl} target="_blank" rel="noopener noreferrer">
+              <button
+                onClick={() => handlePreview(book.readUrl!, 'Đọc Online')}
+                className="w-full"
+              >
                 <Button className="w-full gap-2 bg-amber-600 hover:bg-amber-700 text-white">
                   <BookOpen className="w-4 h-4" />
-                  Đọc Online
+                  Xem Trước
                   <ChevronRight className="w-4 h-4 ml-auto" />
                 </Button>
-              </a>
+              </button>
             )}
             {book.pdfUrl && (
-              <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="w-full gap-2">
-                  <Download className="w-4 h-4" />
-                  Tải E-book PDF
-                  <ChevronRight className="w-4 h-4 ml-auto" />
-                </Button>
-              </a>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePreview(book.pdfUrl!, 'Xem E-book PDF')}
+                  className="flex-1"
+                >
+                  <Button variant="outline" className="w-full gap-2">
+                    <BookOpen className="w-4 h-4" />
+                    Xem Preview
+                  </Button>
+                </button>
+                <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+                  <Button variant="outline" className="w-full gap-2">
+                    <Download className="w-4 h-4" />
+                    Tải PDF
+                  </Button>
+                </a>
+              </div>
             )}
             {book.audioUrl && (
               <a href={book.audioUrl} target="_blank" rel="noopener noreferrer">

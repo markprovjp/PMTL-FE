@@ -1,30 +1,39 @@
-// ─────────────────────────────────────────────────────────────
-//  lib/api/categories-client.ts — Client-side category fetching
-//  Uses Next.js Route Handler for authentication
-// ─────────────────────────────────────────────────────────────
-
 import type { Category, StrapiList } from '@/types/strapi'
 
+// ── Cache phía trình duyệt: categories ít khi thay đổi ────────
+let _cacheData: Category[] | null = null
+let _cacheTime = 0
+const CACHE_THOI_GIAN = 5 * 60 * 1000 // 5 phút
+
 /**
- * Fetch categories from client-side via authenticated route handler.
- * Safe to call from 'use client' components.
+ * Lấy danh sách chủ đề khai thị từ Route Handler.
+ * Có cache 5 phút phía client để tránh gọi network mỗi lần mở menu.
  */
 export async function getCategoriesClient(): Promise<Category[]> {
+  // Trả cache nếu còn hạn
+  if (_cacheData && Date.now() - _cacheTime < CACHE_THOI_GIAN) {
+    return _cacheData
+  }
+
   try {
     const res = await fetch('/api/categories', {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store', // always fetch fresh categories
+      // Để trình duyệt / CDN cache theo Cache-Control header từ route handler
     })
 
-    if (!res.ok) {
-      return []
-    }
+    if (!res.ok) return _cacheData ?? []
 
     const data: StrapiList<Category> = await res.json()
-    return data.data ?? []
+    const danhSach = data.data ?? []
+
+    // Cập nhật cache phía client
+    _cacheData = danhSach
+    _cacheTime = Date.now()
+
+    return danhSach
   } catch (error) {
-    console.error('[Categories] Fetch error:', error)
-    return []
+    console.error('[DanhMuc] Lỗi khi lấy danh mục:', error)
+    return _cacheData ?? []
   }
 }

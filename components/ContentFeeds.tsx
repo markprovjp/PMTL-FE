@@ -1,36 +1,45 @@
 'use client'
+// ─────────────────────────────────────────────────────────────
+//  components/ContentFeeds.tsx
+//  Hiển thị Khai Thị mới nhất và Chuyện Phật Pháp từ server thật
+//  Đã gỡ bỏ mock data (dharmaTalks)
+// ─────────────────────────────────────────────────────────────
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { PlayIcon, BookIcon, ArrowRightIcon } from "@/components/icons/ZenIcons";
+import Image from "next/image";
+import { ArrowRightIcon, BookIcon } from "@/components/icons/ZenIcons";
 import { getCategoriesClient } from "@/lib/api/categories-client";
-import type { Category } from "@/types/strapi";
-
-const dharmaTalks = [
-  { title: "Cách hóa giải oán kết gia đình", category: "Gia Đạo", duration: "15 phút" },
-  { title: "Niệm Phật trị bệnh thân tâm", category: "Sức Khỏe", duration: "22 phút" },
-  { title: "Phóng sinh đúng pháp tăng phước", category: "Tu Tập", duration: "18 phút" },
-  { title: "Cầu con theo lời Phật dạy", category: "Cầu Con", duration: "20 phút" },
-];
-
-import { fetchPosts, CommunityPost } from "@/lib/api/community";
+import type { Category, BlogPost } from "@/types/strapi";
+import { BookOpen, Clock } from "lucide-react";
 
 const ContentFeeds = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const [latestStories, setLatestStories] = useState<CommunityPost[]>([]);
+  const [danhMuc, setDanhMuc] = useState<Category[]>([]);
+  const [baiKhaiThi, setBaiKhaiThi] = useState<BlogPost[]>([]);
+  const [chuyenPhapBao, setChuyenPhapBao] = useState<{ id: string; title: string; createdAt: string }[]>([]);
+  const [dangTai, setDangTai] = useState(true);
+  const [dangTaiBaiViet, setDangTaiBaiViet] = useState(true);
 
   useEffect(() => {
-    getCategoriesClient().then(cats => {
-      setCategories(cats);
-      setLoading(false);
-    });
-    fetchPosts({ pageSize: 4, category: "Tất cả" }).then(res => {
-      // you can filter or use them; here I just fetch 4 posts 
-      setLatestStories(res.posts);
-    }).catch(() => null);
+    // Tải danh mục khai thị
+    getCategoriesClient()
+      .then(ds => setDanhMuc(ds.slice(0, 8)))
+      .catch(() => null);
+
+    // Tải bài khai thị mới nhất (4 bài) từ API blog
+    fetch('/api/blog-posts?pageSize=4')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.data) {
+          setBaiKhaiThi(data.data as BlogPost[])
+        }
+      })
+      .catch(() => null)
+      .finally(() => {
+        setDangTai(false)
+        setDangTaiBaiViet(false)
+      })
   }, []);
 
   return (
@@ -38,11 +47,11 @@ const ContentFeeds = () => {
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
 
-          {/* ── Left Content (8/12) ── */}
+          {/* ── Cột trái (8/12) ── */}
           <div className="lg:col-span-8 space-y-20">
 
-            {/* Dharma Talks */}
-            <div className="group">
+            {/* Khai Thị Mới Nhất */}
+            <div>
               <div className="flex items-center justify-between mb-8">
                 <div className="space-y-1">
                   <h2 className="font-display text-3xl text-foreground">Khai Thị Mới Nhất</h2>
@@ -52,37 +61,69 @@ const ContentFeeds = () => {
                   Xem tất cả <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {dharmaTalks.map((talk, i) => (
-                  <motion.div
-                    key={talk.title}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <Link href="/blog" className="block p-5 rounded-xl bg-card border border-border/50 hover:border-gold/30 transition-all group/item shadow-sm hover:shadow-gold/5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center shrink-0 group-hover/item:bg-gold/10 transition-colors">
-                          <PlayIcon className="w-4 h-4 text-gold" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-display text-base text-foreground truncate group-hover/item:text-gold transition-colors">
-                            {talk.title}
-                          </h4>
-                          <div className="flex items-center gap-3 mt-1">
-                            <span className="text-[10px] text-gold-dim uppercase tracking-wider font-bold">{talk.category}</span>
-                            <span className="text-[10px] text-muted-foreground font-medium">{talk.duration}</span>
+
+              {dangTaiBaiViet ? (
+                // Skeleton
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="p-5 rounded-xl bg-card border border-border/50 animate-pulse">
+                      <div className="h-4 bg-secondary rounded w-1/3 mb-3" />
+                      <div className="h-5 bg-secondary rounded w-full mb-2" />
+                      <div className="h-3 bg-secondary rounded w-4/5" />
+                    </div>
+                  ))}
+                </div>
+              ) : baiKhaiThi.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {baiKhaiThi.map((bai, i) => (
+                    <motion.div
+                      key={bai.documentId}
+                      initial={{ opacity: 0, y: 10 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                    >
+                      <Link
+                        href={`/blog/${bai.slug}`}
+                        className="block p-5 rounded-xl bg-card border border-border/50 hover:border-gold/30 transition-all group/item shadow-sm hover:shadow-gold/5 h-full"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center shrink-0 group-hover/item:bg-gold/10 transition-colors mt-0.5">
+                            <BookOpen className="w-4 h-4 text-gold" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-display text-base text-foreground line-clamp-2 group-hover/item:text-gold transition-colors leading-snug">
+                              {bai.title}
+                            </h4>
+                            <div className="flex items-center gap-3 mt-2 flex-wrap">
+                              {bai.categories?.[0] && (
+                                <span className="text-[10px] text-gold-dim uppercase tracking-wider font-bold">
+                                  {bai.categories[0].name}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <Clock className="w-3 h-3" />
+                                {new Date(bai.publishedAt || bai.createdAt).toLocaleDateString('vi-VN')}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                // Fallback: link đến trang blog
+                <div className="text-center py-12 text-muted-foreground border border-dashed border-border/50 rounded-xl">
+                  <p className="text-sm italic mb-4">Chưa có bài khai thị nào được đăng tải</p>
+                  <Link href="/blog" className="text-gold text-sm font-medium hover:underline">
+                    Đến trang Khai Thị →
+                  </Link>
+                </div>
+              )}
             </div>
 
-            {/* Stories */}
+            {/* Chuyện Phật Pháp */}
             <div>
               <div className="flex items-center justify-between mb-8">
                 <div className="space-y-1">
@@ -93,29 +134,14 @@ const ContentFeeds = () => {
                   Xem tất cả <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="space-y-3">
-                {latestStories.map((story, i) => (
-                  <motion.div
-                    key={story.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.05 }}
-                  >
-                    <Link href={`/shares`} className="flex items-center gap-4 p-5 rounded-xl bg-card border border-border/50 hover:border-gold/30 transition-all group/item shadow-sm">
-                      <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center shrink-0 group-hover/item:bg-gold/10 transition-colors">
-                        <BookIcon className="w-4 h-4 text-gold" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-display text-lg text-foreground truncate group-hover/item:text-gold transition-colors">
-                          {story.title}
-                        </h4>
-                        <span className="text-xs text-muted-foreground mt-1">{new Date(story.createdAt).toLocaleDateString('vi-VN')}</span>
-                      </div>
-                      <ArrowRightIcon className="w-4 h-4 text-muted-foreground/30 group-hover/item:translate-x-1 group-hover/item:text-gold transition-all" />
-                    </Link>
-                  </motion.div>
-                ))}
+              <div className="p-8 rounded-xl bg-card border border-border/50 text-center">
+                <BookIcon className="w-8 h-8 text-gold/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground italic">
+                  Những câu chuyện chứng nghiệm từ cộng đồng đồng tu đang được tổng hợp.
+                </p>
+                <Link href="/shares" className="mt-4 inline-flex items-center gap-1.5 text-gold text-sm font-medium hover:underline">
+                  Đến Diễn Đàn <ArrowRightIcon className="w-3.5 h-3.5" />
+                </Link>
               </div>
             </div>
           </div>
@@ -123,16 +149,16 @@ const ContentFeeds = () => {
           {/* ── Sidebar (4/12) ── */}
           <aside className="lg:col-span-4 space-y-8">
 
-            {/* Dynamic Categories */}
+            {/* Danh Mục Tra Cứu  */}
             <div className="bg-card border border-border/50 rounded-2xl overflow-hidden shadow-sm">
               <div className="px-6 py-4 border-b border-border/50 bg-secondary/30">
                 <h3 className="font-display text-lg text-foreground flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
                   Danh Mục Tra Cứu
                 </h3>
               </div>
               <div className="p-3">
-                {loading ? (
+                {danhMuc.length === 0 ? (
                   <div className="space-y-2 p-3">
                     {[1, 2, 3, 4, 5].map(i => (
                       <div key={i} className="h-9 bg-secondary rounded-lg animate-pulse" />
@@ -140,15 +166,19 @@ const ContentFeeds = () => {
                   </div>
                 ) : (
                   <nav className="space-y-1 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
-                    {categories.map((cat, i) => (
+                    {danhMuc.map((dm, i) => (
                       <Link
-                        key={cat.id}
-                        href={`/category/${cat.slug}`}
+                        key={dm.id}
+                        href={`/category/${dm.slug}`}
                         className="flex items-center justify-between px-4 py-2.5 rounded-xl hover:bg-gold/10 group transition-all"
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-[10px] text-muted-foreground font-mono opacity-50">{(i + 1).toString().padStart(2, '0')}</span>
-                          <span className="text-sm text-muted-foreground group-hover:text-gold group-hover:font-medium transition-colors">{cat.name}</span>
+                          <span className="text-[10px] text-muted-foreground font-mono opacity-50">
+                            {(i + 1).toString().padStart(2, '0')}
+                          </span>
+                          <span className="text-sm text-muted-foreground group-hover:text-gold group-hover:font-medium transition-colors">
+                            {dm.name}
+                          </span>
                         </div>
                         <ArrowRightIcon className="w-3 h-3 text-gold opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                       </Link>
@@ -162,18 +192,9 @@ const ContentFeeds = () => {
                 </div>
               </div>
             </div>
-
-
           </aside>
         </div>
       </div>
-
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.4); }
-      `}</style>
     </section>
   );
 };

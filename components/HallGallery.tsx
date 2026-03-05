@@ -67,6 +67,7 @@ export default function HallGallery({ slides }: HallGalleryProps) {
                       className="object-cover"
                       sizes="(max-width: 1024px) 100vw, 80vw"
                       priority={index === 0}
+                      loading={index === 0 ? undefined : "lazy"}
                     />
 
                     {/* Dark gradient overlay for text specifically */}

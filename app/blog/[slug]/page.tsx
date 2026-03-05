@@ -291,10 +291,10 @@ export default async function BlogPostPage({ params }: Props) {
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
                   <span
-                    key={tag}
+                    key={tag.id}
                     className="px-3 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-gold/10 hover:text-gold transition-colors cursor-default"
                   >
-                    #{tag}
+                    #{tag.name}
                   </span>
                 ))}
               </div>

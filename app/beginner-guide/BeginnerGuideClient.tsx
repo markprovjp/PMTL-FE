@@ -110,27 +110,6 @@ export default function BeginnerGuideClient({ initialGuides, initialGuideFiles }
             )}
           </motion.div>
 
-          {/* ── Tab Navigation ── */}
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <button
-              onClick={() => setActiveTab('steps')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'steps' ? 'bg-gold text-black shadow-md' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
-            >
-              <CheckCircleIcon /> Lộ Trình Tu Học
-            </button>
-            <button
-              onClick={() => setActiveTab('files')}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all ${activeTab === 'files' ? 'bg-gold text-black shadow-md' : 'bg-card border border-border text-muted-foreground hover:text-foreground'}`}
-            >
-              <FileIcon /> Tài Liệu
-              {initialGuideFiles.length > 0 && (
-                <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-current text-[10px] text-gold font-bold" style={{ color: activeTab === 'files' ? '#000' : undefined }}>
-                  {initialGuideFiles.reduce((acc, g) => acc + (g.files?.length ?? 0), 0)}
-                </span>
-              )}
-            </button>
-          </div>
-
           <AnimatePresence mode="wait">
             {/* ═══════════════════════════════════════════════════════════
                 TAB: LỘ TRÌNH TU HỌC
@@ -277,72 +256,6 @@ export default function BeginnerGuideClient({ initialGuides, initialGuideFiles }
                     </div>
                   </div>
                 </div>
-              </motion.div>
-            )}
-
-            {/* ═══════════════════════════════════════════════════════════
-                TAB: TÀI LIỆU
-            ═══════════════════════════════════════════════════════════ */}
-            {activeTab === 'files' && (
-              <motion.div key="files" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                {initialGuideFiles.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-center">
-                    <div className="w-14 h-14 rounded-2xl bg-gold/10 flex items-center justify-center mb-4">
-                      <FileIcon className="w-6 h-6 text-gold" />
-                    </div>
-                    <h3 className="text-foreground font-medium mb-2">Chưa có tài liệu</h3>
-                    <p className="text-sm text-muted-foreground max-w-sm">Admin chưa đăng tải tài liệu nào trong mục này. Vui lòng kiểm tra lại sau.</p>
-                  </div>
-                ) : (
-                  <div className="space-y-8  mx-auto">
-                    {initialGuideFiles.map((group, groupIdx) => (
-                      <motion.div
-                        key={group.documentId}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: groupIdx * 0.06 }}
-                        className="rounded-2xl border border-border bg-card overflow-hidden"
-                      >
-                        {/* Group header */}
-                        <div className="px-6 py-4 border-b border-border bg-gradient-to-r from-gold/5 to-transparent flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
-                            <span className="text-gold font-bold font-display text-sm">{groupIdx + 1}</span>
-                          </div>
-                          <div>
-                            <h2 className="text-base font-semibold text-foreground">{group.name}</h2>
-                            {group.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5">{group.description}</p>
-                            )}
-                          </div>
-                          <div className="ml-auto">
-                            <span className="text-xs text-muted-foreground/60">{group.files?.length ?? 0} file</span>
-                          </div>
-                        </div>
-
-                        {/* Files list */}
-                        <div className="px-6 py-5 space-y-4">
-                          {!group.files || group.files.length === 0 ? (
-                            <p className="text-sm text-muted-foreground/50">Chưa có file trong nhóm này.</p>
-                          ) : (
-                            group.files.map((media) => {
-                              const pf = toPreviewableFile(media);
-                              return (
-                                <PdfPreview key={media.id} file={pf} lazyLoad={true} />
-                              );
-                            })
-                          )}
-                        </div>
-                      </motion.div>
-                    ))}
-
-                    {/* Tip */}
-                    <div className="rounded-xl bg-gold/5 border border-gold/15 p-4 text-center">
-                      <p className="text-xs text-muted-foreground">
-                        Nhấn <strong className="text-gold">Xem</strong> để preview file ngay trong trang, hoặc <strong className="text-foreground">Tải xuống</strong> để lưu về máy.
-                      </p>
-                    </div>
-                  </div>
-                )}
               </motion.div>
             )}
           </AnimatePresence>

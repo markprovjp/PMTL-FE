@@ -63,6 +63,7 @@ const VideoSection = ({ videos }: VideoSectionProps) => {
                         fill
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                         sizes="(max-width: 768px) 100vw, 33vw"
+                        loading="lazy"
                         unoptimized
                       />
                       <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />

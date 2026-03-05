@@ -98,9 +98,6 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
       label: "Tu Học",
       items: [
         { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
-        { label: "Niệm Kinh Online", href: "/niem-kinh" },
-        { label: "Kinh Bài Tập Hằng Ngày", href: "/daily-recitation" },
-        { label: "Hỏi Đáp Phật Học", href: "/qa" },
         { label: "Thư Viện Kinh Sách", href: "/library" },
         { label: "Phim Truyện & Video", href: "/videos" },
         { label: "Đài Phát Thanh", href: "/radio" },
@@ -203,15 +200,30 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
           </div>
         ))}
 
-        <div className="border-b border-border/50">
-          <button onClick={() => setOpenSection(openSection === 'khai-thi' ? null : 'khai-thi')} className="w-full flex items-center justify-between py-4 px-2 text-left font-display text-base text-gold">
+        <div className="px-2 py-3">
+          <button 
+            onClick={() => setOpenSection(openSection === 'khai-thi' ? null : 'khai-thi')} 
+            className={`w-full flex items-center justify-between py-3.5 px-4 text-left font-semibold text-sm tracking-wide rounded-lg border-2 transition-all ${
+              openSection === 'khai-thi' 
+                ? 'border-gold bg-gold/5 text-gold' 
+                : 'border-gold/50 text-gold hover:border-gold hover:bg-gold/5'
+            }`}
+          >
             Chủ Đề Khai Thị
-            <motion.span animate={{ rotate: openSection === 'khai-thi' ? 180 : 0 }}><ChevronDown /></motion.span>
+            <motion.span animate={{ rotate: openSection === 'khai-thi' ? 180 : 0 }} transition={{ duration: 0.2 }}><ChevronDown /></motion.span>
           </button>
           <AnimatePresence>
             {openSection === 'khai-thi' && (
-              <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} className="overflow-hidden pb-4">
-                <CategoryNavMobile onClose={onClose} />
+              <motion.div 
+                initial={{ height: 0, opacity: 0 }} 
+                animate={{ height: "auto", opacity: 1 }} 
+                exit={{ height: 0, opacity: 0 }} 
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden mt-2"
+              >
+                <div className="rounded-lg border border-border bg-secondary/20 overflow-hidden">
+                  <CategoryNavMobile onClose={onClose} />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -235,9 +247,6 @@ const Header = () => {
   const groups = {
     tuHoc: [
       { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
-      { label: "Niệm Kinh Online", href: "/niem-kinh" },
-      { label: "Kinh Bài Tập Hằng Ngày", href: "/daily-recitation" },
-      { label: "Hỏi Đáp Phật Học", href: "/qa" },
       { label: "Thư Viện Kinh Sách", href: "/library" },
       { label: "Phim Truyện & Video", href: "/videos" },
       { label: "Đài Phát Thanh", href: "/radio" },
