@@ -1,8 +1,11 @@
-// app/hub/[slug]/page.tsx — Hub page (server)
+// app/hub/[slug]/page.tsx — Hub page (Server Component)
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getHubBySlug } from '@/lib/api/hub'
 import HubPageComponent from '@/components/hub/HubPageComponent'
+import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import StickyBanner from '@/components/StickyBanner'
 
 interface Params {
   slug: string
@@ -14,7 +17,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     const hub = await getHubBySlug(slug)
     if (!hub) return {}
     return {
-      title: `${hub.title} | Phật Môn Tịnh Lữ`,
+      title: `${hub.title} | Pháp Môn Tịnh Lư`,
       description: hub.description ?? undefined,
     }
   } catch {
@@ -35,5 +38,13 @@ export default async function HubPage({ params }: { params: Promise<Params> }) {
 
   if (!hub) notFound()
 
-  return <HubPageComponent hubPage={hub} />
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      {/* HubPageComponent tu render <main> ben trong */}
+      <HubPageComponent hubPage={hub} />
+      <Footer />
+      <StickyBanner />
+    </div>
+  )
 }

@@ -117,40 +117,42 @@ export interface BlogPost {
   title: string
   slug: string
   content: string
-  excerpt: string | null           // denormalized text preview (auto-extracted from content)
-  /** Original link to the source if available */
-  original_link: string | null
-  /** Many-to-many: one post can have multiple topic categories */
-  categories: Category[] | null
-  tags: BlogTag[] | null           // Changed from string[] to BlogTag relation
+  excerpt: string | null           // tóm tắt ngắn (auto-extracted hoặc editor nhập tay)
+  // ── Media ──────────────────────────────────────────────────────
   thumbnail: StrapiMedia | null
-  gallery: StrapiMedia[] | null      // additional images
-  video_url: string | null           // YouTube / embed URL
-  audio_url: string | null           // audio player URL
+  gallery: StrapiMedia[] | null
+  video_url: string | null
+  audio_url: string | null
+  // ── Taxonomy ────────────────────────────────────────────────────
+  categories: Category[] | null
+  tags: BlogTag[] | null
+  // ── Stats ──────────────────────────────────────────────────────
   views: number
+  unique_views: number
   likes: number
-
-  // ── Publishing ──────────────────────────────────────────
-  status: 'draft' | 'published' | 'archived'
-  featured: boolean                  // pin to top
-  original_title: string | null      // Chinese title for bilingual posts
-
-  // ── Source tracking ────────
-  /** Consistently formatted source e.g. "wenda20140829 42:22" */
-  source: string | null
-
-  // ── Related content ─────────────────────────────────────
+  // ── Editorial ──────────────────────────────────────────────────
+  featured: boolean
+  // ── Source/Origin (bài sưu tầm / dịch) ────────────────────────
+  sourceName: string | null        // tên nguồn/kênh
+  sourceUrl: string | null         // URL bài gốc
+  sourceTitle: string | null       // tiêu đề ngôn ngữ gốc
+  // ── Related ────────────────────────────────────────────────────
   related_posts: BlogPost[] | null
-  // ── Series metadata ──────────────────────────────────────────────────────────
+  // ── Series ─────────────────────────────────────────────────────
   seriesKey: string | null
   seriesNumber: number | null
   eventDate: string | null
   location: string | null
+  // ── Comments ────────────────────────────────────────────────────
+  allowComments: boolean           // true = cho phép bình luận (default), false = đã khóa
+  commentCount: number             // số bình luận đã duyệt (denorm)
+  // ── SEO ────────────────────────────────────────────────────────
   seo: StrapiSEO | null
   publishedAt: string | null
   createdAt: string
   updatedAt: string
 }
+
 
 export interface BeginnerGuide {
   id: number
@@ -238,13 +240,7 @@ export interface StickyBannerConfig {
   enabled: boolean
 }
 
-/** Site title/SEO settings */
-export interface StrapiSEO {
-  id: number
-  metaTitle: string | null
-  metaDescription: string | null
-  metaImage: StrapiMedia | null
-}
+// StrapiSEO da duoc dinh nghia o tren (dong 63) — khong lap lai
 
 // ─── Settings ────────────────────────────────────────────────
 
@@ -344,7 +340,14 @@ export interface GuestbookEntry {
   avatar: StrapiMedia | null
   message: string
   adminReply: string | null
-  status: 'pending' | 'approved'
+  approvalStatus: 'pending' | 'approved'
+  isOfficialReply: boolean         // true = Admin reply — hiển thị nổi bật viền vàng
+  badge?: string | null            // 'Ban Quản Trị' / 'Đông Phương Đài' ...
+  entryType: 'message' | 'question'
+  questionCategory?: string | null
+  isAnswered: boolean
+  year?: number | null             // Dùng lọc archive
+  month?: number | null
   createdAt: string
   updatedAt: string
 }
@@ -393,6 +396,12 @@ export interface HubSection {
   links: HubLink[]
 }
 
+export type HubBlock =
+  | { __component: 'blocks.post-list-auto'; id: number; heading: string; description?: string; category?: Category; count: number }
+  | { __component: 'blocks.post-list-manual'; id: number; heading: string; description?: string; posts: BlogPost[] }
+  | { __component: 'blocks.download-grid'; id: number; heading: string; description?: string; downloads: DownloadItem[] }
+  | { __component: 'blocks.rich-text'; id: number; content: string }
+
 export interface HubPage {
   id: number
   documentId: string
@@ -400,9 +409,38 @@ export interface HubPage {
   slug: string
   description: string | null
   sections: HubSection[]
+  coverImage?: StrapiMedia | null
+  curated_posts?: BlogPost[]       // Legacy — Bài Editor chọn tay
+  downloads?: DownloadItem[]       // Legacy — Khối tài liệu tải gắn vào hub này
+  blocks?: HubBlock[]              // New Dynamic Blocks
+  sortOrder: number
+  showInMenu: boolean
+  menuIcon?: string | null
   publishedAt: string | null
   createdAt: string
   updatedAt: string
+}
+
+// ─── Download Item ─────────────────────────────────────────────────────
+
+export interface DownloadItem {
+  id: number
+  documentId: string
+  title: string
+  description?: string | null
+  url: string
+  fileType: 'pdf' | 'mp3' | 'mp4' | 'zip' | 'doc' | 'epub' | 'html' | 'unknown'
+  category: string
+  groupYear?: number | null
+  groupLabel?: string | null
+  notes?: string | null
+  isUpdating: boolean
+  isNew: boolean
+  sortOrder: number
+  fileSizeMB?: number | null
+  thumbnail?: StrapiMedia | null
+  publishedAt: string | null
+  createdAt: string
 }
 
 // ─── Sidebar Config ───────────────────────────────────────────

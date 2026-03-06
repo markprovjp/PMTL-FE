@@ -188,8 +188,8 @@ function ResultCard({ post, index }: { post: SearchHit; index: number }) {
             {post.featured && (
               <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-amber-500/10 text-amber-500">Nổi bật</span>
             )}
-            {post.source ? (
-              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-gold font-mono">{post.source}</span>
+            {post.sourceName ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-gold font-mono">{post.sourceName}</span>
             ) : (
               <span className="text-[11px] text-muted-foreground">
                 {new Date(post.publishedAt || post.createdAt).toLocaleDateString('vi-VN')}

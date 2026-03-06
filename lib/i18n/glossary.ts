@@ -186,7 +186,7 @@ export const i18n = {
   // ─── Quantity Formatting ───
   quantity: {
     singular: (count: number, word: string) => count === 1 ? word : word,
-    plural: (count: number, word: string, pluralForm?: string) => 
+    plural: (count: number, word: string, pluralForm?: string) =>
       count === 1 ? word : (pluralForm || word),
   },
 }
@@ -197,10 +197,10 @@ export const i18n = {
  */
 export function formatDate(date: Date | string, format: 'short' | 'long' = 'short'): string {
   const d = typeof date === 'string' ? new Date(date) : date
-  const options: Intl.DateTimeFormatOptions = 
-    format === 'long' 
-      ? { year: 'numeric', month: 'long', day: 'numeric', locale: 'vi-VN' }
-      : { year: 'numeric', month: '2-digit', day: '2-digit', locale: 'vi-VN' }
+  const options: Intl.DateTimeFormatOptions =
+    format === 'long'
+      ? { year: 'numeric', month: 'long', day: 'numeric' }
+      : { year: 'numeric', month: '2-digit', day: '2-digit' }
   return new Intl.DateTimeFormat('vi-VN', options).format(d)
 }
 

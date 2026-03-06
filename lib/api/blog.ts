@@ -49,8 +49,8 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
     filters['$or'] = [
       { title: { $containsi: search } },
       { content: { $containsi: search } },
-      { source: { $containsi: search } },
-      { original_title: { $containsi: search } },
+      { sourceName: { $containsi: search } },
+      { sourceTitle: { $containsi: search } },
     ]
   }
   if (categorySlug) {
@@ -61,7 +61,7 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
     filters['tags'] = { slug: { $in: tagSlugs } }
   }
   if (source) {
-    filters['source'] = { $containsi: source }
+    filters['sourceName'] = { $containsi: source }
   }
   if (featured !== undefined) {
     filters['featured'] = { $eq: featured }
@@ -74,9 +74,6 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
     filters['publishedAt'] = publishedAtFilter
   }
 
-  if (language) {
-    // Note: If language is removed from schema, this will be ignored by Strapi or throw error
-  }
 
   return strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
     sort: ['publishedAt:desc'],
@@ -154,7 +151,7 @@ export async function checkDuplicatePost(
 ): Promise<BlogPost | null> {
   try {
     const filters: Record<string, unknown> = {
-      source: { $eq: source },
+      sourceUrl: { $eq: source },
     }
     if (excludeDocumentId) {
       filters['documentId'] = { $ne: excludeDocumentId }
@@ -245,4 +242,34 @@ export async function getAllTags(): Promise<BlogTag[]> {
     return []
   }
 }
+
+/** ─── ARCHIVE API cho Blog ─── */
+
+export interface BlogArchiveStat {
+  year: number
+  total: number
+  months: { month: number; count: number }[]
+}
+
+export async function getBlogArchiveIndex(): Promise<BlogArchiveStat[]> {
+  try {
+    const res = await strapiFetch<{ data: BlogArchiveStat[] }>('/blog-posts/archive-index', {
+      next: { revalidate: 3600, tags: ['blog-posts'] },
+    })
+    return res.data ?? []
+  } catch {
+    return []
+  }
+}
+
+export async function getBlogArchive(year: number, month: number, page = 1, pageSize = 12): Promise<StrapiList<BlogPost>> {
+  const url = Number.isNaN(month)
+    ? `/blog-posts/archive?year=${year}&page=${page}&pageSize=${pageSize}`
+    : `/blog-posts/archive?year=${year}&month=${month}&page=${page}&pageSize=${pageSize}`
+
+  return strapiFetch<StrapiList<BlogPost>>(url, {
+    next: { revalidate: 3600, tags: ['blog-posts'] },
+  })
+}
+
 

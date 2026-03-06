@@ -1,5 +1,4 @@
 // components/layout/widgets/DownloadLinksWidget.tsx — Server component
-import Link from 'next/link'
 import { DownloadIcon } from 'lucide-react'
 import type { QuickLink } from '@/types/strapi'
 

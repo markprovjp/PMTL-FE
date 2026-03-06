@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { useState } from 'react';
-import { uploadAvatar, updateMe } from '@/lib/api/user';
+import { uploadAvatarFile, updateMe } from '@/lib/api/user';
 
 export default function AvatarUploader({ initialUrl }: { initialUrl?: string }) {
   const [preview, setPreview] = useState<string | null>(initialUrl ?? null);
@@ -11,10 +11,10 @@ export default function AvatarUploader({ initialUrl }: { initialUrl?: string }) 
     if (!file) return;
     setUploading(true);
     try {
-      const url = await uploadAvatar(file);
+      const data = await uploadAvatarFile(file);
       // Update user avatar_url field
-      await updateMe({ avatar_url: url });
-      setPreview(url);
+      await updateMe({ avatar_url: data.url });
+      setPreview(data.url);
     } catch (err) {
       console.error('Avatar upload error:', err);
     } finally {

@@ -160,9 +160,9 @@ export default async function CategoryPage({ params }: Props) {
                           {post.featured && (
                             <span className="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/20 text-amber-400 font-medium">Nổi bật</span>
                           )}
-                          {post.source && (
+                          {post.sourceName && (
                             <span className="px-1.5 py-0.5 rounded text-[10px] bg-secondary text-secondary-foreground">
-                              {post.source}
+                              {post.sourceName}
                             </span>
                           )}
                         </div>

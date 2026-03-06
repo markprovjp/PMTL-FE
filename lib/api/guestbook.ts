@@ -22,3 +22,17 @@ export async function getGuestbookArchive(
     { noCache: true }
   )
 }
+
+export interface ArchiveStat {
+  year: number
+  month: number
+  count: number
+}
+
+export async function getGuestbookArchiveList(): Promise<ArchiveStat[]> {
+  const res = await strapiFetch<{ data: ArchiveStat[] }>('/guestbook-entries/archive-list', {
+    noCache: true // Bật cache thì thêm revalidate sau, tuỳ anh
+  })
+  return res.data || []
+}
+

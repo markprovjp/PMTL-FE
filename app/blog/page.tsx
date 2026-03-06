@@ -11,7 +11,7 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import BlogListClient from '@/components/BlogListClient'
-import { getPosts, getCategories } from '@/lib/api/blog'
+import { getPosts, getCategories, getBlogArchiveIndex } from '@/lib/api/blog'
 import { PAGINATION } from '@/lib/config/pagination'
 
 export const revalidate = 3600 // 1h fallback — webhook clears cache instantly
@@ -37,7 +37,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
   const currentSearch = q ?? ''
 
   // Fetch song song: bài viết và danh mục
-  const [res, categories] = await Promise.all([
+  const [res, categories, archives] = await Promise.all([
     getPosts({
       page: currentPage,
       pageSize: PAGINATION.BLOG_PAGE_SIZE,
@@ -46,6 +46,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
       revalidate: currentSearch ? 0 : 3600, // search không cache, browse thì ISR
     }),
     getCategories(),
+    getBlogArchiveIndex(),
   ])
 
   const posts = res.data
@@ -87,6 +88,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
                 categories={categories}
                 currentCategory={currentCategory}
                 currentSearch={currentSearch}
+                archives={archives}
               />
             </Suspense>
           )}

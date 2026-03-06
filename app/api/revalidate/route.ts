@@ -45,13 +45,10 @@ function getTagsForModel(model: string, entry?: StrapiWebhookPayload['entry']): 
 
   switch (model) {
     case 'blog-post': {
-      // Always invalidate the list
       tags.push('blog-posts', 'blog-posts-slugs', 'blog-posts-related')
-      // Invalidate the specific post cache if we have the slug
       if (entry?.slug) {
         tags.push(`blog-post-${entry.slug}`, `blog-post-seo-${entry.slug}`)
       }
-      // Invalidate by documentId if available
       if (entry?.documentId) {
         tags.push(`blog-post-${entry.documentId}`)
       }
@@ -65,9 +62,28 @@ function getTagsForModel(model: string, entry?: StrapiWebhookPayload['entry']): 
       tags.push('blog-tags')
       break
     }
+    case 'hub-page': {
+      tags.push('hub-pages')
+      break
+    }
+    case 'download-item': {
+      tags.push('download-items')
+      break
+    }
+    case 'guestbook-entry': {
+      // Guestbook dung noCache nen khong can revalidate tag
+      break
+    }
+    case 'setting': {
+      tags.push('homepage-settings')
+      break
+    }
+    case 'sidebar-config': {
+      tags.push('sidebar-config')
+      break
+    }
     default: {
-      // Unknown model — do nothing, or optionally revalidate all
-      console.warn(`[Revalidate] Unknown model: ${model} — skipping`)
+      // Unknown model — bo qua
     }
   }
 
@@ -79,7 +95,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.REVALIDATE_SECRET
 
   if (!secret) {
-    console.error('[Revalidate] REVALIDATE_SECRET env var is not set!')
     return NextResponse.json(
       { revalidated: false, message: 'Server misconfiguration: missing secret' },
       { status: 500 }
@@ -90,7 +105,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : authHeader
 
   if (token !== secret) {
-    console.warn('[Revalidate] Unauthorized webhook attempt')
     return NextResponse.json(
       { revalidated: false, message: 'Unauthorized' },
       { status: 401 }
@@ -110,9 +124,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const { event, model, entry } = payload
 
-  console.log(`[Revalidate] Webhook received: event=${event}, model=${model}, slug=${entry?.slug ?? 'N/A'}`)
-
-  // ── 3. Determine which cache tags to invalidate ────────────
+  // Xác định các cache tags cần xóa
   const tagsToInvalidate = getTagsForModel(model, entry)
 
   if (tagsToInvalidate.length === 0) {
@@ -125,10 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // ── 4. Invalidate each tag ─────────────────────────────────
   for (const tag of tagsToInvalidate) {
     revalidateTag(tag)
-    console.log(`[Revalidate] ✓ Invalidated tag: ${tag}`)
   }
-
-  console.log(`[Revalidate] Done — ${tagsToInvalidate.length} tag(s) cleared for ${model}`)
 
   return NextResponse.json({
     revalidated: true,

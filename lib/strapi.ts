@@ -42,7 +42,7 @@ export interface FetchOptions {
  * Build full Strapi API URL with query params
  */
 export function buildStrapiUrl(path: string, options: Omit<FetchOptions, 'next' | 'noCache'> = {}): string {
-  const { populate = '*', fields, filters, sort, pagination, status } = options
+  const { populate, fields, filters, sort, pagination, status } = options
   const query = qs.stringify(
     { populate, fields, filters, sort, pagination, status },
     { encodeValuesOnly: true, skipNulls: true }

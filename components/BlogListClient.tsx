@@ -13,6 +13,7 @@ import Link from 'next/link'
 import { ArrowRightIcon, SearchIcon } from '@/components/icons/ZenIcons'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import type { BlogPost, Category } from '@/types/strapi'
+import type { BlogArchiveStat } from '@/lib/api/blog'
 import BlogPagination from '@/components/BlogPagination'
 import { Loader2, SlidersHorizontal, X, ExternalLink, ChevronDown, Check } from 'lucide-react'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
@@ -34,6 +35,7 @@ interface BlogListClientProps {
   categories: Category[]
   currentCategory: string
   currentSearch: string
+  archives: BlogArchiveStat[]
 }
 
 export default function BlogListClient({
@@ -44,6 +46,7 @@ export default function BlogListClient({
   categories,
   currentCategory,
   currentSearch,
+  archives,
 }: BlogListClientProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -186,6 +189,42 @@ export default function BlogListClient({
           ))}
         </div>
       </div>
+
+      {/* Tra cứu lưu trữ khai thị */}
+      {archives.length > 0 && (
+        <div className="hidden lg:block">
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="archives" className="border-b-0">
+              <AccordionTrigger className="text-xs text-muted-foreground font-medium uppercase tracking-wider py-2 hover:no-underline hover:text-gold transition-colors">
+                Lưu Trữ
+              </AccordionTrigger>
+              <AccordionContent className="pt-2 pb-0">
+                <ScrollArea className="h-[250px] pr-4 -mr-4">
+                  <div className="flex flex-col gap-3 pl-1">
+                    {archives.map((arch) => (
+                      <div key={arch.year}>
+                        <p className="text-sm font-semibold text-foreground/80 mb-1">{arch.year}</p>
+                        <div className="grid grid-cols-2 gap-1 pl-2 border-l-2 border-border/40">
+                          {arch.months.map((m) => (
+                            <Link
+                              key={`${arch.year}-${m.month}`}
+                              href={`/blog/archive/${arch.year}/${m.month}`}
+                              className="text-xs py-1 px-2 rounded-lg text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors flex justify-between"
+                            >
+                              <span>T{m.month}</span>
+                              <span className="opacity-50">({m.count})</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      )}
 
       {/* External Links */}
       <div>
@@ -413,9 +452,9 @@ export default function BlogListClient({
                         <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] text-secondary-foreground">
                           {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('vi-VN')}
                         </span>
-                        {post.source && (
+                        {(post as any).sourceName && (
                           <span className="px-2 py-0.5 rounded-full bg-primary/10 text-gold text-[10px] font-medium font-mono lowercase border border-gold/10">
-                            {post.source}
+                            {(post as any).sourceName}
                           </span>
                         )}
                         {post.categories?.[0] && (
@@ -433,15 +472,15 @@ export default function BlogListClient({
                         {post.title}
                       </h2>
 
-                      {post.original_title && (
+                      {(post as any).sourceTitle && (
                         <p className="text-xs text-muted-foreground/60 font-light italic -mt-1">
-                          {post.original_title}
+                          {(post as any).sourceTitle}
                         </p>
                       )}
 
                       {/* Summary */}
                       <p className="text-muted-foreground text-sm leading-relaxed line-clamp-3">
-                        {post.content.replace(/<[^>]*>/g, '').substring(0, 200)}...
+                        {(post.excerpt || post.content || '').replace(/<[^>]*>/g, '').substring(0, 200)}...
                       </p>
 
                       {/* Footer */}

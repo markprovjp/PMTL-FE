@@ -3,7 +3,12 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MessageCircleQuestion, Sparkles, Lamp, Baby, Users, Scale, GraduationCap, Radio, Compass, BookOpen, Star, Briefcase, Leaf, HeartPulse, Flower2, Home, Waves, Moon, Bird, Flame, Gift, Search, ArrowRight } from "lucide-react";
-import type { SearchCategoryItem } from "@/types/strapi";
+export interface SearchCategoryItem {
+  id: number | string;
+  title: string;
+  iconName: string;
+  link: string;
+}
 import type { LucideIcon } from "lucide-react";
 
 // Map iconName string → Lucide icon component

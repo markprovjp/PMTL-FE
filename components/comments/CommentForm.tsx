@@ -1,8 +1,23 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
+
+function avatar(name: string, size = 9) {
+  const colors = [
+    'from-gold/40 to-amber-600/40 text-gold',
+    'from-emerald-500/30 to-teal-600/30 text-emerald-400',
+    'from-purple-500/30 to-indigo-600/30 text-purple-400',
+    'from-rose-500/30 to-pink-600/30 text-rose-400',
+  ]
+  const idx = name.charCodeAt(0) % colors.length || 0
+  return `w-${size} h-${size} rounded-full bg-gradient-to-br ${colors[idx]} flex items-center justify-center font-bold text-sm shrink-0`
+}
+function initials(name: string) {
+  return name.charAt(0).toUpperCase()
+}
 
 interface CommentFormProps {
   postSlug: string
@@ -21,11 +36,21 @@ export default function CommentForm({
   onCancel,
   compact = false,
 }: CommentFormProps) {
+  const { user } = useAuth()
   const [authorName, setAuthorName] = useState('')
   const [content, setContent] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    if (user) {
+      setAuthorName(user.fullName || user.username || '')
+    } else {
+      const saved = localStorage.getItem('pmtl_author_name')
+      if (saved) setAuthorName(saved)
+    }
+  }, [user])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,6 +75,7 @@ export default function CommentForm({
             content: content.trim(),
             authorName: authorName.trim(),
             parentDocumentId: parentDocumentId ?? undefined,
+            authorAvatar: user?.avatar_url || undefined,
           }),
         })
 
@@ -65,7 +91,9 @@ export default function CommentForm({
         }
 
         setSuccess(true)
-        setAuthorName('')
+        if (!user) {
+          localStorage.setItem('pmtl_author_name', authorName.trim())
+        }
         setContent('')
         setTimeout(() => {
           setSuccess(false)
@@ -102,27 +130,45 @@ export default function CommentForm({
         </p>
       )}
 
-      <div className={cn('grid gap-3', 'grid-cols-1')}>
-        <input
-          type="text"
-          placeholder="Tên của bạn *"
-          value={authorName}
-          onChange={(e) => setAuthorName(e.target.value)}
-          maxLength={100}
-          className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-          disabled={isPending}
-        />
-      </div>
+      <div className="flex items-start gap-3">
+        {user ? (
+          user.avatar_url ? (
+            <img src={user.avatar_url} alt={user.fullName || ''} className="w-10 h-10 rounded-full object-cover shrink-0 mt-1" />
+          ) : (
+            <div className={`${avatar(user.fullName || user.username || 'U', 10)} mt-1`}>
+              {initials(user.fullName || user.username || 'U')}
+            </div>
+          )
+        ) : (
+          <div className={`${avatar(authorName || 'Guest', 10)} mt-1 opacity-60`}>
+            {initials(authorName || 'G')}
+          </div>
+        )}
 
-      <textarea
-        placeholder="Chia sẻ suy nghĩ của bạn..."
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        maxLength={2000}
-        rows={compact ? 3 : 4}
-        className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors resize-none"
-        disabled={isPending}
-      />
+        <div className="flex-1 space-y-3">
+          {!user && (
+            <input
+              type="text"
+              placeholder="Tên của bạn *"
+              value={authorName}
+              onChange={(e) => setAuthorName(e.target.value)}
+              maxLength={100}
+              className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+              disabled={isPending}
+            />
+          )}
+
+          <textarea
+            placeholder={user ? `Bình luận dưới tên ${user.fullName || user.username}...` : "Chia sẻ suy nghĩ của bạn..."}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            maxLength={2000}
+            rows={compact ? 2 : 3}
+            className="w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors resize-none"
+            disabled={isPending}
+          />
+        </div>
+      </div>
 
       <AnimatePresence>
         {error && (

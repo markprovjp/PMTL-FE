@@ -125,7 +125,6 @@ export function resolveUrl(media: any): string | null {
   if (!media) return null
   const url =
     media?.url ??
-    media?.data?.attributes?.url ??
     media?.data?.url ??
     null
   if (!url) return null

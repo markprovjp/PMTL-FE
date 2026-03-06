@@ -4,8 +4,8 @@ const nextConfig = {
  reactCompiler: true,
 
   typescript: {
-    // UI components copied from shadcn have some unused deps — safe to ignore
-    ignoreBuildErrors: true,
+    // Bật type checking khi build — không bỏ qua lỗi TypeScript
+    ignoreBuildErrors: false,
   },
 
   // ── Redis ISR Cache (production) ──────────────────────────────

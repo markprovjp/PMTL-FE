@@ -21,8 +21,6 @@ export interface CommunityPost {
   video_url?: string
   author_name: string
   author_avatar?: string
-  author_country?: string
-  author?: unknown
   likes: number
   views: number
   rating?: number
@@ -40,10 +38,8 @@ export interface CommunityComment {
   content: string
   author_name: string
   author_avatar?: string
-  author_country?: string
   likes: number
   createdAt: string
-  parent_comment?: unknown
 }
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -163,7 +159,6 @@ export async function submitPost(data: {
   type: string
   category: string
   author_name: string
-  author_country: string
   author_avatar?: string
   video_url?: string
   tags?: string | string[]
@@ -187,7 +182,6 @@ export async function submitComment(data: {
   postDocumentId: string
   content: string
   author_name: string
-  author_country: string
   author_avatar?: string
   parentDocumentId?: string
 }): Promise<void> {

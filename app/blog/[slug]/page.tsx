@@ -114,7 +114,10 @@ export default async function BlogPostPage({ params }: Props) {
     : null
 
   const youtubeId = post.video_url ? getYouTubeId(post.video_url) : null
-  const source = post.source
+  // Source mới sau refactor schema (sourceName/sourceUrl/sourceTitle thay source cũ)
+  const sourceName = (post as any).sourceName ?? (post as any).source ?? null
+  const sourceUrl = (post as any).sourceUrl ?? (post as any).original_link ?? null
+  const sourceTitle = (post as any).sourceTitle ?? (post as any).original_title ?? null
 
   const firstCat = post.categories?.[0]
   const categoryName = firstCat?.name ?? 'Khai Thị'
@@ -152,9 +155,9 @@ export default async function BlogPostPage({ params }: Props) {
               </Link>
 
               {/* Source reference badge */}
-              {source && (
+              {sourceName && (
                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-secondary text-muted-foreground`}>
-                  Nguồn: <code className="font-mono opacity-80">{source}</code>
+                  Nguồn: <code className="font-mono opacity-80">{sourceName}</code>
                 </span>
               )}
 
@@ -178,10 +181,10 @@ export default async function BlogPostPage({ params }: Props) {
               {post.title}
             </h1>
 
-            {/* Tựa gốc tiếng Trung */}
-            {post.original_title && (
+            {/* Tựa gốc tiếng Trung hoặc ngôn ngữ gốc */}
+            {sourceTitle && (
               <p className="text-muted-foreground/70 text-lg mb-3 font-light tracking-wide">
-                {post.original_title}
+                {sourceTitle}
               </p>
             )}
 
@@ -278,20 +281,20 @@ export default async function BlogPostPage({ params }: Props) {
             </div>
           )}
 
-          {/* ── Original Link ── */}
-          {post.original_link && (
+          {/* ── Original Link / Source URL ── */}
+          {sourceUrl && (
             <div className="mb-10">
               <a
-                href={post.original_link}
+                href={sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 text-gold text-sm font-medium border border-gold/20 hover:bg-gold hover:text-black transition-all shadow-sm"
               >
                 <ArrowRightIcon className="w-4 h-4 translate-y-px" />
-                Xem bài viết gốc (Link gốc)
+                Xem bài viết gốc
               </a>
               <p className="mt-2 text-[10px] text-muted-foreground italic">
-                Lưu ý: Link dẫn đến trang web chính thống của Pháp Môn Tâm Linh (xlch.org)
+                Link dẫn đến trang web chính thống của Pháp Môn Tâm Linh
               </p>
             </div>
           )}
@@ -362,7 +365,10 @@ export default async function BlogPostPage({ params }: Props) {
 
           {/* ── Comments section ── */}
           <Suspense fallback={null}>
-            <CommentsSection slug={post.slug} />
+            <CommentsSection
+              slug={post.slug}
+              allowComments={(post as any).allowComments !== false}
+            />
           </Suspense>
 
           {/* ── Back link ── */}

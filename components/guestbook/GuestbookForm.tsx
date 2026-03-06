@@ -12,6 +12,8 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
   const [authorName, setAuthorName] = useState('')
   const [country, setCountry] = useState('')
   const [message, setMessage] = useState('')
+  const [entryType, setEntryType] = useState<'message' | 'question'>('message')
+  const [questionCategory, setQuestionCategory] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -38,6 +40,8 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
             authorName: authorName.trim(),
             country: country.trim() || undefined,
             message: message.trim(),
+            entryType,
+            questionCategory: entryType === 'question' ? (questionCategory || 'Dharma') : undefined
           }),
         })
 
@@ -87,6 +91,23 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       onSubmit={handleSubmit}
       className="space-y-4"
     >
+      <div className="flex gap-2 mb-6 p-1 rounded-xl bg-secondary/50 border border-border/50 w-fit">
+        <button
+          type="button"
+          onClick={() => setEntryType('message')}
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${entryType === 'message' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Lưu Bút
+        </button>
+        <button
+          type="button"
+          onClick={() => setEntryType('question')}
+          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${entryType === 'question' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+        >
+          Đặt Câu Hỏi
+        </button>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="gb-name">
@@ -120,9 +141,31 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
         </div>
       </div>
 
+      {entryType === 'question' && (
+        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
+          <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="gb-cat">
+            Chủ đề câu hỏi
+          </label>
+          <select
+            id="gb-cat"
+            value={questionCategory}
+            onChange={(e) => setQuestionCategory(e.target.value)}
+            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/50 focus:outline-none transition-colors"
+          >
+            <option value="">-- Chọn chủ đề --</option>
+            <option value="Tu học">Tu học</option>
+            <option value="Sức khoẻ">Sức khoẻ</option>
+            <option value="Gia đình">Gia đình</option>
+            <option value="Sự nghiệp">Sự nghiệp</option>
+            <option value="Cảm ngộ">Cảm ngộ</option>
+            <option value="Khác">Khác</option>
+          </select>
+        </motion.div>
+      )}
+
       <div>
         <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="gb-message">
-          Lưu bút *
+          {entryType === 'question' ? 'Nội dung câu hỏi *' : 'Lưu bút *'}
         </label>
         <textarea
           id="gb-message"
@@ -154,9 +197,9 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="px-6 py-2.5 rounded-xl bg-gold text-black text-sm font-semibold hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        className="px-6 py-2.5 rounded-xl bg-gold text-black text-sm font-semibold hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
       >
-        {isPending ? 'Đang gửi...' : 'Gửi lưu bút'}
+        {isPending ? 'Đang gửi...' : entryType === 'question' ? 'Gửi câu hỏi' : 'Gửi lưu bút'}
       </button>
     </motion.form>
   )

@@ -55,8 +55,14 @@ export const fetchAllTags = unstable_cache(
 export async function incrementViewAction(documentId: string): Promise<{ success: boolean; status?: number; error?: string }> {
   try {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL ?? 'http://localhost:1337'
+    const token = process.env.STRAPI_API_TOKEN
+
+    const headers: HeadersInit = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
     const res = await fetch(`${strapiUrl}/api/blog-posts/${documentId}/view`, {
       method: 'POST',
+      headers,
       cache: 'no-store',
     })
     return { success: res.ok, status: res.status }

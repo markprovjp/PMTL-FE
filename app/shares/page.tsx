@@ -24,6 +24,8 @@ import {
   type CommunityComment,
 } from '@/lib/api/community';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select as ShadcnSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const CATEGORIES = ['Tất cả', 'Sức Khoẻ', 'Gia Đình', 'Sự Nghiệp', 'Hôn Nhân', 'Tâm Linh', 'Thi Cử', 'Kinh Doanh', 'Mất Ngủ', 'Mối Quan Hệ'];
 
@@ -137,15 +139,15 @@ function avatar(name: string, size = 9) {
 }
 function initials(name: string) { return name.charAt(0).toUpperCase(); }
 
-/* ── Type Badge ───────────────────────────────────────────────── */
+/* ── Type Badge — Tông màu Phật giáo, tĩnh lặng ── */
 const TypeBadge = ({ type }: { type: string }) => {
   const map: Record<string, { label: string; color: string }> = {
-    story: { label: 'Câu Chuyện', color: 'bg-emerald-500/15 text-emerald-400' },
-    feedback: { label: 'Cảm Ngộ', color: 'bg-amber-500/15 text-amber-400' },
-    video: { label: 'Video', color: 'bg-red-500/15 text-red-400' },
+    story: { label: 'Câu Chuyện', color: 'bg-gold/10 text-gold' },
+    feedback: { label: 'Cảm Ngộ', color: 'bg-amber-600/10 text-amber-500' },
+    video: { label: 'Video', color: 'bg-stone-500/10 text-stone-400' },
   };
   const t = map[type] || map.story;
-  return <span className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full ${t.color}`}>{t.label}</span>;
+  return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm ${t.color}`}>{t.label}</span>;
 };
 
 /* ══════════════════════ POST CARD ══════════════════════════════ */
@@ -161,7 +163,7 @@ const PostCard = ({ post, onOpen, onLike, liked }: PostCardProps) => (
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     whileHover={{ y: -2 }}
-    className="group rounded-2xl bg-card border border-border overflow-hidden hover:border-gold/40 hover:shadow-xl hover:shadow-black/20 transition-all duration-300 flex flex-col cursor-pointer"
+    className="group rounded-2xl bg-card border border-border overflow-hidden hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300 flex flex-col cursor-pointer"
     onClick={() => onOpen(post)}
   >
     {/* Cover / Video thumbnail */}
@@ -188,7 +190,7 @@ const PostCard = ({ post, onOpen, onLike, liked }: PostCardProps) => (
           </div>
         )}
         <div className="absolute top-2 left-2 flex gap-1.5">
-          <span className="bg-black/60 text-gold text-xs px-2 py-0.5 rounded-full backdrop-blur-sm">{post.category}</span>
+          <span className="bg-black/40 text-background text-xs px-2 py-0.5 rounded-sm backdrop-blur-md border border-white/10">{post.category}</span>
           <TypeBadge type={post.type} />
         </div>
       </div>
@@ -227,7 +229,6 @@ const PostCard = ({ post, onOpen, onLike, liked }: PostCardProps) => (
         )}
         <div className="min-w-0">
           <p className="text-xs font-medium text-foreground/80 truncate">{post.author_name}</p>
-          {post.author_country && <p className="text-[10px] text-muted-foreground truncate">@ {post.author_country}</p>}
         </div>
         <span className="text-[10px] text-muted-foreground/50 ml-auto shrink-0">{timeAgo(post.createdAt)}</span>
       </div>
@@ -240,7 +241,7 @@ const PostCard = ({ post, onOpen, onLike, liked }: PostCardProps) => (
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onLike(post.documentId); }}
-          className={`flex items-center gap-1 transition-colors ${liked ? 'text-rose-400' : 'hover:text-rose-400'}`}
+          className={`flex items-center gap-1 transition-colors ${liked ? 'text-gold' : 'hover:text-gold'}`}
         >
           <HeartIcon filled={liked} className="w-3.5 h-3.5" />
           <span>{fmt(post.likes + (liked ? 1 : 0))}</span>
@@ -296,7 +297,6 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
         postDocumentId: String(postId),
         content: reply,
         author_name: finalName,
-        author_country: '',
         parentDocumentId: comment.documentId,
         author_avatar: user?.avatar_url || undefined
       });
@@ -322,7 +322,6 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
         <div className="bg-secondary/50 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-xs font-semibold text-foreground/90">{comment.author_name}</span>
-            {comment.author_country && <span className="text-[10px] text-muted-foreground">@ {comment.author_country}</span>}
           </div>
           <p className="text-sm text-foreground/75 leading-relaxed">{comment.content}</p>
         </div>
@@ -375,7 +374,6 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [commentName, setCommentName] = useState('');
-  const [commentCountry, setCommentCountry] = useState('');
   const [sending, setSending] = useState(false);
   const { user } = useAuth();
 
@@ -389,7 +387,6 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
       const saved = localStorage.getItem('pmtl_author_name');
       if (saved) setCommentName(saved);
     }
-    setCommentCountry('');
   }, [post, user]);
 
   const handleComment = async (e: React.FormEvent) => {
@@ -402,7 +399,6 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
         postDocumentId: post!.documentId,
         content: commentText,
         author_name: finalName,
-        author_country: commentCountry,
         author_avatar: user?.avatar_url || undefined
       });
       toast.success('Bình luận đã được gửi và đang chờ duyệt');
@@ -416,23 +412,13 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
   };
 
   return (
-    <AnimatePresence>
-      {post && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50"
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ y: '100%', opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-            className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
-          >
+    <Dialog open={!!post} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto w-full p-0 border-0 bg-transparent shadow-none gap-0 outline-none [&>button:last-child]:hidden sm:rounded-2xl" aria-describedby={undefined}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>{post?.title || 'Chi tiết bài viết'}</DialogTitle>
+        </DialogHeader>
+        {post && (
+          <div className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full h-full shadow-2xl relative outline-none flex flex-col">
             {/* Drag handle */}
             <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm px-6 pt-4 pb-3 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -456,7 +442,6 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
                   <div className="flex flex-col">
                     <h3 className="font-semibold text-[15px] text-foreground flex items-center gap-1.5 leading-tight">
                       {post.author_name}
-                      {post.author_country && <span className="text-muted-foreground font-normal text-xs">@ {post.author_country}</span>}
                     </h3>
                     <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 mt-0.5">
                       {timeAgo(post.createdAt)}
@@ -475,7 +460,7 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
               {/* Title & Content */}
               <div className="space-y-2.5 pt-1">
                 <h2 className="font-display text-lg sm:text-xl text-foreground font-semibold leading-snug">{post.title}</h2>
-                <div className={`text-[15px] text-foreground/90 leading-relaxed whitespace-pre-wrap ${post.type === 'feedback' ? 'italic border-l-4 border-gold/30 pl-4 bg-gold/5 p-3 rounded-r-xl' : ''}`}>
+                <div className={`text-[15px] text-foreground/90 leading-relaxed whitespace-pre-wrap ${post.type === 'feedback' ? 'border-l-4 border-gold/30 pl-4 bg-gold/5 p-3 rounded-r-xl' : ''}`}>
                   {post.content}
                 </div>
               </div>
@@ -565,27 +550,31 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
                 </form>
               </div>
             </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 };
 
 /* ══════════════════════ SUBMIT POST MODAL ══════════════════════ */
-const SubmitModal = ({ onClose, user }: { onClose: () => void; user: any }) => {
+const SubmitModal = ({ onClose, user, availableTags }: { onClose: () => void; user: any; availableTags: string[] }) => {
   const [form, setForm] = useState({
     title: '', content: '', type: 'story', category: 'Tâm Linh',
     author_name: user ? (user.fullName || user.username) : '',
-    author_country: '', video_url: '', tags: '',
+    video_url: '', tags: '',
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setForm((f) => ({ ...f, [name]: value }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -625,121 +614,147 @@ const SubmitModal = ({ onClose, user }: { onClose: () => void; user: any }) => {
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 z-50" onClick={onClose}>
-      <motion.div
-        initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-        className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm px-6 pt-4 pb-3 border-b border-border flex items-center justify-between">
-          <h2 className="font-display text-lg text-foreground">Đăng Bài Chia Sẻ</h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-secondary hover:bg-border flex items-center justify-center transition-colors"><XIcon className="w-4 h-4" /></button>
-        </div>
-
-        {sent ? (
-          <div className="px-6 py-12 text-center space-y-6">
-            <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 py-8">
-              <CheckCircle2 className="w-8 h-8 mx-auto mb-4" />
-              <AlertTitle className="text-xl font-display mb-2">Cảm ơn bạn đã chia sẻ!</AlertTitle>
-              <AlertDescription className="text-sm">
-                Bài viết của bạn đã được tiếp nhận và đang chờ Admin duyệt.
-                Mọi chia sẻ của bạn đều là hạt mầm thiện lành truyền cảm hứng tới cộng đồng.
-              </AlertDescription>
-            </Alert>
-            <button onClick={onClose} className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all">
-              Đóng và Tiếp tục
-            </button>
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto w-full p-0 border-0 bg-transparent shadow-none gap-0 outline-none [&>button:last-child]:hidden sm:rounded-2xl" aria-describedby={undefined}>
+        <DialogHeader className="sr-only">
+          <DialogTitle>Đăng Bài Chia Sẻ</DialogTitle>
+        </DialogHeader>
+        <div className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full h-full shadow-2xl relative outline-none flex flex-col">
+          <div className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm px-6 pt-4 pb-3 border-b border-border flex items-center justify-between">
+            <h2 className="font-display text-lg text-foreground">Đăng Bài Chia Sẻ</h2>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-secondary hover:bg-border flex items-center justify-center transition-colors"><XIcon className="w-4 h-4" /></button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="px-6 py-6 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Loại bài *</label>
-                <select name="type" value={form.type} onChange={handleChange} className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-gold/50">
-                  <option value="story">Câu Chuyện</option>
-                  <option value="feedback">Cảm Ngộ / Trải Nghiệm</option>
-                  <option value="video">Video</option>
-                </select>
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Danh mục *</label>
-                <select name="category" value={form.category} onChange={handleChange} className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:border-gold/50">
-                  {CATEGORIES.slice(1).map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
+
+          {sent ? (
+            <div className="px-6 py-12 text-center space-y-6">
+              <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 py-8">
+                <CheckCircle2 className="w-8 h-8 mx-auto mb-4" />
+                <AlertTitle className="text-xl font-display mb-2">Cảm ơn bạn đã chia sẻ!</AlertTitle>
+                <AlertDescription className="text-sm">
+                  Bài viết của bạn đã được tiếp nhận và đang chờ Admin duyệt.
+                  Mọi chia sẻ của bạn đều là hạt mầm thiện lành truyền cảm hứng tới cộng đồng.
+                </AlertDescription>
+              </Alert>
+              <button onClick={onClose} className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all">
+                Đóng và Tiếp tục
+              </button>
             </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Tiêu đề *</label>
-              <input name="title" value={form.title} onChange={handleChange} placeholder="Tiêu đề câu chuyện của bạn..." required className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Nội dung *</label>
-              <textarea name="content" value={form.content} onChange={handleChange} placeholder="Chia sẻ câu chuyện, trải nghiệm của bạn..." required rows={6} className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 resize-none" />
-            </div>
-
-            {form.type === 'video' && (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Link Video (YouTube, Vimeo...)</label>
-                <input name="video_url" value={form.video_url} onChange={handleChange} placeholder="https://youtube.com/..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
-              </div>
-            )}
-
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Ảnh bìa cho bài viết</label>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground cursor-pointer hover:bg-border/50 transition-colors">
-                    <ImageIcon className="w-4 h-4 text-muted-foreground" />
-                    {coverFile ? 'Đổi ảnh bìa' : 'Tải ảnh lên'}
-                    <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
-                  </label>
-                  {coverFile && <span className="text-xs text-muted-foreground truncate w-40">{coverFile.name}</span>}
+          ) : (
+            <form onSubmit={handleSubmit} className="px-6 py-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Loại bài *</label>
+                  <ShadcnSelect value={form.type} onValueChange={(val) => handleSelectChange('type', val)}>
+                    <SelectTrigger className="w-full bg-secondary border-border h-10 rounded-lg">
+                      <SelectValue placeholder="Chọn loại bài" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="story">Câu Chuyện</SelectItem>
+                      <SelectItem value="feedback">Cảm Ngộ / Trải Nghiệm</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
+                    </SelectContent>
+                  </ShadcnSelect>
                 </div>
-                {coverPreview && (
-                  <div className="relative aspect-video rounded-xl overflow-hidden border border-border bg-secondary">
-                    <img src={coverPreview} alt="Preview" className="w-full h-full object-cover" />
-                    <button onClick={() => { setCoverFile(null); setCoverPreview(null); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors">
-                      <XIcon className="w-3 h-3" />
-                    </button>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Danh mục *</label>
+                  <ShadcnSelect value={form.category} onValueChange={(val) => handleSelectChange('category', val)}>
+                    <SelectTrigger className="w-full bg-secondary border-border h-10 rounded-lg">
+                      <SelectValue placeholder="Chọn danh mục" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.slice(1).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </ShadcnSelect>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Tiêu đề *</label>
+                <input name="title" value={form.title} onChange={handleChange} placeholder="Tiêu đề câu chuyện của bạn..." required className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Nội dung *</label>
+                <textarea name="content" value={form.content} onChange={handleChange} placeholder="Chia sẻ câu chuyện, trải nghiệm của bạn..." required rows={6} className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 resize-none" />
+              </div>
+
+              {form.type === 'video' && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Link Video (YouTube, Vimeo...)</label>
+                  <input name="video_url" value={form.video_url} onChange={handleChange} placeholder="https://youtube.com/..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+                </div>
+              )}
+
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-muted-foreground">Ảnh bìa cho bài viết</label>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary border border-border text-sm text-foreground cursor-pointer hover:bg-border/50 transition-colors">
+                      <ImageIcon className="w-4 h-4 text-muted-foreground" />
+                      {coverFile ? 'Đổi ảnh bìa' : 'Tải ảnh lên'}
+                      <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+                    </label>
+                    {coverFile && <span className="text-xs text-muted-foreground truncate w-40">{coverFile.name}</span>}
                   </div>
-                )}
+                  {coverPreview && (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-border bg-secondary">
+                      <img src={coverPreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button onClick={() => { setCoverFile(null); setCoverPreview(null); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-black/70 transition-colors">
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Họ tên *</label>
-                <input name="author_name" value={form.author_name} onChange={handleChange} required placeholder="Tên của bạn..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Họ tên *</label>
+                  <input name="author_name" value={form.author_name} onChange={handleChange} required placeholder="Tên của bạn..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-muted-foreground">Tags (chọn từ danh sách hoặc nhập mới qua dấu phẩy)</label>
+                  {availableTags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {availableTags.map((tag) => (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            const currentTags = form.tags.split(',').map(t => t.trim()).filter(Boolean);
+                            if (!currentTags.includes(tag)) {
+                              handleSelectChange('tags', [...currentTags, tag].join(', '));
+                            } else {
+                              handleSelectChange('tags', currentTags.filter(t => t !== tag).join(', '));
+                            }
+                          }}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors border ${form.tags.split(',').map(t => t.trim()).includes(tag) ? 'bg-gold text-black border-gold' : 'bg-transparent text-muted-foreground border-border hover:border-gold/40'}`}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">Quốc gia</label>
-                <input name="author_country" value={form.author_country} onChange={handleChange} placeholder="Việt Nam" className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
-              </div>
-            </div>
 
-            <div className="flex flex-col gap-1">
-              <label className="text-xs text-muted-foreground">Tags (ngăn cách bằng dấu phẩy)</label>
-              <input name="tags" value={form.tags} onChange={handleChange} placeholder="phuocbau, samhoi, kietac..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
-            </div>
+              <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500">
+                  <Info className="w-4 h-4" />
+                  <AlertTitle className="text-xs font-semibold">Lưu ý kiểm duyệt</AlertTitle>
+                  <AlertDescription className="text-[10px] leading-relaxed">
+                    Để đảm bảo chất lượng nội dung, bài viết sẽ được Admin duyệt trong vòng 24 giờ trước khi hiển thị công khai.
+                  </AlertDescription>
+                </Alert>
 
-            <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500">
-              <Info className="w-4 h-4" />
-              <AlertTitle className="text-xs font-semibold">Lưu ý kiểm duyệt</AlertTitle>
-              <AlertDescription className="text-[10px] leading-relaxed">
-                Để đảm bảo chất lượng nội dung, bài viết sẽ được Admin duyệt trong vòng 24 giờ trước khi hiển thị công khai.
-              </AlertDescription>
-            </Alert>
-
-            <button type="submit" disabled={sending} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
-              <SendIcon />{sending ? 'Đang gửi...' : 'Gửi Bài Chia Sẻ'}
-            </button>
-          </form>
-        )}
-      </motion.div>
-    </motion.div>
+                <button type="submit" disabled={sending} className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                  <SendIcon />{sending ? 'Đang gửi...' : 'Gửi Bài Chia Sẻ'}
+                </button>
+            </form>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
@@ -770,7 +785,7 @@ export default function SharesPage() {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const [showSubmit, setShowSubmit] = useState(false);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
-  const searchTimeout = useRef<NodeJS.Timeout>();
+  const searchTimeout = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     try {
@@ -894,28 +909,28 @@ export default function SharesPage() {
                 Những chia sẻ người thật việc thật từ đồng tu khắp thế giới — Hãy cùng lan tỏa năng lượng thiện lành và truyền cảm hứng tu học.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 pb-8 border-b border-border/50">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mb-10">
                 <button
                   onClick={() => setShowSubmit(true)}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gold text-black font-bold hover:bg-gold/90 active:scale-95 transition-all shadow-lg shadow-gold/10 text-sm"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gold text-black font-semibold hover:shadow-lg hover:shadow-gold/20 active:scale-95 transition-all text-sm"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  Chia Sẻ Câu Chuyện
+                  Gửi Gắm Câu Chuyện
                 </button>
+              </div>
 
-                <div className="flex items-center gap-8 text-sm">
-                  {[
-                    { value: total > 0 ? `${total}+` : '—', label: 'Bài viết' },
-                    { value: '50+', label: 'Quốc Gia' },
-                    { value: '10M+', label: 'Lượt Đọc' },
-                    { value: '4.9★', label: 'Đánh giá' },
-                  ].map((s) => (
-                    <div key={s.label} className="text-left">
-                      <p className="font-display text-lg text-gold leading-none">{s.value}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
+              <div className="flex items-center justify-center gap-8 text-sm pb-8 border-b border-border/50">
+                {[
+                  { value: total > 0 ? `${total}+` : '—', label: 'Bài viết' },
+                  { value: '50+', label: 'Quốc Gia' },
+                  { value: '10M+', label: 'Lượt Đọc' },
+                  { value: '4.9★', label: 'Đánh giá' },
+                ].map((s) => (
+                  <div key={s.label} className="text-left">
+                    <p className="font-display text-lg text-gold leading-none">{s.value}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">{s.label}</p>
+                  </div>
+                ))}
               </div>
             </motion.div>
           </div>
@@ -935,11 +950,18 @@ export default function SharesPage() {
                   </button>
                 ))}
               </div>
-              <select value={sort} onChange={(e) => handleSort(e.target.value)} className="shrink-0 px-4 py-2 rounded-xl bg-card border border-border text-sm text-foreground focus:outline-none focus:border-gold/50 cursor-pointer">
-                <option value="newest">Mới Nhất</option>
-                <option value="popular">Nhiều Xem Nhất</option>
-                <option value="most_liked">Nhiều Tim Nhất</option>
-              </select>
+              <div className="w-full sm:w-48 shrink-0">
+                <ShadcnSelect value={sort} onValueChange={(val) => handleSort(val)}>
+                  <SelectTrigger className="w-full bg-card border-border h-10 rounded-xl">
+                    <SelectValue placeholder="Sắp xếp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Mới Nhất</SelectItem>
+                    <SelectItem value="popular">Nhiều Xem Nhất</SelectItem>
+                    <SelectItem value="most_liked">Nhiều Tim Nhất</SelectItem>
+                  </SelectContent>
+                </ShadcnSelect>
+              </div>
             </div>
 
             {!loading && (
@@ -950,70 +972,74 @@ export default function SharesPage() {
           </motion.div>
 
           {/* ── Pinned Posts ───────────────────────────────────── */}
-          {!loading && pinned.length > 0 && (
-            <div className="mb-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
-                <Pin className="w-3.5 h-3.5" /> Bài Ghim
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {pinned.map((post) => (
-                  <PostCard key={post.id} post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
-                ))}
+          {
+            !loading && pinned.length > 0 && (
+              <div className="mb-8">
+                <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4 flex items-center gap-2">
+                  <Pin className="w-3.5 h-3.5" /> Bài Ghim
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {pinned.map((post) => (
+                    <PostCard key={post.id} post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )
+          }
 
           {/* ── Main Masonry Grid ──────────────────────────────── */}
-          {loading ? (
-            <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="break-inside-avoid mb-5"><SkeletonCard /></div>
-              ))}
-            </div>
-          ) : regular.length > 0 ? (
-            <>
+          {
+            loading ? (
               <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-                {regular.map((post, i) => (
-                  <motion.div
-                    key={post.id}
-                    className="break-inside-avoid mb-5"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-40px' }}
-                    transition={{ duration: 0.4, delay: (i % 4) * 0.06 }}
-                  >
-                    <PostCard post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
-                  </motion.div>
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="break-inside-avoid mb-5"><SkeletonCard /></div>
                 ))}
               </div>
-              {/* Phân trang */}
-              <SharesPagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </>
-          ) : (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
-              <QuoteIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground/20" />
-              <h3 className="font-display text-xl text-foreground mb-2">
-                {posts.length === 0 && !search ? 'Chưa có bài chia sẻ nào' : 'Không tìm thấy kết quả'}
-              </h3>
-              <p className="text-muted-foreground text-sm mb-6">
-                {posts.length === 0 && !search ? 'Hãy là người đầu tiên chia sẻ câu chuyện của bạn!' : 'Thử từ khóa khác hoặc đổi danh mục.'}
-              </p>
-              {search && (
-                <button onClick={() => { setSearch(''); setCategory('Tất cả'); load('', 'Tất cả', sort); }} className="px-5 py-2.5 rounded-xl bg-secondary text-sm text-foreground hover:bg-border transition-colors mr-3">
-                  Xóa bộ lọc
+            ) : regular.length > 0 ? (
+              <>
+                <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+                  {regular.map((post, i) => (
+                    <motion.div
+                      key={post.id}
+                      className="break-inside-avoid mb-5"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: '-40px' }}
+                      transition={{ duration: 0.4, delay: (i % 4) * 0.06 }}
+                    >
+                      <PostCard post={post} onOpen={handleOpenPost} onLike={handleLike} liked={likedIds.has(String(post.documentId))} />
+                    </motion.div>
+                  ))}
+                </div>
+                {/* Phân trang */}
+                <SharesPagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
+              </>
+            ) : (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
+                <QuoteIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground/20" />
+                <h3 className="font-display text-xl text-foreground mb-2">
+                  {posts.length === 0 && !search ? 'Chưa có bài chia sẻ nào' : 'Không tìm thấy kết quả'}
+                </h3>
+                <p className="text-muted-foreground text-sm mb-6">
+                  {posts.length === 0 && !search ? 'Hãy là người đầu tiên chia sẻ câu chuyện của bạn!' : 'Thử từ khóa khác hoặc đổi danh mục.'}
+                </p>
+                {search && (
+                  <button onClick={() => { setSearch(''); setCategory('Tất cả'); load('', 'Tất cả', sort); }} className="px-5 py-2.5 rounded-xl bg-secondary text-sm text-foreground hover:bg-border transition-colors mr-3">
+                    Xóa bộ lọc
+                  </button>
+                )}
+                <button onClick={() => setShowSubmit(true)} className="px-5 py-2.5 rounded-xl bg-gold text-black text-sm font-medium hover:bg-gold/90 transition-colors">
+                  Đăng bài ngay
                 </button>
-              )}
-              <button onClick={() => setShowSubmit(true)} className="px-5 py-2.5 rounded-xl bg-gold text-black text-sm font-medium hover:bg-gold/90 transition-colors">
-                Đăng bài ngay
-              </button>
-            </motion.div>
-          )}
-        </div>
-      </main>
+              </motion.div>
+            )
+          }
+        </div >
+      </main >
 
       <Footer />
       <StickyBanner />
@@ -1027,8 +1053,8 @@ export default function SharesPage() {
       />
 
       <AnimatePresence>
-        {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} user={user} />}
+        {showSubmit && <SubmitModal onClose={() => setShowSubmit(false)} user={user} availableTags={Array.from(new Set(posts.flatMap(p => p.tags || [])))} />}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }
