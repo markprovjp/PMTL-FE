@@ -11,8 +11,6 @@ import AboutSection from "@/components/AboutSection";
 import HallGallery from "@/components/HallGallery";
 import VideoSection from "@/components/VideoSection";
 import ContentFeeds from "@/components/ContentFeeds";
-import AwardsSection from "@/components/AwardsSection";
-import RegisterSection from "@/components/RegisterSection";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import Footer from "@/components/Footer";
 import StickyBanner from "@/components/StickyBanner";
@@ -24,7 +22,6 @@ import {
   FALLBACK_PHAP_BAO,
   FALLBACK_ACTION_CARDS,
   FALLBACK_VIDEOS,
-  FALLBACK_AWARDS,
   FALLBACK_GALLERY,
   FALLBACK_STICKY_BANNER,
 } from "@/lib/api/homepage";
@@ -69,7 +66,6 @@ export default async function HomePage() {
   const phapBao = settings?.phapBao ?? FALLBACK_PHAP_BAO
   const actionCards = settings?.actionCards ?? FALLBACK_ACTION_CARDS
   const featuredVideos = settings?.featuredVideos ?? FALLBACK_VIDEOS
-  const awards = settings?.awards ?? FALLBACK_AWARDS
   const gallerySlides = settings?.gallerySlides ?? FALLBACK_GALLERY
   const stickyBanner = settings?.stickyBanner ?? FALLBACK_STICKY_BANNER
 
@@ -105,13 +101,7 @@ export default async function HomePage() {
         <ContentFeeds />
         <div className="zen-divider max-w-xs mx-auto" />
 
-        {/* Giải thưởng quốc tế */}
-        <AwardsSection awards={awards} />
-        <div className="zen-divider max-w-xs mx-auto" />
 
-        {/* Đăng ký thỉnh Pháp Bảo miễn phí */}
-        <RegisterSection />
-        <div className="zen-divider max-w-xs mx-auto" />
 
         {/* Bản tin Phật pháp */}
         <NewsletterSignup />

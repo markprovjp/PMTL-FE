@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 import { strapiFetch } from '@/lib/strapi'
-import type { StrapiList, BeginnerGuide, BeginnerGuideFile } from '@/types/strapi'
+import type { StrapiList, BeginnerGuide } from '@/types/strapi'
 
 /**
  * Fetch danh sách hướng dẫn theo loại.
@@ -15,7 +15,7 @@ export async function getGuides(guideType: 'so-hoc' | 'kinh-bai-tap'): Promise<B
     const res = await strapiFetch<StrapiList<BeginnerGuide>>('/beginner-guides', {
       filters: { guide_type: { $eq: guideType } },
       sort: ['step_number:asc', 'order:asc'],
-      populate: ['images'],
+      populate: ['images', 'attached_files'],
       pagination: { page: 1, pageSize: 100 },
       next: { revalidate: 300, tags: [`guides-${guideType}`] },
     })
@@ -40,7 +40,7 @@ export async function getDailyRecitationSteps(): Promise<BeginnerGuide[]> {
 export async function getGuideById(documentId: string): Promise<BeginnerGuide | null> {
   try {
     const res = await strapiFetch<{ data: BeginnerGuide }>(`/beginner-guides/${documentId}`, {
-      populate: ['images'],
+      populate: ['images', 'attached_files'],
       next: { revalidate: 300, tags: [`guide-${documentId}`] },
     })
     return res.data ?? null
@@ -49,18 +49,4 @@ export async function getGuideById(documentId: string): Promise<BeginnerGuide | 
   }
 }
 
-/** Fetch danh sách tài liệu file hướng dẫn sơ học */
-export async function getBeginnerGuideFiles(): Promise<BeginnerGuideFile[]> {
-  try {
-    const res = await strapiFetch<StrapiList<BeginnerGuideFile>>('/beginner-guide-files', {
-      sort: ['order:asc'],
-      populate: ['files'],
-      pagination: { page: 1, pageSize: 100 },
-      next: { revalidate: 300, tags: ['beginner-guide-files'] },
-    })
-    return res.data ?? []
-  } catch (err) {
-    console.error('[Guides] Failed to fetch guide files:', err)
-    return []
-  }
-}
+

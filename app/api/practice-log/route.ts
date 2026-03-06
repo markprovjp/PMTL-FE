@@ -33,7 +33,16 @@ export async function GET(req: NextRequest) {
       headers: { Authorization: `Bearer ${jwt}` },
       cache: 'no-store',
     });
-    const data = await res.json();
+
+    const contentType = res.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      data = { error: text || 'Unknown backend error' };
+    }
+
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
     console.error('[api/practice-log GET]', err);
@@ -55,7 +64,16 @@ export async function PUT(req: NextRequest) {
       },
       body: JSON.stringify(body),
     });
-    const data = await res.json();
+
+    const contentType = res.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      data = { error: text || 'Unknown backend error' };
+    }
+
     return NextResponse.json(data, { status: res.status });
   } catch (err) {
     console.error('[api/practice-log PUT]', err);

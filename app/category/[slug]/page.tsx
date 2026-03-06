@@ -16,13 +16,14 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import type { BlogPost, StrapiList, Category } from '@/types/strapi'
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 // generateMetadata updated for simplified schema
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
   const result = await strapiFetch<StrapiList<Category>>(`/categories`, { // Using Category type instead of any
-    filters: { slug: { $eq: params.slug } },
+    filters: { slug: { $eq: slug } },
     pagination: { page: 1, pageSize: 1 },
   })
   const cat = result?.data?.[0]
@@ -44,14 +45,15 @@ function timeAgo(dateStr: string): string {
 }
 
 export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params
   const [category, allCats] = await Promise.all([
-    getCategoryBySlug(params.slug),
+    getCategoryBySlug(slug),
     getCategories(),
   ])
 
   if (!category) notFound()
 
-  const breadcrumb = getCategoryBreadcrumb(allCats, params.slug)
+  const breadcrumb = getCategoryBreadcrumb(allCats, slug)
 
   // Fetch posts (filter by dynamic categories relation or category enum)
   let posts: BlogPost[] = []
@@ -60,17 +62,17 @@ export default async function CategoryPage({ params }: Props) {
     const res = await strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
       filters: {
         // Filter by dynamic category relation
-        categories: { slug: { $eq: params.slug } }
+        categories: { slug: { $eq: slug } }
       },
       sort: ['publishedAt:desc'],
       populate: ['thumbnail', 'gallery', 'categories'],
       pagination: { page: 1, pageSize: 24 },
-      next: { revalidate: 60, tags: [`category-${params.slug}`] },
+      next: { revalidate: 60, tags: [`category-${slug}`] },
     })
     posts = res.data
     total = res.meta?.pagination?.total ?? 0
   } catch (err) {
-    console.error(`[Category ${params.slug}] Fetch error:`, err instanceof Error ? err.message : err)
+    console.error(`[Category ${slug}] Fetch error:`, err instanceof Error ? err.message : err)
     // no matching posts
   }
 

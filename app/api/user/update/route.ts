@@ -22,7 +22,7 @@ export async function PUT(req: NextRequest) {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ data: body }),
     })
 
     const data = await res.json()

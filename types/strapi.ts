@@ -141,7 +141,11 @@ export interface BlogPost {
 
   // ── Related content ─────────────────────────────────────
   related_posts: BlogPost[] | null
-
+  // ── Series metadata ──────────────────────────────────────────────────────────
+  seriesKey: string | null
+  seriesNumber: number | null
+  eventDate: string | null
+  location: string | null
   seo: StrapiSEO | null
   publishedAt: string | null
   createdAt: string
@@ -163,19 +167,7 @@ export interface BeginnerGuide {
   pdf_url: string | null
   video_url: string | null
   images: StrapiMedia[] | null
-  publishedAt: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-/** Hướng Dẫn Sơ Học File — tài liệu PDF/file có thể download hoặc xem preview */
-export interface BeginnerGuideFile {
-  id: number
-  documentId: string
-  name: string
-  description: string | null
-  order: number
-  files: StrapiMedia[] | null
+  attached_files: StrapiMedia[] | null // <== New direct file attachments
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -311,4 +303,181 @@ export function isStrapiError(res: unknown): res is StrapiError {
     'error' in res &&
     typeof (res as StrapiError).error?.status === 'number'
   )
+}
+
+// ─── Blog Comments ────────────────────────────────────────────
+
+export interface BlogComment {
+  id: number
+  documentId: string
+  authorName: string
+  authorAvatar: StrapiMedia | null
+  userId: string | null
+  content: string
+  likes: number
+  createdAt: string
+  updatedAt: string
+  publishedAt: string | null
+  /** Populated for top-level comments returned from byPost endpoint */
+  replies: BlogComment[]
+}
+
+export interface BlogCommentThread {
+  data: BlogComment[]
+  meta: {
+    pagination: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+  }
+}
+
+// ─── Guestbook ────────────────────────────────────────────────
+
+export interface GuestbookEntry {
+  id: number
+  documentId: string
+  authorName: string
+  country: string | null
+  avatar: StrapiMedia | null
+  message: string
+  adminReply: string | null
+  status: 'pending' | 'approved'
+  createdAt: string
+  updatedAt: string
+}
+
+export interface GuestbookList {
+  data: GuestbookEntry[]
+  meta: {
+    pagination: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+    archive?: { year: number; month: number }
+  }
+}
+
+// ─── Archive ──────────────────────────────────────────────────
+
+export interface ArchiveMonth {
+  month: number
+  count: number
+}
+
+export interface ArchiveYear {
+  year: number
+  total: number
+  months: ArchiveMonth[]
+}
+
+// ─── Hub Pages ────────────────────────────────────────────────
+
+export interface HubLink {
+  id: number
+  title: string
+  url: string
+  description: string | null
+  thumbnail: StrapiMedia | null
+  kind: 'internal' | 'external'
+}
+
+export interface HubSection {
+  id: number
+  heading: string
+  description: string | null
+  links: HubLink[]
+}
+
+export interface HubPage {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  description: string | null
+  sections: HubSection[]
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+// ─── Sidebar Config ───────────────────────────────────────────
+
+export interface QuickLink {
+  id: number
+  title: string
+  url: string
+}
+
+export interface CmsSocialLink {
+  id: number
+  label: string
+  url: string
+  iconName: string | null
+}
+
+export interface SidebarConfig {
+  showSearch: boolean
+  showCategoryTree: boolean
+  showArchive: boolean
+  showLatestComments: boolean
+  showDownloadLinks: boolean
+  downloadLinks: QuickLink[]
+  socialLinks: CmsSocialLink[]
+  qrImages: StrapiMedia[] | null
+}
+
+// ─── Series ───────────────────────────────────────────────────
+
+export interface SeriesPost {
+  documentId: string
+  title: string
+  slug: string
+  seriesKey: string | null
+  seriesNumber: number | null
+  eventDate: string | null
+  location: string | null
+  publishedAt: string | null
+  thumbnail: StrapiMedia | null
+}
+
+export interface SeriesData {
+  data: SeriesPost[]
+  meta: {
+    seriesKey: string
+    currentSlug: string
+    currentIndex: number
+    prev: SeriesPost | null
+    next: SeriesPost | null
+  }
+}
+
+// ─── Event ────────────────────────────────────────────────────
+
+export interface StrapiEvent {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  description: string
+  content: string | null
+  date: string | null
+  timeString: string | null
+  location: string
+  type: 'dharma-talk' | 'webinar' | 'retreat' | 'liberation' | 'festival'
+  eventStatus: 'upcoming' | 'live' | 'past'
+  speaker: string
+  language: string
+  link: string | null
+  youtubeId: string | null
+  coverImage: StrapiMedia | null
+  gallery: StrapiMedia[] | null
+  files: StrapiMedia[] | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
 }

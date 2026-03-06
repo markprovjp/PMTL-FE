@@ -21,9 +21,11 @@ function PostHogInit() {
           api_host: host,
           capture_pageview: true,
           capture_pageleave: true,
-          autocapture: false,   // Tắt autocapture để kiểm soát dữ liệu
-          persistence: 'localStorage+cookie',
-          // Tuân thủ GDPR: không theo dõi nếu user đã opt-out
+          autocapture: false,
+          // Dùng cookie-only (không localStorage) để tuân thủ GDPR
+          persistence: 'cookie',
+          // Tắt tracking khi user từ chối consent (EU GDPR)
+          cookieless_mode: 'on_reject',
           opt_out_capturing_by_default: false,
         })
       }

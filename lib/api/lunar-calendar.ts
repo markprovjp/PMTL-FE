@@ -38,12 +38,10 @@ export async function fetchLunarEvents(): Promise<LunarEvent[]> {
     });
 
     if (!res.ok) {
-      console.error('[LunarAPI] HTTP error:', res.status, await res.text());
       return [];
     }
 
     const json = await res.json();
-    console.log('[LunarAPI] Raw Strapi response:', JSON.stringify(json, null, 2));
     return (json.data as LunarEvent[]) ?? [];
   } catch (err) {
     console.error('[LunarAPI] Error:', err);

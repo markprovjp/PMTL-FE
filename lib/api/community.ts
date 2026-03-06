@@ -184,12 +184,12 @@ export async function submitPost(data: {
 }
 
 export async function submitComment(data: {
-  postId: string | number
+  postDocumentId: string
   content: string
   author_name: string
   author_country: string
   author_avatar?: string
-  parent_comment?: string | number
+  parentDocumentId?: string
 }): Promise<void> {
   const res = await fetch(`${API}/api/community-comments/submit`, {
     method: 'POST',

@@ -76,13 +76,15 @@ export async function strapiFetch<T>(
     headers['Authorization'] = `Bearer ${token}`
   }
 
+  const isDraft = queryOptions.status === 'draft'
+  const cacheStrategy = (noCache || isDraft) ? 'no-store' : 'force-cache'
+
   try {
     const res = await fetch(url, {
       headers,
-      // Default revalidate: 3600s (1h) — On-Demand Revalidation via /api/revalidate
-      // handles instant invalidation when admin updates content in Strapi.
-      next: noCache ? undefined : { revalidate: next?.revalidate ?? 3600, tags: next?.tags },
-      cache: noCache ? 'no-store' : undefined,
+      // Default revalidate: 3600s (1h)
+      next: cacheStrategy === 'no-store' ? undefined : { revalidate: next?.revalidate ?? 3600, tags: next?.tags },
+      cache: cacheStrategy,
     })
 
     if (!res.ok) {

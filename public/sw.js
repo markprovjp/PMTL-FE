@@ -6,17 +6,15 @@
 const CACHE_NAME = 'pmtl-v1'
 const STATIC_ASSETS = [
   '/',
-  '/niem-kinh',
-  '/lunar-calendar',
-  '/blog',
   '/manifest.json',
+  '/favicon.ico',
 ]
 
 // ── Install: pre-cache shell ──────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {})
+      return cache.addAll(STATIC_ASSETS).catch(() => { })
     })
   )
   self.skipWaiting()
@@ -36,7 +34,7 @@ self.addEventListener('activate', (event) => {
   self.clients.claim()
 })
 
-// ── Fetch: network-first cho API, cache-first cho static ─────
+// ── Fetch strategy ────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
@@ -44,29 +42,49 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
   if (url.origin !== self.location.origin) return
 
-  // API routes: network-first
-  if (url.pathname.startsWith('/api/')) {
+  // 1. API & Navigation (Pages): Network-First
+  const isApi = url.pathname.startsWith('/api/')
+  const isPage = event.request.mode === 'navigate'
+
+  if (isApi || isPage) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request)
-      })
+      fetch(event.request)
+        .then((response) => {
+          // Chỉ cache nếu response ok
+          if (response.ok && response.status === 200) {
+            const copy = response.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
+          }
+          return response
+        })
+        .catch(() => caches.match(event.request))
     )
     return
   }
 
-  // Static assets: cache-first
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached
-      return fetch(event.request).then((res) => {
-        if (res.ok && res.status === 200) {
-          const clone = res.clone()
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
-        }
-        return res
+  // 2. Static Assets (JS, CSS, Images, Fonts): Cache-First
+  const isStatic =
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/images/') ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css') ||
+    url.pathname.endsWith('.woff2')
+
+  if (isStatic) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached
+        return fetch(event.request).then((res) => {
+          if (res.ok && res.status === 200) {
+            const clone = res.clone()
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone))
+          }
+          return res
+        })
       })
-    })
-  )
+    )
+    return
+  }
 })
 
 // ── Push Notifications ────────────────────────────────────────

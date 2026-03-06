@@ -1,8 +1,23 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { Playfair_Display, Be_Vietnam_Pro } from 'next/font/google'
 import Providers from './providers'
 import { Toaster } from "@/components/ui/sonner"
+import { SmoothScroll } from "@/components/SmoothScroll"
 import './globals.css'
+
+const fontDisplay = Playfair_Display({
+  subsets: ['vietnamese'],
+  variable: '--font-display',
+  display: 'swap',
+})
+
+const fontBody = Be_Vietnam_Pro({
+  subsets: ['vietnamese'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-body',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://phapmontamlinh.vn'),
@@ -44,11 +59,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi" suppressHydrationWarning>
-      <body className="min-h-screen bg-background antialiased" suppressHydrationWarning>
+    <html lang="vi" suppressHydrationWarning className={`${fontDisplay.variable} ${fontBody.variable}`}>
+      <body className="min-h-screen bg-background antialiased font-body" suppressHydrationWarning>
         <Providers>
-          {children}
-          <Toaster position="top-center" />
+          <SmoothScroll>
+            {children}
+            <Toaster position="top-center" />
+          </SmoothScroll>
         </Providers>
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {

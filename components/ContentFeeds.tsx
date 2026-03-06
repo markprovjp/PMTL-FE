@@ -13,6 +13,7 @@ import { ArrowRightIcon, BookIcon } from "@/components/icons/ZenIcons";
 import { getCategoriesClient } from "@/lib/api/categories-client";
 import type { Category, BlogPost } from "@/types/strapi";
 import { BookOpen, Clock } from "lucide-react";
+import { getStrapiMediaUrl } from "@/lib/strapi";
 
 const ContentFeeds = () => {
   const [danhMuc, setDanhMuc] = useState<Category[]>([]);
@@ -37,8 +38,20 @@ const ContentFeeds = () => {
       })
       .catch(() => null)
       .finally(() => {
-        setDangTai(false)
         setDangTaiBaiViet(false)
+      })
+
+    // Tải chuyện Phật pháp mới nhất (1 bài) từ API cộng đồng
+    fetch('/api/community-posts?pageSize=1')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.data) {
+          setChuyenPhapBao(data.data)
+        }
+      })
+      .catch(() => null)
+      .finally(() => {
+        setDangTai(false)
       })
   }, []);
 
@@ -134,17 +147,82 @@ const ContentFeeds = () => {
                   Xem tất cả <ArrowRightIcon className="w-4 h-4" />
                 </Link>
               </div>
-              <div className="p-8 rounded-xl bg-card border border-border/50 text-center">
-                <BookIcon className="w-8 h-8 text-gold/30 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground italic">
-                  Những câu chuyện chứng nghiệm từ cộng đồng đồng tu đang được tổng hợp.
-                </p>
-                <Link href="/shares" className="mt-4 inline-flex items-center gap-1.5 text-gold text-sm font-medium hover:underline">
-                  Đến Diễn Đàn <ArrowRightIcon className="w-3.5 h-3.5" />
-                </Link>
-              </div>
+
+              {dangTai ? (
+                <div className="p-8 rounded-xl bg-card border border-border/50 animate-pulse">
+                  <div className="h-4 bg-secondary rounded w-1/4 mb-4 mx-auto" />
+                  <div className="h-20 bg-secondary rounded w-full" />
+                </div>
+              ) : chuyenPhapBao.length > 0 ? (
+                chuyenPhapBao.map((bai: any) => (
+                  <motion.div
+                    key={bai.documentId}
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                  >
+                    <Link
+                      href={`/shares/${bai.slug}`}
+                      className="block p-8 rounded-xl bg-card border border-border/50 hover:border-gold/30 transition-all group/share shadow-sm hover:shadow-gold/5"
+                    >
+                      <div className="flex flex-col md:flex-row gap-6">
+                        {bai.cover_image && (
+                          <div className="w-full md:w-48 h-32 rounded-lg overflow-hidden shrink-0">
+                            <Image
+                              src={getStrapiMediaUrl(bai.cover_image.url) || ''}
+                              alt={bai.title}
+                              width={200}
+                              height={150}
+                              className="w-full h-full object-cover group-hover/share:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gold/10 text-gold uppercase tracking-wide">
+                              {bai.type || 'Câu chuyện'}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(bai.publishedAt || bai.createdAt).toLocaleDateString('vi-VN')}
+                            </span>
+                          </div>
+                          <h3 className="font-display text-xl text-foreground group-hover/share:text-gold transition-colors">
+                            {bai.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                            {bai.content ? bai.content.replace(/<[^>]*>/g, '').substring(0, 250) + '...' : 'Nhấn để xem chi tiết câu chuyện...'}
+                          </p>
+                          <div className="flex items-center gap-2 pt-2">
+                            <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+                              {bai.author_avatar ? (
+                                <Image src={getStrapiMediaUrl(bai.author_avatar) || ''} alt={bai.author_name} width={24} height={24} />
+                              ) : (
+                                <span className="text-[10px] font-bold text-gold">{bai.author_name?.charAt(0)}</span>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground font-medium">{bai.author_name}</span>
+                            <span className="text-[10px] text-muted-foreground/50">•</span>
+                            <span className="text-[10px] text-muted-foreground">{bai.author_country || 'Đồng tu'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="p-8 rounded-xl bg-card border border-border/50 text-center">
+                  <BookIcon className="w-8 h-8 text-gold/30 mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground italic">
+                    Những câu chuyện chứng nghiệm từ cộng đồng đồng tu đang được tổng hợp.
+                  </p>
+                  <Link href="/shares" className="mt-4 inline-flex items-center gap-1.5 text-gold text-sm font-medium hover:underline">
+                    Đến Diễn Đàn <ArrowRightIcon className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
+
 
           {/* ── Sidebar (4/12) ── */}
           <aside className="lg:col-span-4 space-y-8">

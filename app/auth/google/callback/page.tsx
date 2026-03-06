@@ -4,7 +4,6 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 
 function CallbackHandler() {
   const router = useRouter()
@@ -13,29 +12,41 @@ function CallbackHandler() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const access_token = searchParams.get('access_token')
+    // Strapi redirects back to the frontend with access_token as a URL query param
+    const accessToken = searchParams.get('access_token')
+    const errorParam = searchParams.get('error')
+    const errorDescription = searchParams.get('error_description')
 
     const handleGoogleAuth = async () => {
       try {
-        // Gọi server-side route để trao đổi token → set httpOnly cookie
-        const res = await fetch(`/api/auth/google-callback?access_token=${encodeURIComponent(access_token ?? '')}`)
+        // Gửi token của Strapi tới Backend để set cookie
+        const res = await fetch('/api/auth/google-callback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ access_token: accessToken }),
+        })
         const data = await res.json()
 
-        if (!res.ok) throw new Error(data.error || 'Authentication failed')
+        if (!res.ok) throw new Error(data.error || 'Xác thực phiên đăng nhập thất bại')
 
         if (data.user) {
           login(data.user)
           router.push('/')
         } else {
-          throw new Error('No user data returned from server')
+          throw new Error('Không có dữ liệu người dùng từ server')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred during login')
+        setError(err instanceof Error ? err.message : 'Lỗi xác thực Google')
       }
     }
 
-    if (access_token) handleGoogleAuth()
-    else setError('No authentication token found.')
+    if (errorParam) {
+      setError(`${errorParam}: ${errorDescription || 'Không rõ lý do'}`)
+    } else if (accessToken) {
+      handleGoogleAuth()
+    } else {
+      setError('Không tìm thấy token truy cập (access_token) từ Strapi.')
+    }
   }, [searchParams, login, router])
 
   if (error) {

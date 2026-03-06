@@ -1,28 +1,45 @@
 // ─────────────────────────────────────────────────────────────
 //  POST /api/push/send — Gửi push notification
 //
-//  Gọi bởi cron job (hoặc Strapi webhook) để nhắc nhở hàng ngày
+//  Gọi bởi cron job (định kỳ) để nhắc nhở hàng ngày
 //  Header bảo mật: Authorization: Bearer <PUSH_SEND_SECRET>
+//  Subscriptions lấy từ Strapi DB (không dùng file system).
 //
 //  Cài web-push: npm install web-push
 // ─────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from 'next/server'
-import { readFile } from 'fs/promises'
-import path from 'path'
 
-const DB_FILE = path.join(process.cwd(), '.push-subscriptions', 'subscriptions.json')
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
+const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN || ''
 
 interface Subscription {
   endpoint: string
-  keys: { p256dh: string; auth: string }
+  p256dh: string
+  auth: string
   reminderHour: number
+}
+
+async function fetchSubscriptionsForHour(hour: number): Promise<Subscription[]> {
+  const url = `${STRAPI_URL}/api/push-subscriptions?filters[reminderHour][$eq]=${hour}&pagination[limit]=500`
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${STRAPI_TOKEN}` },
+    cache: 'no-store',
+  })
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data?.data || []).map((item: any) => ({
+    endpoint: item.endpoint,
+    p256dh: item.p256dh,
+    auth: item.auth,
+    reminderHour: item.reminderHour,
+  }))
 }
 
 export async function POST(req: NextRequest) {
   // Xác thực bí mật
   const secret = process.env.PUSH_SEND_SECRET
-  const auth = req.headers.get('Authorization')
-  if (!secret || auth !== `Bearer ${secret}`) {
+  const authHeader = req.headers.get('Authorization')
+  if (!secret || authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -37,17 +54,9 @@ export async function POST(req: NextRequest) {
   const currentHour = new Date().getHours()
   const { message } = await req.json().catch(() => ({}))
 
-  let subs: Subscription[] = []
-  try {
-    subs = JSON.parse(await readFile(DB_FILE, 'utf-8'))
-  } catch {
-    return NextResponse.json({ sent: 0 })
-  }
+  const subs = await fetchSubscriptionsForHour(currentHour)
+  if (subs.length === 0) return NextResponse.json({ sent: 0 })
 
-  // Chỉ gửi cho subscription có giờ nhắc là giờ hiện tại
-  const targets = subs.filter((s) => s.reminderHour === currentHour)
-
-  // Lazy import web-push (npm install web-push khi deploy)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let webpush: any
   try {
@@ -67,14 +76,14 @@ export async function POST(req: NextRequest) {
   })
 
   const results = await Promise.allSettled(
-    targets.map((sub) =>
+    subs.map((sub) =>
       webpush.sendNotification(
-        { endpoint: sub.endpoint, keys: sub.keys },
+        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
         payload
       )
     )
   )
 
   const sent = results.filter((r) => r.status === 'fulfilled').length
-  return NextResponse.json({ sent, total: targets.length })
+  return NextResponse.json({ sent, total: subs.length })
 }

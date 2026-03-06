@@ -21,8 +21,7 @@ export function getMeilisearchClient() {
 
 /**
  * Search blog posts via Meilisearch
- * @param query Search keyword
- * @param options Pagination + filters
+ * Returns hits with _formatted field for keyword highlighting
  */
 export async function searchBlogPostsViaMeilisearch(
   query: string,
@@ -61,15 +60,26 @@ export async function searchBlogPostsViaMeilisearch(
       filters.push(`publishedAt <= "${dateTo}"`)
     }
 
-    // Combine filters with AND
     const filterString = filters.length > 0 ? filters.join(' AND ') : undefined
 
-    // Execute search
     const result = await index.search(query, {
       limit: pageSize,
       offset: (page - 1) * pageSize,
       filter: filterString ? [filterString] : undefined,
       sort: ['publishedAt:desc'],
+      // Highlight matching keywords in title, excerpt and content
+      attributesToHighlight: ['title', 'excerpt', 'content'],
+      highlightPreTag: '<mark class="bg-gold/20 text-gold rounded px-0.5">',
+      highlightPostTag: '</mark>',
+      // Only return the fields we need (performance)
+      attributesToRetrieve: [
+        'id', 'documentId', 'title', 'slug', 'excerpt', 'content',
+        'thumbnail', 'categories', 'tags', 'views', 'likes',
+        'publishedAt', 'createdAt', 'featured', 'source',
+      ],
+      // Return a snippet of the content around the match
+      attributesToCrop: ['content', 'excerpt'],
+      cropLength: 200,
     })
 
     return {
@@ -91,7 +101,6 @@ export async function searchBlogPostsViaMeilisearch(
 
 /**
  * Fetch all blog posts (for initial load or fallback)
- * Use Meilisearch instead of Strapi for better performance
  */
 export async function getAllBlogPostsViaMeilisearch(options: {
   page?: number
@@ -101,6 +110,6 @@ export async function getAllBlogPostsViaMeilisearch(options: {
   dateFrom?: string
   dateTo?: string
 } = {}) {
-  // When query is empty, return all posts
   return searchBlogPostsViaMeilisearch('', options)
 }
+

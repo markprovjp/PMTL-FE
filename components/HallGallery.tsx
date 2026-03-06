@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from "react"
-import { motion } from "framer-motion"
 import Image from "next/image"
 import Autoplay from "embla-carousel-autoplay"
 import type { GallerySlide } from "@/types/strapi"
@@ -27,12 +26,7 @@ export default function HallGallery({ slides }: HallGalleryProps) {
     <section className="relative overflow-hidden bg-secondary/10">
       <div className="container mx-auto px-6 ">
         {/* Tiêu đề */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <p className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-semibold tracking-widest uppercase mb-6 shadow-sm">
             Đạo Tràng Không Khoảng Cách
           </p>
@@ -42,7 +36,7 @@ export default function HallGallery({ slides }: HallGalleryProps) {
           <p className="text-muted-foreground max-w-2xl mx-auto text-base leading-relaxed">
             Tận mắt chiêm ngưỡng những thước ảnh tuyệt đẹp tại các buổi pháp hội và đạo tràng lớn nhỏ. Phật tử đồng tâm, chung tay hướng thiện.
           </p>
-        </motion.div>
+        </div>
 
         {/* Shadcn Carousel */}
         <div className="relative group/carousel  mx-auto">

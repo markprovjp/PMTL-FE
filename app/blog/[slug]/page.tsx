@@ -6,20 +6,24 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Suspense } from 'react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import { getPostBySlug, getAllPostSlugs, getRelatedPosts, getPostBySlugForMetadata } from '@/lib/api/blog'
+import { getSeriesData } from '@/lib/api/series'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import ViewTracker from '@/components/ViewTracker'
 import { ArrowRightIcon } from '@/components/icons/ZenIcons'
 import ShareButtons from './ShareButtons'
+import CommentsSection from '@/components/comments/CommentsSection'
+import SeriesNav from '@/components/blog/SeriesNav'
 
 export const revalidate = 3600 // 1h fallback — webhook clears cache instantly on admin publish
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 /** Pre-generate known slugs at build time */
@@ -35,8 +39,9 @@ export async function generateStaticParams() {
 /** Dynamic SEO metadata per post */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
+    const { slug } = await params
     // Use lighter fetch for metadata (faster, only fetches needed fields)
-    const post = await getPostBySlugForMetadata(params.slug)
+    const post = await getPostBySlugForMetadata(slug)
     if (!post) return { title: 'Bài không tồn tại' }
 
     const seoData = post.seo
@@ -94,13 +99,15 @@ function getYouTubeId(url: string): string | null {
 // LanguageBadge removed as it's no longer in schema
 
 export default async function BlogPostPage({ params }: Props) {
-  const post = await getPostBySlug(params.slug)
+  const { slug } = await params
+  const post = await getPostBySlug(slug)
   if (!post) notFound()
 
-  // Fetch related posts concurrently
-  const related = post.related_posts?.length
-    ? post.related_posts
-    : await getRelatedPosts(post, 4)
+  // Fetch related posts + series data concurrently
+  const [related, seriesData] = await Promise.all([
+    post.related_posts?.length ? Promise.resolve(post.related_posts) : getRelatedPosts(post, 4),
+    post.seriesKey ? getSeriesData(post.seriesKey, post.slug) : Promise.resolve(null),
+  ])
 
   const thumbnailUrl = post.thumbnail
     ? getStrapiMediaUrl(post.thumbnail.formats?.large?.url ?? post.thumbnail.url)
@@ -127,6 +134,11 @@ export default async function BlogPostPage({ params }: Props) {
               { label: post.title }
             ]}
           />
+
+          {/* ── Series navigation ── */}
+          {post.seriesKey && (
+            <SeriesNav post={post} seriesData={seriesData} />
+          )}
 
           {/* ── Header meta ── */}
           <div className="mb-8">
@@ -347,6 +359,11 @@ export default async function BlogPostPage({ params }: Props) {
             url={`/blog/${post.slug}`}
             content={post.content}
           />
+
+          {/* ── Comments section ── */}
+          <Suspense fallback={null}>
+            <CommentsSection slug={post.slug} />
+          </Suspense>
 
           {/* ── Back link ── */}
           <div className="mt-12">

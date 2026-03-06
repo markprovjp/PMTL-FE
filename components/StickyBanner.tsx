@@ -6,12 +6,23 @@ import { CloseIcon, BookIcon } from "@/components/icons/ZenIcons";
 import Link from "next/link";
 import type { StickyBannerConfig } from "@/types/strapi";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import RegisterForm from "./RegisterForm";
+
 interface StickyBannerProps {
   config?: StickyBannerConfig | null
 }
 
 const StickyBanner = ({ config }: StickyBannerProps) => {
   const [visible, setVisible] = useState(true);
+  const [open, setOpen] = useState(false);
 
   // Nếu config bảo disabled hoặc không có config → ẩn
   if (!visible || (config && !config.enabled)) return null;
@@ -19,7 +30,6 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
   const title = config?.title ?? "Thỉnh Kinh Văn & Máy Niệm Kinh Miễn Phí";
   const subtitle = config?.subtitle ?? "Gieo duyên miễn phí: Máy niệm kinh, Tranh Phật, Kinh văn";
   const buttonText = config?.buttonText ?? "Đăng ký ngay";
-  const buttonLink = config?.buttonLink ?? "/register";
 
   return (
     <AnimatePresence>
@@ -46,15 +56,38 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <Link href={buttonLink}>
-                <motion.button
-                  animate={{ boxShadow: ["0 0 0 0 hsl(var(--gold) / 0)", "0 0 0 8px hsl(var(--gold) / 0.15)", "0 0 0 0 hsl(var(--gold) / 0)"] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                  className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
-                >
-                  {buttonText}
-                </motion.button>
-              </Link>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <motion.button
+                    animate={{ boxShadow: ["0 0 0 0 hsl(var(--gold) / 0)", "0 0 0 8px hsl(var(--gold) / 0.15)", "0 0 0 0 hsl(var(--gold) / 0)"] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className="px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap"
+                  >
+                    {buttonText}
+                  </motion.button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-gold/20 bg-card/95 backdrop-blur-xl">
+                  <div className="p-6 md:p-8">
+                    <DialogHeader className="mb-6">
+                      <div className="flex justify-center mb-4">
+                        <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
+                          <BookIcon className="w-6 h-6 text-gold" />
+                        </div>
+                      </div>
+                      <p className="text-gold text-[10px] font-bold tracking-widest uppercase text-center mb-1">Hoàn Toàn Miễn Phí</p>
+                      <DialogTitle className="font-display text-2xl md:text-3xl text-center">
+                        Đăng Ký Thỉnh <span className="gold-gradient-text">Pháp Bảo</span>
+                      </DialogTitle>
+                      <DialogDescription className="text-center text-muted-foreground text-xs px-4">
+                        Nhận hướng dẫn tu tập và tài liệu Pháp Môn Tâm Linh (心灵法门) miễn phí từ Bồ Tát.
+                      </DialogDescription>
+                    </DialogHeader>
+
+                    <RegisterForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+
               <button
                 onClick={() => setVisible(false)}
                 className="p-1.5 text-muted-foreground hover:text-foreground transition-colors"

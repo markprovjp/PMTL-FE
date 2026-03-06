@@ -22,18 +22,19 @@ export const metadata: Metadata = {
 }
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     page?: string
     category?: string
     q?: string
-  }
+  }>
 }
 
 export default async function BlogPage({ searchParams }: PageProps) {
+  const { page, category, q } = await searchParams
   // Đọc params từ URL
-  const currentPage = Math.max(1, parseInt(searchParams.page ?? '1', 10))
-  const currentCategory = searchParams.category ?? ''
-  const currentSearch = searchParams.q ?? ''
+  const currentPage = Math.max(1, parseInt(page ?? '1', 10))
+  const currentCategory = category ?? ''
+  const currentSearch = q ?? ''
 
   // Fetch song song: bài viết và danh mục
   const [res, categories] = await Promise.all([

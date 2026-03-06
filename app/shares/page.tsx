@@ -293,11 +293,11 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
     setSending(true);
     try {
       await submitComment({
-        postId,
+        postDocumentId: String(postId),
         content: reply,
         author_name: finalName,
         author_country: '',
-        parent_comment: comment.id,
+        parentDocumentId: comment.documentId,
         author_avatar: user?.avatar_url || undefined
       });
       toast.success('Trả lời đã được gửi và đang chờ duyệt');
@@ -399,7 +399,7 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
     setSending(true);
     try {
       await submitComment({
-        postId: post!.documentId,
+        postDocumentId: post!.documentId,
         content: commentText,
         author_name: finalName,
         author_country: commentCountry,

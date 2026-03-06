@@ -1,0 +1,73 @@
+// app/archive/[year]/[month]/page.tsx — Archive year+month page (server)
+import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { ChevronLeftIcon } from 'lucide-react'
+import { getArchivePosts } from '@/lib/api/archive'
+import ArchivePostList from '@/components/archive/ArchivePostList'
+import type { StrapiList, BlogPost } from '@/types/strapi'
+
+interface Params {
+  year: string
+  month: string
+}
+
+const MONTH_VI = [
+  '', 'Tháng Một', 'Tháng Hai', 'Tháng Ba', 'Tháng Tư', 'Tháng Năm', 'Tháng Sáu',
+  'Tháng Bảy', 'Tháng Tám', 'Tháng Chín', 'Tháng Mười', 'Tháng Mười Một', 'Tháng Mười Hai',
+]
+
+export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
+  const { year: yearStr, month: monthStr } = await params
+  const y = parseInt(yearStr, 10)
+  const m = parseInt(monthStr, 10)
+  if (isNaN(y) || isNaN(m) || m < 1 || m > 12) return {}
+  return {
+    title: `Lưu Trữ ${MONTH_VI[m]} ${y} | Phật Môn Tịnh Lữ`,
+  }
+}
+
+export const revalidate = 3600
+
+export default async function ArchiveMonthPage({ params }: { params: Promise<Params> }) {
+  const { year: yearStr, month: monthStr } = await params
+  const year = parseInt(yearStr, 10)
+  const month = parseInt(monthStr, 10)
+
+  if (isNaN(year) || isNaN(month) || year < 2000 || month < 1 || month > 12) {
+    notFound()
+  }
+
+  let posts: StrapiList<BlogPost> = {
+    data: [],
+    meta: { pagination: { page: 1, pageSize: 12, pageCount: 0, total: 0 } },
+  }
+
+  try {
+    posts = await getArchivePosts(year, month, 1, 20)
+  } catch {
+    // hiển thị trang trống
+  }
+
+  const monthLabel = `${MONTH_VI[month]} ${year}`
+
+  return (
+    <main className="min-h-screen py-16">
+      <div className="container max-w-3xl mx-auto px-4">
+        <div className="flex items-center gap-2 mb-8">
+          <Link
+            href={`/archive/${year}`}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-gold transition-colors"
+          >
+            <ChevronLeftIcon className="w-4 h-4" />
+            Năm {year}
+          </Link>
+        </div>
+
+        <h1 className="font-display text-3xl text-foreground mb-10">{monthLabel}</h1>
+
+        <ArchivePostList data={posts} year={year} month={month} />
+      </div>
+    </main>
+  )
+}

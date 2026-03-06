@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Bật React Compiler (thay thế React.memo, useMemo, useCallback)
+ reactCompiler: true,
+
   typescript: {
     // UI components copied from shadcn have some unused deps — safe to ignore
     ignoreBuildErrors: true,
@@ -10,12 +13,13 @@ const nextConfig = {
   // Cài: npm install @neshca/cache-handler ioredis
   ...(process.env.REDIS_URL
     ? {
-        cacheHandler: new URL('./cache-handler.js', import.meta.url).pathname,
-        cacheMaxMemorySize: 0,
-      }
+      cacheHandler: new URL('./cache-handler.js', import.meta.url).pathname,
+      cacheMaxMemorySize: 0,
+    }
     : {}),
 
   images: {
+    unoptimized: process.env.NODE_ENV === 'development',
     remotePatterns: [
       // External media
       { protocol: 'https', hostname: 'img.youtube.com' },
@@ -23,6 +27,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'picsum.photos' },
       // Strapi local uploads (dev)
       { protocol: 'http', hostname: 'localhost', port: '1337', pathname: '/uploads/**' },
+      { protocol: 'http', hostname: '127.0.0.1', port: '1337', pathname: '/uploads/**' },
+      { protocol: 'http', hostname: '::1', port: '1337', pathname: '/uploads/**' },
       // Strapi production
       { protocol: 'https', hostname: 'api.phapmontamlinh.vn', pathname: '/uploads/**' },
       // Cloudflare R2 / CDN (production — uncomment và thay hostname khi deploy)
