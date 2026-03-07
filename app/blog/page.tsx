@@ -56,20 +56,20 @@ export default async function BlogPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="py-16">
-        <div className="container mx-auto px-6">
-          {/* ── Header ── */}
-          <div className="flex flex-col items-center mb-12">
-            <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">
-              Blog &amp; Chia Sẻ
+      <main className="section-padding">
+        <div className="container mx-auto px-6 lg:px-8">
+          {/* ── Header - Senior Friendly ── */}
+          <div className="flex flex-col items-center mb-16 text-center">
+            <p className="text-gold text-sm font-semibold tracking-widest uppercase mb-4">
+              Blog & Chia Se
             </p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">
-              Kho Tàng Khai Thị
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground mb-5 text-balance">
+              Kho Tang Khai Thi
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg max-w-xl">
               {totalPosts > 0
-                ? `${totalPosts.toLocaleString('vi-VN')} bài giảng của Sư Phụ`
-                : 'Tổng hợp khai thị của Sư Phụ'}
+                ? `${totalPosts.toLocaleString('vi-VN')} bai giang cua Su Phu`
+                : 'Tong hop khai thi cua Su Phu'}
             </p>
           </div>
 

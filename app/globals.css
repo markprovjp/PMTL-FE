@@ -4,115 +4,131 @@
 
 @layer base {
   :root {
-    /* ── Light Mode: Kem ngà ấm, không chói ── */
-    /* Nền kem ngà đậm hơn một chút: giảm lightness từ 98% → 94% */
-    --background: 38 45% 94%;
-    --foreground: 28 35% 15%;
+    /* ══════════════════════════════════════════════════════════════
+       BUDDHIST ZEN DESIGN SYSTEM - Senior Friendly
+       Optimized for elderly users with high contrast & large text
+    ══════════════════════════════════════════════════════════════ */
+    
+    /* ── Light Mode: Warm cream, peaceful & readable ── */
+    --background: 40 35% 96%;
+    --foreground: 25 30% 12%;
 
-    --card: 38 30% 97%;
-    --card-foreground: 28 35% 15%;
+    --card: 40 30% 99%;
+    --card-foreground: 25 30% 12%;
 
-    --popover: 38 30% 97%;
-    --popover-foreground: 28 35% 15%;
+    --popover: 40 30% 99%;
+    --popover-foreground: 25 30% 12%;
 
-    /* Primary/Gold — giữ nguyên #FFD038 (hsl ~46 100% 61%) */
-    --primary: 46 100% 55%;
-    --primary-foreground: 0 0% 8%;
+    /* Primary/Gold — warm Buddhist gold, not too bright */
+    --primary: 43 85% 45%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 38 25% 90%;
-    --secondary-foreground: 28 25% 25%;
+    /* Secondary — Sage Green for calm, Buddhist nature feel */
+    --secondary: 145 25% 92%;
+    --secondary-foreground: 145 30% 25%;
 
-    --muted: 38 20% 88%;
-    --muted-foreground: 28 18% 42%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 25 20% 38%;
 
-    --accent: 46 100% 50%;
-    --accent-foreground: 0 0% 8%;
+    /* Accent — Warm sage for secondary actions */
+    --accent: 145 35% 88%;
+    --accent-foreground: 145 40% 22%;
 
-    --destructive: 0 63% 38%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 38 20% 84%;
-    --input: 38 20% 84%;
-    --ring: 46 100% 55%;
+    --border: 40 25% 86%;
+    --input: 40 25% 86%;
+    --ring: 43 85% 45%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 38 40% 93%;
-    --sidebar-foreground: 28 30% 22%;
-    --sidebar-primary: 46 100% 55%;
-    --sidebar-primary-foreground: 0 0% 8%;
-    --sidebar-accent: 38 25% 89%;
-    --sidebar-accent-foreground: 28 30% 22%;
-    --sidebar-border: 38 20% 84%;
-    --sidebar-ring: 46 100% 55%;
+    /* Sidebar */
+    --sidebar-background: 40 30% 94%;
+    --sidebar-foreground: 25 25% 20%;
+    --sidebar-primary: 43 85% 45%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 145 25% 90%;
+    --sidebar-accent-foreground: 145 30% 25%;
+    --sidebar-border: 40 25% 86%;
+    --sidebar-ring: 43 85% 45%;
 
-    /* Custom tokens */
-    --gold: 46 100% 46%; /* #FFD038 giảm lightness để không lóa trên nền sáng */
-    --gold-dim: 44 90% 40%;
-    --gold-glow: 46 100% 60%;
-    --cream: 38 45% 94%;
-    --zen-dark: 28 35% 12%;
-    --zen-surface: 38 30% 92%;
-    --zen-border: 38 20% 82%;
+    /* ── Custom Tokens ── */
+    --gold: 43 85% 45%;
+    --gold-dim: 40 75% 38%;
+    --gold-glow: 45 90% 55%;
+    --sage: 145 30% 55%;
+    --sage-light: 145 25% 92%;
+    --cream: 40 35% 96%;
+    --zen-dark: 25 30% 10%;
+    --zen-surface: 40 25% 93%;
+    --zen-border: 40 20% 84%;
+    --lotus: 350 60% 55%;
 
-    --shadow-gold: 0 4px 30px -8px hsl(46 100% 50% / 0.18);
-    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.07);
+    /* Shadows */
+    --shadow-gold: 0 4px 24px -6px hsl(43 85% 45% / 0.2);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.08);
+    --shadow-card: 0 2px 12px -4px hsl(0 0% 0% / 0.06);
   }
 
   .dark {
-    /* ── Dark Mode: Nâu đất áo Phật tử (ca sa Bắc Tông) ── */
-    /* Màu nâu áo Phật tử Việt Nam: hsl(25, 35%, X%)       */
-    /* Nền rất sẫm: như nâu đất tối                         */
-    --background: 24 28% 8%;
-    --foreground: 35 25% 88%;
+    /* ── Dark Mode: Deep brown (Buddhist robe color) ── */
+    --background: 20 25% 7%;
+    --foreground: 38 20% 90%;
 
-    --card: 24 25% 11%;
-    --card-foreground: 35 25% 88%;
+    --card: 20 22% 10%;
+    --card-foreground: 38 20% 90%;
 
-    --popover: 24 25% 11%;
-    --popover-foreground: 35 25% 88%;
+    --popover: 20 22% 10%;
+    --popover-foreground: 38 20% 90%;
 
-    /* Gold trong dark mode — giảm lightness, không bị lóa */
-    --primary: 46 95% 52%;
+    /* Gold in dark mode — slightly dimmed for comfort */
+    --primary: 45 90% 50%;
     --primary-foreground: 0 0% 8%;
 
-    --secondary: 24 22% 15%;
-    --secondary-foreground: 35 20% 65%;
+    /* Secondary — Dark sage green */
+    --secondary: 145 20% 15%;
+    --secondary-foreground: 145 25% 75%;
 
-    --muted: 24 20% 17%;
-    --muted-foreground: 35 15% 50%;
+    --muted: 20 18% 14%;
+    --muted-foreground: 38 15% 55%;
 
-    --accent: 46 90% 48%;
-    --accent-foreground: 0 0% 8%;
+    --accent: 145 25% 18%;
+    --accent-foreground: 145 30% 78%;
 
-    --destructive: 0 60% 40%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 65% 42%;
+    --destructive-foreground: 0 0% 100%;
 
-    /* Border: nâu trung, đủ tương phản nhưng không gắt */
-    --border: 24 20% 20%;
-    --input: 24 20% 20%;
-    --ring: 46 95% 52%;
+    --border: 20 18% 18%;
+    --input: 20 18% 18%;
+    --ring: 45 90% 50%;
 
-    --sidebar-background: 24 30% 6%;
-    --sidebar-foreground: 35 20% 65%;
-    --sidebar-primary: 46 95% 52%;
+    /* Sidebar */
+    --sidebar-background: 20 28% 5%;
+    --sidebar-foreground: 38 18% 70%;
+    --sidebar-primary: 45 90% 50%;
     --sidebar-primary-foreground: 0 0% 8%;
-    --sidebar-accent: 24 22% 14%;
-    --sidebar-accent-foreground: 35 20% 65%;
-    --sidebar-border: 24 20% 18%;
-    --sidebar-ring: 46 95% 52%;
+    --sidebar-accent: 145 20% 14%;
+    --sidebar-accent-foreground: 145 25% 70%;
+    --sidebar-border: 20 18% 16%;
+    --sidebar-ring: 45 90% 50%;
 
-    /* Custom tokens */
-    --gold: 46 95% 52%; /* Vàng hơi dịu hơn trong dark mode */
-    --gold-dim: 44 85% 44%;
-    --gold-glow: 46 95% 66%;
-    --cream: 35 25% 85%;
-    --zen-dark: 24 28% 6%;
-    --zen-surface: 24 25% 12%;
-    --zen-border: 24 20% 22%;
+    /* ── Custom Tokens ── */
+    --gold: 45 90% 50%;
+    --gold-dim: 42 80% 42%;
+    --gold-glow: 47 95% 62%;
+    --sage: 145 30% 45%;
+    --sage-light: 145 20% 18%;
+    --cream: 38 20% 88%;
+    --zen-dark: 20 25% 5%;
+    --zen-surface: 20 22% 12%;
+    --zen-border: 20 18% 20%;
+    --lotus: 350 55% 50%;
 
-    --shadow-gold: 0 4px 30px -8px hsl(46 95% 52% / 0.2);
-    --shadow-elevated: 0 8px 40px -12px hsl(0 0% 0% / 0.55);
+    /* Shadows */
+    --shadow-gold: 0 4px 24px -6px hsl(45 90% 50% / 0.25);
+    --shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.5);
+    --shadow-card: 0 2px 12px -4px hsl(0 0% 0% / 0.4);
   }
 }
 
@@ -121,32 +137,74 @@
     @apply border-border;
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     SENIOR-FRIENDLY TYPOGRAPHY
+     Base: 18.5px for better readability
+     Line height: 1.75 for easy line tracking
+  ══════════════════════════════════════════════════════════════ */
   html {
-    font-size: 17px;
+    font-size: 18.5px;
+    scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
+    line-height: 1.75;
+    letter-spacing: 0.01em;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+  }
+
+  /* Improve focus visibility for keyboard users */
+  :focus-visible {
+    outline: 3px solid hsl(var(--gold));
+    outline-offset: 2px;
+  }
+
+  /* Selection color */
+  ::selection {
+    background: hsl(var(--gold) / 0.25);
+    color: hsl(var(--foreground));
   }
 }
 
 @layer utilities {
+  /* ══════════════════════════════════════════════════════════════
+     CUSTOM UTILITY CLASSES
+  ══════════════════════════════════════════════════════════════ */
+  
+  /* ── Color Utilities ── */
   .text-gold {
     color: hsl(var(--gold));
   }
 
   .text-gold-dim {
     color: hsl(var(--gold-dim));
+  }
+
+  .text-sage {
+    color: hsl(var(--sage));
+  }
+
+  .text-lotus {
+    color: hsl(var(--lotus));
+  }
+
+  .bg-gold {
+    background-color: hsl(var(--gold));
+  }
+
+  .bg-sage {
+    background-color: hsl(var(--sage));
+  }
+
+  .bg-sage-light {
+    background-color: hsl(var(--sage-light));
   }
 
   .bg-zen-surface {
@@ -157,6 +215,15 @@
     border-color: hsl(var(--zen-border));
   }
 
+  .border-gold {
+    border-color: hsl(var(--gold));
+  }
+
+  .border-sage {
+    border-color: hsl(var(--sage));
+  }
+
+  /* ── Typography ── */
   .font-display {
     font-family: var(--font-display);
   }
@@ -165,6 +232,7 @@
     font-family: var(--font-body);
   }
 
+  /* ── Shadows ── */
   .shadow-gold {
     box-shadow: var(--shadow-gold);
   }
@@ -173,6 +241,11 @@
     box-shadow: var(--shadow-elevated);
   }
 
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ── Gradients ── */
   .gold-gradient {
     background: linear-gradient(
       135deg,
@@ -194,28 +267,115 @@
     background-clip: text;
   }
 
+  .sage-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--sage) / 0.8),
+      hsl(var(--sage)),
+      hsl(145 35% 60%)
+    );
+  }
+
+  /* ── Decorative Elements ── */
   .zen-divider {
-    height: 1px;
+    height: 2px;
     background: linear-gradient(
       90deg,
       transparent,
-      hsl(var(--gold-dim) / 0.4),
+      hsl(var(--gold) / 0.35),
       transparent
     );
   }
 
-  /* Scrollbar vàng mảnh cho sidebar */
+  .zen-divider-sage {
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--sage) / 0.4),
+      transparent
+    );
+  }
+
+  /* Lotus decoration */
+  .lotus-decoration::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 2c-1 3-4 5-4 8s3 5 4 5 4-2 4-5-3-5-4-8z' fill='%23C9A961' opacity='0.6'/%3E%3Cpath d='M4 12c3-1 5-4 8-4s5 3 5 4-2 4-5 4-5-3-8-4z' fill='%23C9A961' opacity='0.5'/%3E%3Cpath d='M20 12c-3-1-5-4-8-4s-5 3-5 4 2 4 5 4 5-3 8-4z' fill='%23C9A961' opacity='0.5'/%3E%3Ccircle cx='12' cy='16' r='3' fill='%23C9A961' opacity='0.7'/%3E%3C/svg%3E") center no-repeat;
+    margin: 0 auto 1rem;
+  }
+
+  /* ── Senior-Friendly Button Styles ── */
+  .btn-senior {
+    @apply px-6 py-3 text-base font-medium rounded-xl transition-all duration-200;
+    min-height: 48px;
+  }
+
+  .btn-senior-primary {
+    @apply btn-senior bg-primary text-primary-foreground hover:opacity-90;
+  }
+
+  .btn-senior-secondary {
+    @apply btn-senior bg-secondary text-secondary-foreground hover:bg-secondary/80;
+  }
+
+  .btn-senior-outline {
+    @apply btn-senior border-2 border-gold text-gold hover:bg-gold/10;
+  }
+
+  /* ── Card Styles ── */
+  .card-zen {
+    @apply rounded-2xl border border-border bg-card p-6 shadow-card transition-all duration-300;
+  }
+
+  .card-zen:hover {
+    @apply border-gold/30 shadow-gold;
+  }
+
+  /* ── Section Spacing (generous for seniors) ── */
+  .section-padding {
+    @apply py-16 md:py-20 lg:py-24;
+  }
+
+  .section-padding-sm {
+    @apply py-12 md:py-16;
+  }
+
+  /* ── Text Balance for Titles ── */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* ── Scrollbar Styling ── */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
   }
+  
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: hsl(var(--muted) / 0.3);
+    border-radius: 3px;
   }
+  
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: hsl(var(--gold) / 0.2);
-    border-radius: 4px;
+    background: hsl(var(--gold) / 0.3);
+    border-radius: 3px;
   }
+  
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--gold) / 0.5);
+  }
+
+  /* ── Smooth Transitions ── */
+  .transition-zen {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  /* ── Responsive Text Sizes for Seniors ── */
+  @media (max-width: 640px) {
+    html {
+      font-size: 17px;
+    }
   }
 }

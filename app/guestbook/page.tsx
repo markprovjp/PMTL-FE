@@ -37,13 +37,13 @@ export default async function GuestbookPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="py-16">
-        <div className="container mx-auto px-6">
+      <main className="section-padding">
+        <div className="container mx-auto px-6 lg:px-8">
 
-          {/* Client component xử lý motion animation */}
+          {/* Page Header - Senior Friendly */}
           <GuestbookPageHeader />
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             {/* Main content */}
             <div className="lg:col-span-2 w-full min-w-0">
               <GuestbookList initialData={initialData} />

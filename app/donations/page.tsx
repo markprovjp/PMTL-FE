@@ -78,15 +78,15 @@ export default function DonationsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="py-16">
-        <div className="container mx-auto px-6">
+      <main className="section-padding">
+        <div className="container mx-auto px-6 lg:px-8">
 
-          {/* Header */}
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-12">
-            <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">Liễm Tài — Không Lợi Dụng Tiền</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Hộ Trì Phật Pháp</h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              &ldquo;不为经济目的，一切免费&rdquo; — Mọi thứ miễn phí. Chúng tôi <strong className="text-foreground">không nhận tiền</strong> — chỉ chấp nhận các phật cụ để hỗ trợ hoạt động tu học.
+          {/* Header - Senior Friendly */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-16">
+            <p className="text-gold text-sm font-semibold tracking-widest uppercase mb-4">Liem Tai — Khong Loi Dung Tien</p>
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground mb-5 text-balance">Ho Tri Phat Phap</h1>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+              Moi thu mien phi. Chung toi <strong className="text-foreground">khong nhan tien</strong> — chi chap nhan cac phat cu de ho tro hoat dong tu hoc.
             </p>
           </motion.div>
 

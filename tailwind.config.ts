@@ -60,6 +60,11 @@ export default {
           dim: "hsl(var(--gold-dim))",
           glow: "hsl(var(--gold-glow))",
         },
+        sage: {
+          DEFAULT: "hsl(var(--sage))",
+          light: "hsl(var(--sage-light))",
+        },
+        lotus: "hsl(var(--lotus))",
         cream: "hsl(var(--cream))",
         zen: {
           dark: "hsl(var(--zen-dark))",

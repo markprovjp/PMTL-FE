@@ -27,8 +27,20 @@ export default async function LibraryPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="py-16">
-        <div className="container mx-auto px-6">
+      <main className="section-padding">
+        <div className="container mx-auto px-6 lg:px-8">
+          {/* Page Header */}
+          <div className="flex flex-col items-center mb-16 text-center">
+            <p className="text-gold text-sm font-semibold tracking-widest uppercase mb-4">
+              Tai Lieu Tu Hoc
+            </p>
+            <h1 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground mb-5 text-balance">
+              Thu Vien Tai Lieu
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-xl">
+              Tong hop kinh dien, khai thi, audio, video va tai lieu tu hoc. Tat ca mien phi.
+            </p>
+          </div>
           <LibraryClient initialItems={allItems} categories={[...DOWNLOAD_CATEGORIES]} />
         </div>
       </main>
