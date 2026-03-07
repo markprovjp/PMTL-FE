@@ -13,6 +13,7 @@ function imgUrl(media: unknown): string {
 export interface CommunityPost {
   documentId: string
   title: string
+  slug: string
   content: string
   type: 'story' | 'feedback' | 'video'
   category: string
@@ -109,6 +110,23 @@ export async function fetchPostById(documentId: string): Promise<CommunityPost> 
   }
 }
 
+export async function fetchPostBySlug(slug: string): Promise<CommunityPost> {
+  const res = await fetch(`/api/community-posts?filters[slug][$eq]=${slug}&populate[0]=cover_image`)
+  if (!res.ok) throw new Error('Không tìm thấy bài viết')
+  const json = await res.json()
+  if (!json.data || json.data.length === 0) throw new Error('Không tìm thấy bài viết')
+  const raw = json.data[0]
+  return {
+    documentId: raw.documentId,
+    ...raw,
+    coverUrl: imgUrl(raw.cover_image),
+    comments: (raw.comments || []).map((c: any) => ({
+      documentId: c.documentId,
+      ...c,
+    })),
+  }
+}
+
 export async function likePost(documentId: string): Promise<number> {
   const res = await fetch(`/api/community-posts/like/${documentId}`, {
     method: 'POST',
@@ -182,7 +200,10 @@ export async function submitComment(data: {
     },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Gửi bình luận thất bại')
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error || err?.message || 'Gửi bình luận thất bại');
+  }
 }
 
 export async function likeComment(documentId: string): Promise<number> {

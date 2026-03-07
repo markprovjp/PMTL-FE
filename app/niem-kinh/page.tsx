@@ -8,7 +8,7 @@
 // ─────────────────────────────────────────────────────────────
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import Header from '@/components/Header';
+import HeaderServer from '@/components/HeaderServer';
 import Footer from '@/components/Footer';
 import StickyBanner from '@/components/StickyBanner';
 import { fetchTodayChant } from '@/lib/api/chanting';
@@ -85,7 +85,7 @@ export default async function NiemKinhPage({
   return (
     <div className="min-h-screen bg-background">
       <StickyBanner />
-      <Header />
+      <HeaderServer />
       <main className="py-8 md:py-12">
         <div className="container mx-auto px-6">
           {/* ── Header Section ────────────────────────────────── */}

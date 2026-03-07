@@ -5,6 +5,9 @@ import Link from 'next/link'
 import { ChevronLeftIcon } from 'lucide-react'
 import { getArchivePosts } from '@/lib/api/archive'
 import ArchivePostList from '@/components/archive/ArchivePostList'
+import HeaderServer from '@/components/HeaderServer'
+import Footer from '@/components/Footer'
+import StickyBanner from '@/components/StickyBanner'
 import type { StrapiList, BlogPost } from '@/types/strapi'
 
 interface Params {
@@ -52,22 +55,30 @@ export default async function ArchiveMonthPage({ params }: { params: Promise<Par
   const monthLabel = `${MONTH_VI[month]} ${year}`
 
   return (
-    <main className="min-h-screen py-16">
-      <div className="container max-w-3xl mx-auto px-4">
-        <div className="flex items-center gap-2 mb-8">
-          <Link
-            href={`/archive/${year}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-gold transition-colors"
-          >
-            <ChevronLeftIcon className="w-4 h-4" />
-            Năm {year}
-          </Link>
+    <div className="min-h-screen bg-background">
+      <HeaderServer />
+      <main className="py-24">
+        <div className="container max-w-3xl mx-auto px-6">
+          <div className="flex items-center gap-2 mb-10">
+            <Link
+              href={`/archive/${year}`}
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-gold transition-colors"
+            >
+              <ChevronLeftIcon className="w-4 h-4" />
+              Năm {year}
+            </Link>
+          </div>
+
+          <div className="mb-12">
+            <p className="text-gold text-xs font-medium tracking-widest uppercase mb-3">Kho Lưu Trữ</p>
+            <h1 className="font-display text-4xl md:text-5xl text-foreground">{monthLabel}</h1>
+          </div>
+
+          <ArchivePostList data={posts} year={year} month={month} />
         </div>
-
-        <h1 className="font-display text-3xl text-foreground mb-10">{monthLabel}</h1>
-
-        <ArchivePostList data={posts} year={year} month={month} />
-      </div>
-    </main>
+      </main>
+      <Footer />
+      <StickyBanner />
+    </div>
   )
 }

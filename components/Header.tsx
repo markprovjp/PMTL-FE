@@ -8,6 +8,7 @@ import { SearchIcon, MenuIcon, CloseIcon } from "@/components/icons/ZenIcons";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import CategoryNav, { CategoryNavMobile } from "@/components/CategoryNav";
+import type { NavItem } from "@/lib/api/navigation";
 
 const UserIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -88,7 +89,7 @@ const NavDropdown = ({ label, items, isOpen, onToggle, onClose, columns = 1 }: {
   </div>
 );
 
-const MobileMenu = ({ onClose }: { onClose: () => void }) => {
+const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; tuHoc: NavItem[]; congDong: NavItem[]; hoTri: NavItem }) => {
   const { user, logout } = useAuth();
   const [openSection, setOpenSection] = useState<string | null>(null);
 
@@ -96,23 +97,12 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
     {
       id: 'tu-hoc',
       label: "Tu Học",
-      items: [
-        { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
-        { label: "Bạch Thoại Phật Pháp", href: "/hub/bach-thoai-phat-phap" },
-        { label: "Thường Thức Niệm Phật", href: "/hub/thuong-thuc-niem-phat" },
-        { label: "Thư Viện Tài Liệu", href: "/library" },
-        { label: "Phim Truyện & Video", href: "/videos" },
-        { label: "Đài Phát Thanh", href: "/radio" },
-        { label: "Danh Bạ Toàn Cầu", href: "/directory" },
-      ]
+      items: tuHoc
     },
     {
       id: 'cong-dong',
       label: "Cộng Đồng",
-      items: [
-        { label: "Hỏi Đáp & Sổ Lưu Bút", href: "/guestbook" },
-        { label: "Sự Kiện & Pháp Hội", href: "/events" },
-      ]
+      items: congDong
     },
   ];
 
@@ -207,8 +197,8 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
           <button
             onClick={() => setOpenSection(openSection === 'khai-thi' ? null : 'khai-thi')}
             className={`w-full flex items-center justify-between py-3.5 px-4 text-left font-semibold text-sm tracking-wide rounded-lg border-2 transition-all ${openSection === 'khai-thi'
-                ? 'border-gold bg-gold/5 text-gold'
-                : 'border-gold/50 text-gold hover:border-gold hover:bg-gold/5'
+              ? 'border-gold bg-gold/5 text-gold'
+              : 'border-gold/50 text-gold hover:border-gold hover:bg-gold/5'
               }`}
           >
             Chủ Đề Khai Thị
@@ -231,35 +221,43 @@ const MobileMenu = ({ onClose }: { onClose: () => void }) => {
           </AnimatePresence>
         </div>
 
-        <Link href="/donations" onClick={onClose} className="block py-4 px-2 text-base font-display text-foreground">
-          Hộ Trì Phật Pháp
+        <Link href={hoTri.href} onClick={onClose} className="block py-4 px-2 text-base font-display text-foreground">
+          {hoTri.label}
         </Link>
       </nav>
     </motion.div>
   );
 };
 
-const Header = () => {
+const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavItem[]; hoTri?: NavItem } = {}) => {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout, loading } = useAuth();
 
+  // Default nav items nếu không truyền props
+  const defaultTuHoc: NavItem[] = [
+    { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
+    { label: "Bạch Thoại Phật Pháp", href: "/hub/bach-thoai-phat-phap" },
+    { label: "Thường Thức Niệm Phật", href: "/hub/thuong-thuc-niem-phat" },
+    { label: "Thư Viện Tài Liệu", href: "/library" },
+    { label: "Phim Truyện & Video", href: "/videos" },
+    { label: "Đài Phát Thanh", href: "/radio" },
+    { label: "Danh Bạ Toàn Cầu", href: "/directory" },
+  ]
+
+  const defaultCongDong: NavItem[] = [
+    { label: "Hỏi Đáp & Sổ Lưu Bút", href: "/guestbook" },
+    { label: "Sự Kiện & Pháp Hội", href: "/events" },
+  ]
+
+  const defaultHoTri: NavItem = { label: "Hộ Trì Phật Pháp", href: "/donations" }
+
   const groups = {
-    tuHoc: [
-      { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
-      { label: "Bạch Thoại Phật Pháp", href: "/hub/bach-thoai-phat-phap" },
-      { label: "Thường Thức Niệm Phật", href: "/hub/thuong-thuc-niem-phat" },
-      { label: "Thư Viện Tài Liệu", href: "/library" },
-      { label: "Phim Truyện & Video", href: "/videos" },
-      { label: "Đài Phát Thanh", href: "/radio" },
-      { label: "Danh Bạ Toàn Cầu", href: "/directory" },
-    ],
-    congDong: [
-      { label: "Hỏi Đáp & Sổ Lưu Bút", href: "/guestbook" },
-      { label: "Sự Kiện & Pháp Hội", href: "/events" },
-    ]
+    tuHoc: tuHoc ?? defaultTuHoc,
+    congDong: congDong ?? defaultCongDong,
+    hoTri: hoTri ?? defaultHoTri
   };
 
   return (
@@ -324,6 +322,10 @@ const Header = () => {
                 Chủ Đề
                 <motion.span animate={{ rotate: categoryOpen ? 180 : 0 }} transition={{ duration: 0.2 }}><ChevronDown /></motion.span>
               </button>
+
+              <Link href={groups.hoTri.href} className="px-2 py-2.5 text-xs font-medium text-gold/70 hover:text-gold transition-colors whitespace-nowrap ml-1 border-l border-border/50 pl-3">
+                {groups.hoTri.label}
+              </Link>
             </nav>
           </div>
 
@@ -384,7 +386,7 @@ const Header = () => {
         )}
       </AnimatePresence>
 
-      <AnimatePresence>{mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} />}</AnimatePresence>
+      <AnimatePresence>{mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} tuHoc={groups.tuHoc} congDong={groups.congDong} hoTri={groups.hoTri} />}</AnimatePresence>
       {userMenuOpen && <div className="fixed inset-0 z-50" onClick={() => setUserMenuOpen(false)} />}
     </header>
   );

@@ -4,7 +4,7 @@ import { getGuestbookArchive, getGuestbookArchiveList, type ArchiveStat } from '
 import GuestbookList from '@/components/guestbook/GuestbookList'
 import GuestbookSidebar from '@/components/guestbook/GuestbookSidebar'
 import GuestbookArchiveHeader from '@/components/guestbook/GuestbookArchiveHeader'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import type { GuestbookList as GuestbookListType } from '@/types/strapi'
@@ -45,8 +45,8 @@ export default async function GuestbookArchivePage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="py-16">
+      <HeaderServer />
+      <main className="py-24">
         <div className="container mx-auto px-6">
 
           {/* Client component xử lý motion animation + archive badge */}

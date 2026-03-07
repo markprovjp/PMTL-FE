@@ -19,7 +19,8 @@ If any file, component, page, helper, or prompt conflicts with this document, th
 Use this order when rules conflict:
 
 1. `C:/Users/ADMIN/DEV2/THINKLABS/PMTL_VN/fe-pmtl/FRONTEND_CONSTITUTION.md`
-2. `C:/Users/ADMIN/DEV2/THINKLABS/PMTL_VN/.agent/skills/pmtl-frontend/SKILL.md`
+2. `C:/Users/ADMIN/DEV2/THINKLABS/PMTL_VN/fe-pmtl/VISUAL_CONSTITUTION.md` ← Visual design rules, page archetypes, AI workflow
+3. `C:/Users/ADMIN/DEV2/THINKLABS/PMTL_VN/.agent/skills/pmtl-frontend/SKILL.md`
 3. `C:/Users/ADMIN/DEV2/THINKLABS/PMTL_VN/fe-pmtl/app/videos/page.tsx`
 4. shared foundations in `app/globals.css`, `tailwind.config.ts`, `types/strapi.ts`, `lib/strapi.ts`, `lib/strapi-client.ts`, `lib/api/*`
 5. feature-level implementation
@@ -237,7 +238,8 @@ Dynamic CMS page pattern:
 Any AI or contributor touching this frontend must:
 
 1. read this file first
-2. check `app/videos/page.tsx` before changing public page UI
+2. read `VISUAL_CONSTITUTION.md` for page design and archetype rules
+3. check `app/videos/page.tsx` before changing public page UI
 3. check `types/strapi.ts` before adding or using fields
 4. check `lib/api/` before writing new requests
 5. prefer Server Components first

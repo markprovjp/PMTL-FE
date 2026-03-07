@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import BlogListClient from '@/components/BlogListClient'
@@ -40,7 +40,7 @@ export default async function BlogArchivePage({ params, searchParams }: PageProp
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderServer />
       <main className="py-16">
         <div className="container mx-auto px-6">
           {/* ── Header ── */}

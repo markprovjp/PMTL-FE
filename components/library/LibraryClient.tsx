@@ -68,8 +68,8 @@ function DownloadCard({ item }: { item: DownloadItem }) {
       className="group flex items-start gap-3 p-4 rounded-xl bg-card border border-border hover:border-gold/40 transition-all duration-200"
     >
       <motion.div
-        className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${typeBadgeClass(item.fileType)} group-hover:scale-110`}
-        whileHover={{ scale: 1.15 }}
+        className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${typeBadgeClass(item.fileType)} group-hover:scale-105`}
+        whileHover={{ scale: 1.05 }}
       >
         <FileIcon type={item.fileType} className="w-5 h-5" />
       </motion.div>
@@ -134,7 +134,7 @@ function DownloadGroupSection({ group }: { group: DownloadGroup }) {
         <div className="flex items-center gap-4 text-left">
           <motion.div
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/10 to-amber-500/5 flex items-center justify-center"
-            whileHover={{ scale: 1.1 }}
+            whileHover={{ scale: 1.05 }}
           >
             <Archive className="w-5 h-5 text-gold" />
           </motion.div>
@@ -216,79 +216,58 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
 
   return (
     <>
-      {/* Animated Page Header */}
+      {/* Hero */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col items-center text-center mb-12"
       >
-        <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">Thư Viện Tài Liệu Miễn Phí</p>
-        <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Tài Liệu Tu Học</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Tổng hợp kinh điển, khai thị, audio, video và tài liệu tu học của Pháp Môn Tâm Linh.
-          Tất cả được phát hành <strong className="text-foreground">hoàn toàn miễn phí</strong>.
+        <p className="text-gold text-xs font-medium tracking-widest uppercase mb-4">Thư Viện Tài Liệu Miễn Phí</p>
+        <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground mb-5">Tài Liệu Tu Học</h1>
+        <p className="text-muted-foreground text-base leading-relaxed max-w-2xl mx-auto">
+          Kinh điển, khai thị, audio, video và tài liệu tu học của Pháp Môn Tâm Linh.
+          Tất cả phát hành <strong className="text-foreground">hoàn toàn miễn phí</strong>.
         </p>
       </motion.div>
 
-      {/* Info Banner — palette vàng/trầm */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="mb-10 p-6 rounded-2xl bg-gradient-to-r from-gold/5 to-amber-500/5 border border-gold/10"
-      >
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
-            <Download className="w-6 h-6 text-gold" />
-          </div>
-          <div>
-            <h2 className="text-sm font-semibold text-foreground mb-1">Tải Tài Liệu Miễn Phí</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Tất cả tài liệu được cung cấp <strong className="text-foreground">hoàn toàn miễn phí</strong> — không bao giờ yêu cầu đóng tiền.
-              Truy cập bất kỳ lúc nào để download, chia sẻ với bạn bè, và học tập.
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* Filters */}
+      {/* Search Bar — focal point */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-10 p-5 rounded-2xl bg-card border border-border"
+        transition={{ delay: 0.1 }}
+        className="mb-5"
       >
-        <h3 className="text-sm font-medium text-foreground mb-4">Tìm Kiếm & Lọc</h3>
-        <div className="flex flex-col sm:flex-row gap-4">
-          {/* Search Input */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Nhập tên tài liệu..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-3 rounded-xl border border-border bg-secondary/30 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/20 transition-all"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-0.5">
-            {categories.map((cat) => (
-              <motion.button
-                key={cat}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => setCategory(cat)}
-                className={`whitespace-nowrap px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${category === cat
-                  ? 'bg-gold text-black shadow-lg shadow-gold/30'
-                  : 'bg-secondary border border-border text-muted-foreground hover:border-gold/40 hover:text-gold'
-                  }`}
-              >
-                {cat}
-              </motion.button>
-            ))}
-          </div>
+        <div className="relative max-w-2xl mx-auto">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Tìm kiếm tài liệu, kinh điển..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-12 pr-4 py-4 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 shadow-sm transition-colors"
+          />
         </div>
+      </motion.div>
+
+      {/* Category tabs */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.15 }}
+        className="mb-10 flex gap-2 overflow-x-auto pb-1 justify-start scrollbar-none"
+      >
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setCategory(cat)}
+            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-medium transition-all ${category === cat
+                ? 'bg-gold text-black shadow-sm'
+                : 'bg-card border border-border text-muted-foreground hover:border-gold/30 hover:text-foreground'
+              }`}
+          >
+            {cat}
+          </button>
+        ))}
       </motion.div>
 
       {/* Content */}
@@ -312,18 +291,29 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
             </p>
           </motion.div>
         ) : (
-          <div className="space-y-5">
-            {groups.map((group, idx) => (
-              <motion.div
-                key={group.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-              >
-                <DownloadGroupSection group={group} />
-              </motion.div>
-            ))}
-          </div>
+          <>
+            {/* Functional Archive Phase Header */}
+            <div className="flex items-center gap-3 mb-8">
+              <div>
+                <p className="text-xs font-medium tracking-widest text-gold/70 uppercase mb-1">Thư Viện</p>
+                <h2 className="font-display text-2xl md:text-3xl text-foreground">Kho Tài Liệu</h2>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-gold/20 to-transparent" />
+            </div>
+
+            <div className="space-y-5">
+              {groups.map((group, idx) => (
+                <motion.div
+                  key={group.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <DownloadGroupSection group={group} />
+                </motion.div>
+              ))}
+            </div>
+          </>
         )}
       </motion.div>
 

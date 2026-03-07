@@ -1,12 +1,12 @@
 import Link from "next/link";
-import Header from "@/components/Header";
+import HeaderServer from "@/components/HeaderServer";
 import Footer from "@/components/Footer";
 import StickyBanner from "@/components/StickyBanner";
 
 export default function NotFound() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      <HeaderServer />
       <main className="flex-1 flex items-center justify-center">
         <div className="text-center px-4">
           <h1 className="mb-4 text-6xl font-display text-gold">404</h1>

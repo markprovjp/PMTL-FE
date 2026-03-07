@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { CloseIcon, BookIcon } from "@/components/icons/ZenIcons";
 import Link from "next/link";
 import type { StickyBannerConfig } from "@/types/strapi";
@@ -32,11 +32,9 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
   const buttonText = config?.buttonText ?? "Đăng ký ngay";
 
   return (
-    <AnimatePresence>
+    <>
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 100, opacity: 0 }}
+        animate={visible ? { y: 0, opacity: 1 } : { y: 100, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
         className="fixed bottom-0 left-0 right-0 z-50 p-3 md:p-0"
       >
@@ -66,8 +64,9 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
                     {buttonText}
                   </motion.button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-gold/20 bg-card/95 backdrop-blur-xl">
-                  <div className="p-6 md:p-8">
+                <DialogContent className="sm:max-w-xl w-[calc(100vw-2rem)] p-0 overflow-hidden border-gold/20 bg-card/95 backdrop-blur-xl max-h-[85vh] flex flex-col">
+                  <div className="flex-1 overflow-y-auto overscroll-contain custom-scrollbar">
+                    <div className="p-6 md:p-8">
                     <DialogHeader className="mb-6">
                       <div className="flex justify-center mb-4">
                         <div className="w-12 h-12 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
@@ -85,6 +84,7 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
 
                     <RegisterForm />
                   </div>
+                  </div>
                 </DialogContent>
               </Dialog>
 
@@ -99,7 +99,7 @@ const StickyBanner = ({ config }: StickyBannerProps) => {
           </div>
         </div>
       </motion.div>
-    </AnimatePresence>
+    </>
   );
 };
 

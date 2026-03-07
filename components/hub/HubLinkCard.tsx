@@ -9,17 +9,31 @@ import { cn } from '@/lib/utils'
 
 interface HubLinkCardProps {
   link: HubLink
+  theme?: 'teaching' | 'practice' | 'story' | 'reference' | null
 }
 
-export default function HubLinkCard({ link }: HubLinkCardProps) {
+export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
   const thumbnailUrl = link.thumbnail
     ? getStrapiMediaUrl(link.thumbnail.formats?.small?.url ?? link.thumbnail.url)
     : null
 
   const isExternal = link.kind === 'external'
 
-  const wrapperClass =
-    'group flex flex-col rounded-2xl border border-border bg-card hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300 overflow-hidden'
+  // Card personality theo theme
+  const getThemeClass = () => {
+    switch (theme) {
+      case 'story': return 'rounded-[2rem] border-gold/10 hover:shadow-2xl hover:shadow-gold/10'
+      case 'teaching': return 'rounded-sm border-gold/20 hover:border-gold/60'
+      case 'practice': return 'rounded-2xl border-gold/15 bg-stone-50/50 dark:bg-stone-900/20'
+      case 'reference': return 'rounded-lg border-border hover:bg-secondary/50'
+      default: return 'rounded-2xl border-border'
+    }
+  }
+
+  const wrapperClass = cn(
+    'group flex flex-col bg-card hover:shadow-lg transition-all duration-300 overflow-hidden border',
+    getThemeClass()
+  )
 
   const inner = (
     <>

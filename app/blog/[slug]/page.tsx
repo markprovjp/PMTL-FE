@@ -7,7 +7,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Suspense } from 'react'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import { getPostBySlug, getAllPostSlugs, getRelatedPosts, getPostBySlugForMetadata } from '@/lib/api/blog'
@@ -124,7 +124,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-background selection:bg-gold/20 selection:text-gold">
-      <Header />
+      <HeaderServer />
       <ViewTracker documentId={post.documentId} slug={post.slug} />
       <main className="py-5">
         <div className="container mx-auto px-6 ">

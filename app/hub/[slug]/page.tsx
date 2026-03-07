@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getHubBySlug } from '@/lib/api/hub'
 import HubPageComponent from '@/components/hub/HubPageComponent'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 
@@ -40,7 +40,7 @@ export default async function HubPage({ params }: { params: Promise<Params> }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderServer />
       {/* HubPageComponent tu render <main> ben trong */}
       <HubPageComponent hubPage={hub} />
       <Footer />

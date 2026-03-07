@@ -413,6 +413,7 @@ export interface HubPage {
   curated_posts?: BlogPost[]       // Legacy — Bài Editor chọn tay
   downloads?: DownloadItem[]       // Legacy — Khối tài liệu tải gắn vào hub này
   blocks?: HubBlock[]              // New Dynamic Blocks
+  visualTheme?: 'teaching' | 'practice' | 'story' | 'reference' | null  // Hub personality
   sortOrder: number
   showInMenu: boolean
   menuIcon?: string | null

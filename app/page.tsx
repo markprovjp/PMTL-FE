@@ -3,7 +3,7 @@
 //  Fetch dữ liệu động từ Strapi CMS → truyền props vào các section
 // ─────────────────────────────────────────────────────────────
 
-import Header from "@/components/Header";
+import HeaderServer from "@/components/HeaderServer";
 import HeroSection from "@/components/HeroSection";
 import PhaoBaoSection from "@/components/PhaoBaoSection";
 import ActionCards from "@/components/ActionCards";
@@ -74,7 +74,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderServer />
       <main>
         {/* Hero slideshow 3 ảnh */}
         <HeroSection slides={heroSlides} stats={stats} />

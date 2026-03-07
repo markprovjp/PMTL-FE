@@ -1,8 +1,10 @@
 // app/archive/page.tsx — Archive index page (server)
 import type { Metadata } from 'next'
-import { ArchiveIcon } from 'lucide-react'
 import { getArchiveIndex } from '@/lib/api/archive'
 import ArchiveGrid from '@/components/archive/ArchiveGrid'
+import HeaderServer from '@/components/HeaderServer'
+import Footer from '@/components/Footer'
+import StickyBanner from '@/components/StickyBanner'
 import type { ArchiveYear } from '@/types/strapi'
 
 export const metadata: Metadata = {
@@ -21,18 +23,22 @@ export default async function ArchivePage() {
   }
 
   return (
-    <main className="min-h-screen py-16">
-      <div className="container max-w-4xl mx-auto px-4">
-        <div className="flex items-center gap-3 mb-4">
-          <ArchiveIcon className="w-7 h-7 text-gold" />
-          <h1 className="font-display text-3xl text-foreground">Lưu Trữ</h1>
+    <div className="min-h-screen bg-background">
+      <HeaderServer />
+      <main className="py-24">
+        <div className="container max-w-4xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <p className="text-gold text-xs font-medium tracking-widest uppercase mb-4">Kho Lưu Trữ</p>
+            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-5">Lưu Trữ Bài Viết</h1>
+            <p className="text-muted-foreground text-base leading-relaxed max-w-2xl mx-auto">
+              Toàn bộ bài viết phân loại theo năm và tháng. Chọn tháng để xem danh sách bài.
+            </p>
+          </div>
+          <ArchiveGrid data={data} />
         </div>
-        <p className="text-muted-foreground mb-12 leading-relaxed">
-          Tổng hợp bài viết theo năm và tháng. Chọn tháng để xem danh sách bài viết.
-        </p>
-
-        <ArchiveGrid data={data} />
-      </div>
-    </main>
+      </main>
+      <Footer />
+      <StickyBanner />
+    </div>
   )
 }

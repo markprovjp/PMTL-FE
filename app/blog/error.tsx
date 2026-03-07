@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import Header from '@/components/Header'
+import Header from '@/components/Header' // Note: Error boundaries use client Header for simplicity
 import Footer from '@/components/Footer'
 
 export default function BlogError({
@@ -19,6 +19,7 @@ export default function BlogError({
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
       <main className="flex-1 py-16">
+        {/* Note: Error boundary uses client Header for fallback safety */}
         <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto">
             <div className="bg-red-950/20 border border-red-500/50 rounded-lg p-8 space-y-4">

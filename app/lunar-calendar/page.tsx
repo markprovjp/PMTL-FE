@@ -277,89 +277,99 @@ function DayDrawer({ detail, onClose }: { detail: DayDetail | null; onClose: () 
   const dow = new Date(solar.year, solar.month - 1, solar.day).getDay();
 
   return (
-    <Dialog open={!!detail} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col gap-0 p-0 bg-card border border-border rounded-2xl">
-        {/* Header */}
-        <DialogHeader className="px-6 py-5 border-b border-border bg-gradient-to-r from-card to-secondary/30 space-y-0">
-          <div className="flex items-start justify-between w-full">
-            <div>
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{dayNames[dow]}</p>
-              <DialogTitle className="font-display text-4xl text-foreground leading-none">{solar.day}</DialogTitle>
-              <p className="text-sm text-muted-foreground mt-1">tháng {solar.month}, {solar.year}</p>
-            </div>
-            <div className="text-right">
-              <div className="inline-block bg-gold/10 border border-gold/20 rounded-xl px-4 py-3">
-                <p className="text-xs text-gold/70 font-medium mb-0.5">Âm lịch</p>
-                <p className="font-display text-2xl text-gold">{lunar.lunarDay}</p>
-                <p className="text-xs text-gold/70">tháng {lunar.lunarMonth}{lunar.isLeapMonth ? ' nhuận' : ''}</p>
+    <Dialog open={!!detail} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col gap-0 p-0 bg-transparent border-0 shadow-none outline-none [&>button]:hidden w-[calc(100vw-1rem)]"
+      >
+        <div className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full h-full shadow-2xl relative outline-none flex flex-col overflow-hidden">
+          {/* Header — NOT scrollable */}
+          <DialogHeader className="px-6 py-5 border-b border-border bg-gradient-to-r from-card to-secondary/30 space-y-0 shrink-0">
+            <div className="flex items-start justify-between w-full">
+              <div>
+                <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{dayNames[dow]}</p>
+                <DialogTitle className="font-display text-4xl text-foreground leading-none">{solar.day}</DialogTitle>
+                <p className="text-sm text-muted-foreground mt-1">tháng {solar.month}, {solar.year}</p>
+              </div>
+              <div className="text-right">
+                <div className="inline-block bg-gold/10 border border-gold/20 rounded-xl px-4 py-3">
+                  <p className="text-xs text-gold/70 font-medium mb-0.5">Âm lịch</p>
+                  <p className="font-display text-2xl text-gold">{lunar.lunarDay}</p>
+                  <p className="text-xs text-gold/70">tháng {lunar.lunarMonth}{lunar.isLeapMonth ? ' nhuận' : ''}</p>
+                </div>
               </div>
             </div>
-          </div>
-        </DialogHeader>
+          </DialogHeader>
 
-        {/* Special days — scrollable content */}
-        <div className="px-6 py-4 space-y-3 overflow-y-auto flex-1">
-          {markers.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-8">Ngày thường — tu học như thường.</p>
-          ) : (
-            markers.map((m, i) => {
-              const style = TYPE_STYLE[m.type];
-              return (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`rounded-xl p-4 border ${style.bg} ${style.border}`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    <m.icon className={`w-5 h-5 ${style.text} flex-shrink-0`} />
-                    <h3 className={`text-sm font-semibold ${style.text}`}>{m.name}</h3>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                    {m.description}
-                  </p>
-
-                  {/* Blog liên quan tu admin */}
-                  {m.relatedBlogs && m.relatedBlogs.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-white/10">
-                      <p className={`text-xs font-semibold mb-2 ${style.text}`}>Khai Thị Liên Kết:</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {m.relatedBlogs.map((blog) => (
-                          <a
-                            key={blog.id}
-                            href={`/blog/${blog.slug}`}
-                            className="group px-3 py-2 rounded-lg border border-white/10 hover:border-gold/20 bg-white/5 hover:bg-gold/5 transition-all duration-200"
-                          >
-                            <div className={`text-xs font-medium ${style.text} group-hover:text-gold transition-colors flex items-center gap-1.5`}>
-                              <BookOpen className="w-3 h-3 flex-shrink-0" /> {blog.title}
-                            </div>
-                          </a>
-                        ))}
+          {/* Scrollable content area */}
+          <div
+            className="flex-1 min-h-0 overflow-y-auto overscroll-contain custom-scrollbar touch-pan-y"
+            data-lenis-prevent
+            style={{ WebkitOverflowScrolling: 'touch' }}
+          >
+            <div className="px-6 py-4 space-y-3">
+              {markers.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Ngày thường — tu học như thường.</p>
+              ) : (
+                markers.map((m, i) => {
+                  const style = TYPE_STYLE[m.type];
+                  return (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`rounded-xl p-4 border ${style.bg} ${style.border}`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <m.icon className={`w-5 h-5 ${style.text} flex-shrink-0`} />
+                        <h3 className={`text-sm font-semibold ${style.text}`}>{m.name}</h3>
                       </div>
-                    </div>
-                  )}
-                </motion.div>
-              );
-            })
-          )}
-        </div>
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                        {m.description}
+                      </p>
 
-        {/* Footer */}
-        <DialogFooter className="px-6 py-4 border-t border-border flex items-center justify-between">
-          <button
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold transition-colors"
-            onClick={() => { alert('Tính năng nhắc lịch qua email sắp ra mắt!'); }}
-          >
-            <BellIcon className="w-4 h-4" /> Nhắc trước 1 ngày
-          </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-secondary text-xs text-foreground hover:bg-border transition-colors"
-          >
-            Đóng
-          </button>
-        </DialogFooter>
+                      {/* Blog liên quan tu admin */}
+                      {m.relatedBlogs && m.relatedBlogs.length > 0 && (
+                        <div className="mt-3 pt-3 border-t border-white/10">
+                          <p className={`text-xs font-semibold mb-2 ${style.text}`}>Khai Thị Liên Kết:</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {m.relatedBlogs.map((blog) => (
+                              <a
+                                key={blog.id}
+                                href={`/blog/${blog.slug}`}
+                                className="group px-3 py-2 rounded-lg border border-white/10 hover:border-gold/20 bg-white/5 hover:bg-gold/5 transition-all duration-200"
+                              >
+                                <div className={`text-xs font-medium ${style.text} group-hover:text-gold transition-colors flex items-center gap-1.5`}>
+                                  <BookOpen className="w-3 h-3 flex-shrink-0" /> {blog.title}
+                                </div>
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <DialogFooter className="px-6 py-4 border-t border-border bg-card flex items-center justify-between shrink-0">
+            <button
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-gold transition-colors"
+              onClick={() => { alert('Tính năng nhắc lịch qua email sắp ra mắt!'); }}
+            >
+              <BellIcon className="w-4 h-4" /> Nhắc trước 1 ngày
+            </button>
+            <button
+              onClick={onClose}
+              className="px-6 h-10 rounded-xl bg-secondary text-xs text-foreground hover:bg-border transition-colors font-medium"
+            >
+              Đóng
+            </button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );

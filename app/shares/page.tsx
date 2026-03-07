@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 import SharesClient from '@/components/shares/SharesClient'
 import { fetchPosts } from '@/lib/api/community'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 
@@ -28,7 +28,7 @@ export default async function SharesPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderServer />
       <SharesClient
         initialPosts={res?.posts || []}
         initialTotal={res?.total || 0}

@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 import BlogPagination from '@/components/BlogPagination'
@@ -78,7 +78,7 @@ export default async function TagPage({ params, searchParams }: Props) {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <HeaderServer />
       <main className="py-12">
         <div className="container mx-auto px-6 max-w-5xl">
 

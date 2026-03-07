@@ -39,23 +39,23 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(212, 175, 55, 0.08)' }}
+      whileHover={{ y: -2 }}
       transition={{ duration: 0.3 }}
-      className="rounded-2xl bg-card border border-border/50 p-6 hover:border-gold/20 transition-all duration-300"
+      className="relative rounded-xl border border-border/40 border-l-2 border-l-gold bg-linear-to-b from-gold/[0.01] to-background p-6 md:p-8 hover:border-gold/30 transition-all duration-300 before:absolute before:top-0 before:left-0 before:w-8 before:h-8 before:text-gold/30 before:text-3xl before:leading-none before:font-display before:content-['✦']"
     >
       {/* Author row */}
-      <div className="flex items-start gap-4 mb-4">
+      <div className="flex items-start gap-4 mb-5">
         <motion.div
-          whileHover={{ scale: 1.08 }}
+          whileHover={{ scale: 1.05 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center text-gold text-xs font-bold select-none border border-gold/30"
+          className="shrink-0 w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center text-gold text-[10px] font-bold select-none border border-gold/40"
         >
           {avatarUrl ? (
             <Image
               src={avatarUrl}
               alt={entry.authorName}
-              width={48}
-              height={48}
+              width={56}
+              height={56}
               className="w-full h-full object-cover"
               loading="lazy"
             />
@@ -64,15 +64,15 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
           )}
         </motion.div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <p className="text-sm font-semibold text-foreground leading-none">{entry.authorName}</p>
+          <p className="font-display text-lg text-foreground leading-tight mb-2">{entry.authorName}</p>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             {entry.entryType === 'question' && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-[10px] font-bold uppercase tracking-tight border border-amber-500/30">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-tight border border-amber-500/20">
                 Câu Hỏi
               </span>
             )}
             {entry.questionCategory && (
-              <span className="px-2 py-0.5 rounded-full bg-gold/15 text-gold text-[10px] font-medium border border-gold/30">
+              <span className="px-2 py-0.5 rounded-full bg-gold/10 text-gold text-[10px] font-medium border border-gold/20">
                 {entry.questionCategory}
               </span>
             )}
@@ -85,8 +85,8 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
         </div>
       </div>
 
-      {/* Message */}
-      <p className="text-sm text-foreground/85 leading-relaxed whitespace-pre-wrap mb-4 font-[500]">
+      {/* Message — journal page style */}
+      <p className="text-base text-foreground/80 leading-relaxed whitespace-pre-wrap mb-6 font-[400]">
         {entry.message}
       </p>
 

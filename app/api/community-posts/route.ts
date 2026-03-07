@@ -11,15 +11,28 @@ export async function GET(request: Request) {
 
     // Extract query parameters
     const { searchParams } = new URL(request.url)
-    const pageSize = parseInt(searchParams.get('pageSize') || '4')
-    const page = parseInt(searchParams.get('page') || '1')
 
-    const url = buildStrapiUrl('/community-posts', {
-      populate: ['cover_image'],
-      sort: ['publishedAt:desc'],
-      pagination: { page, pageSize },
-      status: 'published'
-    })
+    // Chuyển đổi searchParams sang object
+    const queryObj: any = Object.fromEntries(searchParams.entries())
+
+    // Xử lý mapping page/pageSize phẳng sang cấu trúc pagination của Strapi/buildStrapiUrl
+    const page = searchParams.get('page')
+    const pageSize = searchParams.get('pageSize')
+
+    if (page || pageSize) {
+      queryObj.pagination = {
+        ...(queryObj.pagination || {}),
+        ...(page ? { page: parseInt(page) } : {}),
+        ...(pageSize ? { pageSize: parseInt(pageSize) } : {})
+      }
+    }
+
+    // Đảm bảo các tham số mặc định nếu thiếu
+    if (!queryObj.populate) queryObj.populate = ['cover_image']
+    if (!queryObj.sort) queryObj.sort = ['publishedAt:desc']
+    if (!queryObj.status) queryObj.status = 'published'
+
+    const url = buildStrapiUrl('/community-posts', queryObj)
 
     const res = await fetch(url, {
       headers: {

@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+import HeaderServer from "@/components/HeaderServer";
 import Footer from "@/components/Footer";
 import StickyBanner from "@/components/StickyBanner";
 import EventsClient from "./EventsClient";
@@ -16,8 +16,8 @@ export default async function EventsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="py-16">
+      <HeaderServer />
+      <main className="py-24">
         <div className="container mx-auto px-6">
           <EventsClient initialEvents={initialEvents || []} />
         </div>

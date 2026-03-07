@@ -18,7 +18,7 @@ import { getStrapiMediaUrl } from "@/lib/strapi";
 const ContentFeeds = () => {
   const [danhMuc, setDanhMuc] = useState<Category[]>([]);
   const [baiKhaiThi, setBaiKhaiThi] = useState<BlogPost[]>([]);
-  const [chuyenPhapBao, setChuyenPhapBao] = useState<{ id: string; title: string; createdAt: string }[]>([]);
+  const [chuyenPhapBao, setChuyenPhapBao] = useState<{ id: string; documentId: string; slug: string; title: string; createdAt: string }[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [dangTaiBaiViet, setDangTaiBaiViet] = useState(true);
 
@@ -243,7 +243,7 @@ const ContentFeeds = () => {
                     ))}
                   </div>
                 ) : (
-                  <nav className="space-y-1 max-h-[500px] overflow-y-auto custom-scrollbar pr-1">
+                  <nav className="space-y-1 max-h-[700px] overflow-y-auto custom-scrollbar pr-1">
                     {danhMuc.map((dm, i) => (
                       <Link
                         key={dm.id}

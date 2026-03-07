@@ -11,17 +11,18 @@ export async function POST(
   const { documentId } = await params
   const cookieStore = await cookies()
   const token = cookieStore.get('auth_token')?.value || process.env.STRAPI_API_TOKEN
-
-  if (!token) return NextResponse.json({ error: 'Chưa đăng nhập' }, { status: 401 })
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   try {
     const res = await fetch(`${STRAPI_URL}/api/community-comments/like/${documentId}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
+      headers,
+    });
 
     const data = await res.json()
 

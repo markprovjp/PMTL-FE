@@ -3,26 +3,66 @@
 // Visual language: Phật giáo, trang nghiêm, nhịp điệu thị giác rõ ràng
 import type { HubSection as HubSectionType } from '@/types/strapi'
 import HubLinkCard from './HubLinkCard'
+import { BookOpen, FolderOpen, Flame, LayoutGrid } from 'lucide-react'
 
 interface HubSectionProps {
   section: HubSectionType
+  theme?: 'teaching' | 'practice' | 'story' | 'reference' | null
 }
 
-export default function HubSection({ section }: HubSectionProps) {
+export default function HubSection({ section, theme }: HubSectionProps) {
+  // Config header theo theme
+  const getHeaderStyle = () => {
+    switch (theme) {
+      case 'story': return {
+        badgePrefix: <Flame className="w-3.5 h-3.5" />,
+        badgeText: 'Hồi Ức / Chuyện Kể',
+        divider: 'h-px bg-gradient-to-r from-gold/30 via-gold/10 to-transparent max-w-sm',
+        headingClass: 'italic font-serif'
+      }
+      case 'teaching': return {
+        badgePrefix: <BookOpen className="w-3.5 h-3.5" />,
+        badgeText: 'Giáo Pháp',
+        divider: 'h-px bg-gold/20 w-full',
+        headingClass: ''
+      }
+      case 'practice': return {
+        badgePrefix: <div className="w-2 h-2 rounded-full border border-gold/60" />,
+        badgeText: 'Tu Tập',
+        divider: 'h-1 w-12 bg-gold/30 rounded-full',
+        headingClass: 'tracking-tight'
+      }
+      case 'reference': return {
+        badgePrefix: <FolderOpen className="w-3.5 h-3.5" />,
+        badgeText: 'Tra Cứu',
+        divider: 'h-px bg-border w-full',
+        headingClass: 'text-lg md:text-xl font-sans font-bold'
+      }
+      default: return {
+        badgePrefix: <LayoutGrid className="w-3 h-3" />,
+        badgeText: 'Chuyên Mục',
+        divider: 'h-px bg-gradient-to-r from-gold/20 via-gold/10 to-transparent',
+        headingClass: ''
+      }
+    }
+  }
+
+  const style = getHeaderStyle()
+
   return (
     <section>
       {/* ── Section Header — có nhịp điệu, badge, divider ── */}
       <div className="mb-8">
         {/* eyebrow badge */}
         <div className="flex items-center gap-3 mb-3">
-          <span className="inline-block w-1 h-5 rounded-full bg-gold/60 shrink-0" />
+          <span className="text-gold/60 text-xs">{style.badgePrefix}</span>
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold/60 font-semibold">
-            Chuyên Mục
+            {style.badgeText}
           </p>
         </div>
 
         {/* heading chính */}
-        <h2 className="font-display text-xl md:text-2xl text-foreground leading-snug mb-2 pl-4">
+        <h2 className={`font-display text-xl md:text-2xl text-foreground leading-snug mb-2 pl-4 ${style.headingClass}`}>
           {section.heading}
         </h2>
 
@@ -33,15 +73,29 @@ export default function HubSection({ section }: HubSectionProps) {
           </p>
         )}
 
-        {/* divider gradient */}
-        <div className="h-px bg-gradient-to-r from-gold/20 via-gold/10 to-transparent mt-4" />
+        {/* divider bespoke */}
+        <div className={`mt-4 ${style.divider}`} />
       </div>
 
-      {/* ── Links Grid ── */}
+      {/* ── Links Grid / Structural Layout ── */}
       {section.links && section.links.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {section.links.map((link) => (
-            <HubLinkCard key={link.id} link={link} />
+        <div className={
+          theme === 'story' ? 'grid grid-cols-1 md:grid-cols-2 gap-8' :
+            theme === 'reference' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3' :
+              theme === 'practice' ? 'flex flex-col gap-4' :
+                'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' // Default / teaching
+        }>
+          {section.links.map((link, index) => (
+            <div key={link.id} className={theme === 'practice' ? 'flex gap-4 items-center bg-card p-4 rounded-xl border border-gold/10' : ''}>
+              {theme === 'practice' && (
+                <div className="w-8 h-8 rounded-full bg-gold/5 flex items-center justify-center font-display text-gold/60 shrink-0">
+                  {index + 1}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <HubLinkCard link={link} theme={theme} />
+              </div>
+            </div>
           ))}
         </div>
       ) : (

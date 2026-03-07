@@ -3,7 +3,7 @@
 import type { Metadata } from 'next'
 import { fetchDownloads, DOWNLOAD_CATEGORIES, type DownloadItem } from '@/lib/api/downloads'
 import LibraryClient from '@/components/library/LibraryClient'
-import Header from '@/components/Header'
+import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
 
@@ -26,8 +26,8 @@ export default async function LibraryPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="py-16">
+      <HeaderServer />
+      <main className="py-24">
         <div className="container mx-auto px-6">
           <LibraryClient initialItems={allItems} categories={[...DOWNLOAD_CATEGORIES]} />
         </div>
