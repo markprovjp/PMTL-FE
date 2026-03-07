@@ -10,7 +10,7 @@ export async function getBlogCommentsBySlug(
   page = 1,
   pageSize = 20
 ): Promise<BlogCommentThread> {
-  return strapiFetch<BlogCommentThread>(`/blog-comments/by-post/${encodeURIComponent(slug)}`, {
+  return strapiFetch<BlogCommentThread>(`/blog-comments/by-post/${encodeURIComponent(slug)}?page=${page}&pageSize=${pageSize}`, {
     noCache: true,
   })
 }

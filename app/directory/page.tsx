@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
 
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
 import { SearchIcon } from "@/components/icons/ZenIcons";
 
 interface Center { name: string; address: string; phone: string; hours: string; }
@@ -51,8 +48,7 @@ export default function DirectoryPage() {
   })).filter((r) => r.centers.length > 0);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
       <main className="py-16">
         <div className="container mx-auto px-6">
 
@@ -93,8 +89,6 @@ export default function DirectoryPage() {
           </div>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }

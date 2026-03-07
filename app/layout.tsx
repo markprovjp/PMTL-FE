@@ -3,8 +3,8 @@ import Script from 'next/script'
 import { Playfair_Display, Be_Vietnam_Pro } from 'next/font/google'
 import Providers from './providers'
 import { Toaster } from "@/components/ui/sonner"
-import { SmoothScroll } from "@/components/SmoothScroll"
 import './globals.css'
+import { SmoothScroll } from '@/components/SmoothScroll'
 
 const fontDisplay = Playfair_Display({
   subsets: ['vietnamese'],
@@ -67,6 +67,7 @@ export default function RootLayout({
             <Toaster position="top-center" />
           </SmoothScroll>
         </Providers>
+
         <Script id="sw-register" strategy="afterInteractive">{`
           if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {

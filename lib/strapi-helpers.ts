@@ -14,23 +14,18 @@ import { STRAPI_URL, getStrapiMediaUrl } from '@/lib/strapi'
 /** Lấy URL ảnh từ media object Strapi (hỗ trợ nhiều format object khác nhau) */
 export function resolveMediaUrl(media: StrapiMediaInput | null | undefined): string | null {
   if (!media) return null
-  const url =
-    (media as any)?.url ??
-    (media as any)?.data?.attributes?.url ??    // Strapi v4 compat
-    (media as any)?.data?.url ??
-    null
+  const url = media?.url ?? null
   return getStrapiMediaUrl(url)
 }
 
 /** Lấy thumbnail nhỏ nhất có thể (tối ưu Largest Contentful Paint) */
 export function resolveThumbnailUrl(media: StrapiMediaInput | null | undefined): string | null {
   if (!media) return null
-  const formats = (media as any)?.formats ?? (media as any)?.data?.formats ?? null
+  const formats = media?.formats ?? null
   const url =
     formats?.thumbnail?.url ??
     formats?.small?.url ??
-    (media as any)?.url ??
-    (media as any)?.data?.url ??
+    media?.url ??
     null
   return getStrapiMediaUrl(url)
 }
@@ -48,15 +43,10 @@ export function resolveFileUrl(media: StrapiMediaInput | null | undefined): stri
   return resolveMediaUrl(media)
 }
 
-// Kiểu hỗ trợ — chấp nhận cả v4 và v5 object shapes
+// Kiểu hỗ trợ — chuẩn Strapi v5
 type StrapiMediaInput = {
   url?: string
   formats?: Record<string, { url: string }>
-  data?: {
-    url?: string
-    attributes?: { url?: string; formats?: Record<string, { url: string }> }
-    formats?: Record<string, { url: string }>
-  }
 }
 
 // ─── List & Search Helpers ─────────────────────────────────────

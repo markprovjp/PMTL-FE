@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
 
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
 import { HeartIcon } from "@/components/icons/ZenIcons";
 
 const ShieldIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
@@ -76,8 +73,7 @@ export default function DonationsPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
       <main className="py-16">
         <div className="container mx-auto px-6">
 
@@ -281,8 +277,6 @@ export default function DonationsPage() {
           </div>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }

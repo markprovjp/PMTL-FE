@@ -11,7 +11,7 @@ export async function getCategories(): Promise<Category[]> {
     const res = await strapiFetch<StrapiList<Category>>('/categories', {
       sort: ['order:asc', 'name:asc'],
       populate: ['parent'],
-      pagination: { page: 1, pageSize: 200 },
+      pagination: { page: 1, pageSize: 100 },
       next: { revalidate: 300, tags: ['categories'] },
     })
     return res.data

@@ -1,7 +1,7 @@
-'use client'
-
 import Link from "next/link";
 import Image from "next/image";
+import { getSiteSettings } from "@/lib/api/settings";
+import type { SocialLinks } from "@/types/strapi";
 
 const YoutubeIcon = () => (
   <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -35,7 +35,7 @@ const navGroups = [
     links: [
       { label: "Hướng Dẫn Sơ Học", href: "/beginner-guide" },
       { label: "Lịch Tu Học", href: "/lunar-calendar" },
-      { label: "Hỏi Đáp Phật Học", href: "/qa" },
+      { label: "Hỏi Đáp & Lưu Bút", href: "/guestbook" },
       { label: "Danh Bạ Toàn Cầu", href: "/directory" },
       { label: "Hộ Trì Phật Pháp", href: "/donations" },
     ]
@@ -75,100 +75,118 @@ const externalLinks = [
   { label: "xlch.org", href: "https://xlch.org" },
 ];
 
-const Footer = () => (
-  <footer className="border-t border-border bg-card/30">
-    <div className="container mx-auto px-6 pt-12 pb-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-10">
-        <div className="lg:col-span-2">
-          <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
-            <Image
-              src="/images/logoo.png"
-              alt="Pháp Môn Tâm Linh"
-              width={160}
-              height={50}
-              className="h-12 w-auto object-contain"
-            />
-          </Link>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-xs">
-            Trực tiếp từ đài Phật pháp của Trưởng Lư Quân Hoành. Tất cả tài liệu hoàn toàn miễn phí.
-          </p>
-          <div className="flex items-center gap-2">
-            {[
-              { icon: <FacebookIcon />, href: "https://facebook.com", label: "Facebook" },
-              { icon: <YoutubeIcon />, href: "https://youtube.com", label: "YouTube" },
-              { icon: <TiktokIcon />, href: "https://tiktok.com", label: "TikTok" },
-              { icon: <ZaloIcon />, href: "https://zalo.me", label: "Zalo" },
-            ].map(({ icon, href, label }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-gold hover:bg-secondary/80 transition-colors"
-              >
-                {icon}
-              </a>
-            ))}
-          </div>
-        </div>
+function buildSocialIcons(social: SocialLinks | null) {
+  const icons = [
+    { key: "facebook" as const, icon: <FacebookIcon />, label: "Facebook", fallback: "https://www.facebook.com/groups/1772491517480555/?ref=share" },
+    { key: "youtube" as const, icon: <YoutubeIcon />, label: "YouTube", fallback: "https://youtube.com/@phapmon.tamlinh?si=EkMtyo76fes5pJoQ" },
+    { key: "tiktok" as const, icon: <TiktokIcon />, label: "TikTok", fallback: "https://www.tiktok.com/@pmtl_0983885116" },
+    { key: "zalo" as const, icon: <ZaloIcon />, label: "Zalo", fallback: "https://zalo.me/g/sjajsj328" },
+  ]
+  return icons.map(({ key, icon, label, fallback }) => ({
+    icon,
+    href: social?.[key] ?? fallback,
+    label,
+  }))
+}
 
-        {navGroups.map((group) => (
-          <div key={group.title}>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{group.title}</h4>
+const Footer = async () => {
+  const settings = await getSiteSettings()
+
+  const address = settings.address ?? "2A Holden Street, Ashfield, NSW 2131, Australia"
+  const phone = settings.contactPhone ?? "+61 2 9283 2758"
+  const email = settings.contactEmail ?? "oriental2or@hotmail.com"
+  const socialIcons = buildSocialIcons(settings.socialLinks)
+
+  return (
+    <footer className="border-t border-border bg-card/30">
+      <div className="container mx-auto px-6 pt-12 pb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 mb-10">
+          <div className="lg:col-span-2">
+            <Link href="/" className="inline-block mb-4 hover:opacity-80 transition-opacity">
+              <Image
+                src="/images/logoo.png"
+                alt="Pháp Môn Tâm Linh"
+                width={160}
+                height={50}
+                className="h-12 w-auto object-contain"
+              />
+            </Link>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4 max-w-xs">
+              Trực tiếp từ đài Phật pháp của Trưởng Lư Quân Hoành. Tất cả tài liệu hoàn toàn miễn phí.
+            </p>
+            <div className="flex items-center gap-2">
+              {socialIcons.map(({ icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-gold hover:bg-secondary/80 transition-colors"
+                >
+                  {icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {navGroups.map((group) => (
+            <div key={group.title}>
+              <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{group.title}</h4>
+              <ul className="space-y-2">
+                {group.links.map((l) => (
+                  <li key={l.href}>
+                    <Link href={l.href} className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                      {l.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Tài liệu</h4>
             <ul className="space-y-2">
-              {group.links.map((l) => (
-                <li key={l.href}>
-                  <Link href={l.href} className="text-sm text-muted-foreground hover:text-gold transition-colors">
+              {downloadLinks.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-gold transition-colors">
                     {l.label}
-                  </Link>
+                  </a>
                 </li>
               ))}
             </ul>
           </div>
-        ))}
 
-        <div>
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Tài liệu</h4>
-          <ul className="space-y-2">
-            {downloadLinks.map((l) => (
-              <li key={l.label}>
-                <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-gold transition-colors">
-                  {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="sm:col-span-2 md:col-span-3 lg:col-span-1">
-          <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Liên kết</h4>
-          <ul className="space-y-2 mb-6">
-            {externalLinks.map((l) => (
-              <li key={l.label}>
-                <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-gold transition-colors">
-                  ↗ {l.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="pt-4 border-t border-border/50 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1">Trụ sở chính</p>
-            <p className="text-xs text-muted-foreground/70 leading-relaxed">2A Holden Street, Ashfield, NSW 2131, Australia</p>
-            <a href="tel:+61292832758" className="text-xs text-muted-foreground/70 hover:text-gold transition-colors block">+61 2 9283 2758</a>
-            <a href="mailto:oriental2or@hotmail.com" className="text-xs text-muted-foreground/70 hover:text-gold transition-colors block truncate">oriental2or@hotmail.com</a>
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-1">
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Liên kết</h4>
+            <ul className="space-y-2 mb-6">
+              {externalLinks.map((l) => (
+                <li key={l.label}>
+                  <a href={l.href} target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-gold transition-colors">
+                    ↗ {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <div className="pt-4 border-t border-border/50 space-y-1.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground/50 mb-1">Trụ sở chính</p>
+              <p className="text-xs text-muted-foreground/70 leading-relaxed">{address}</p>
+              <a href={`tel:${phone.replace(/\s/g, '')}`} className="text-xs text-muted-foreground/70 hover:text-gold transition-colors block">{phone}</a>
+              <a href={`mailto:${email}`} className="text-xs text-muted-foreground/70 hover:text-gold transition-colors block truncate">{email}</a>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground/60 text-center sm:text-left">
-          © {new Date().getFullYear()} Pháp Môn Tâm Linh. Nguyện đem công đức này hướng về khắp tất cả chúng sinh đều trọn thành Phật đạo.
-        </p>
-        <p className="text-xs text-gold/50 shrink-0">南無阿彌陀佛</p>
+        <div className="border-t border-border/50 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground/60 text-center sm:text-left">
+            © {new Date().getFullYear()} Pháp Môn Tâm Linh. Nguyện đem công đức này hướng về khắp tất cả chúng sinh đều trọn thành Phật đạo.
+          </p>
+          <p className="text-xs text-gold/50 shrink-0">南無阿彌陀佛</p>
+        </div>
       </div>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 export default Footer;

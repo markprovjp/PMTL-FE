@@ -11,7 +11,6 @@ function imgUrl(media: unknown): string {
 
 /* ── Types ──────────────────────────────────────────────────── */
 export interface CommunityPost {
-  id: number
   documentId: string
   title: string
   content: string
@@ -33,7 +32,6 @@ export interface CommunityPost {
 }
 
 export interface CommunityComment {
-  id: number
   documentId: string
   content: string
   author_name: string
@@ -44,20 +42,15 @@ export interface CommunityComment {
 
 /* ── Helpers ─────────────────────────────────────────────────── */
 export function normalizePosts(raw: any[]): CommunityPost[] {
-  return raw.map((item) => {
-    const attrs = item.attributes || item
-    return {
-      id: item.id,
-      documentId: item.documentId,
-      ...attrs,
-      coverUrl: imgUrl(attrs.cover_image?.data || attrs.cover_image),
-      comments: (attrs.comments?.data || attrs.comments || []).map((c: any) => ({
-        id: c.id,
-        documentId: c.documentId,
-        ...(c.attributes || c),
-      })),
-    }
-  })
+  return raw.map((item) => ({
+    documentId: item.documentId,
+    ...item,
+    coverUrl: imgUrl(item.cover_image),
+    comments: (item.comments || []).map((c: any) => ({
+      documentId: c.documentId,
+      ...c,
+    })),
+  }))
 }
 
 /* ── API calls ───────────────────────────────────────────────── */
@@ -91,7 +84,7 @@ export async function fetchPosts(params?: {
   }
   qs.set('sort', sortMap[params?.sort || 'newest'] || 'createdAt:desc')
 
-  const res = await fetch(`${API}/api/community-posts?${qs}`)
+  const res = await fetch(`/api/community-posts?${qs}`)
   if (!res.ok) throw new Error('Không thể tải bài viết')
   const json = await res.json()
   return {
@@ -100,28 +93,24 @@ export async function fetchPosts(params?: {
   }
 }
 
-export async function fetchPostById(id: string | number): Promise<CommunityPost> {
-  // Custom findOne() trả về data kèm comments tự động, không cần truyền populate
-  const res = await fetch(`${API}/api/community-posts/${id}`)
+export async function fetchPostById(documentId: string): Promise<CommunityPost> {
+  const res = await fetch(`/api/community-posts/${documentId}`)
   if (!res.ok) throw new Error('Không tìm thấy bài viết')
   const json = await res.json()
   const raw = json.data
-  const attrs = raw.attributes || raw
   return {
-    id: raw.id,
     documentId: raw.documentId,
-    ...attrs,
-    coverUrl: imgUrl(attrs.cover_image?.data || attrs.cover_image),
-    comments: (attrs.comments?.data || attrs.comments || []).map((c: any) => ({
-      id: c.id,
+    ...raw,
+    coverUrl: imgUrl(raw.cover_image),
+    comments: (raw.comments || []).map((c: any) => ({
       documentId: c.documentId,
-      ...(c.attributes || c),
+      ...c,
     })),
   }
 }
 
-export async function likePost(id: string | number): Promise<number> {
-  const res = await fetch(`${API}/api/community-posts/like/${id}`, {
+export async function likePost(documentId: string): Promise<number> {
+  const res = await fetch(`/api/community-posts/like/${documentId}`, {
     method: 'POST',
     headers: { ...authHeaders() },
   })
@@ -130,8 +119,8 @@ export async function likePost(id: string | number): Promise<number> {
   return json.likes
 }
 
-export async function viewPost(id: string | number): Promise<number> {
-  const res = await fetch(`${API}/api/community-posts/${id}/view`, {
+export async function viewPost(documentId: string): Promise<number> {
+  const res = await fetch(`/api/community-posts/${documentId}/view`, {
     method: 'POST',
     headers: { ...authHeaders() },
   })
@@ -140,17 +129,17 @@ export async function viewPost(id: string | number): Promise<number> {
   return json.views || 0
 }
 
-export async function uploadFile(file: File): Promise<number | undefined> {
+export async function uploadFile(file: File): Promise<string | undefined> {
   const formData = new FormData()
   formData.append('files', file)
-  const res = await fetch(`${API}/api/upload`, {
+  const res = await fetch(`/api/upload`, {
     method: 'POST',
     body: formData,
     headers: { ...authHeaders() },
   })
   if (!res.ok) throw new Error('Upload ảnh thất bại')
   const json = await res.json()
-  return json[0]?.id
+  return json[0]?.documentId || json[0]?.id
 }
 
 export async function submitPost(data: {
@@ -164,7 +153,7 @@ export async function submitPost(data: {
   tags?: string | string[]
   cover_image?: number | string
 }): Promise<void> {
-  const res = await fetch(`${API}/api/community-posts/submit`, {
+  const res = await fetch(`/api/community-posts/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -185,7 +174,7 @@ export async function submitComment(data: {
   author_avatar?: string
   parentDocumentId?: string
 }): Promise<void> {
-  const res = await fetch(`${API}/api/community-comments/submit`, {
+  const res = await fetch(`/api/community-comments/submit`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -196,8 +185,8 @@ export async function submitComment(data: {
   if (!res.ok) throw new Error('Gửi bình luận thất bại')
 }
 
-export async function likeComment(id: string | number): Promise<number> {
-  const res = await fetch(`${API}/api/community-comments/like/${id}`, {
+export async function likeComment(documentId: string): Promise<number> {
+  const res = await fetch(`/api/community-comments/like/${documentId}`, {
     method: 'POST',
     headers: { ...authHeaders() },
   })

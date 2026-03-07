@@ -7,9 +7,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import StickyBanner from '@/components/StickyBanner'
+
 import { useAuth } from '@/contexts/AuthContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { updateMe, uploadAvatarFile } from '@/lib/api/user'
@@ -176,8 +174,7 @@ export default function ProfilePage() {
   const initials = (user.fullName || user.username || user.email)[0]?.toUpperCase() ?? '?'
 
   return (
-    <div>
-      <Header />
+    <>
 
       <main className="py-12">
         <div className="container mx-auto px-6 ">
@@ -335,9 +332,6 @@ export default function ProfilePage() {
           </motion.div>
         </div>
       </main>
-
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   )
 }

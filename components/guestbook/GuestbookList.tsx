@@ -67,12 +67,12 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <p className="text-sm font-semibold text-foreground leading-none">{entry.authorName}</p>
             {entry.entryType === 'question' && (
-              <span className="px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-500 text-[10px] font-bold uppercase tracking-tight border border-blue-500/30">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 text-[10px] font-bold uppercase tracking-tight border border-amber-500/30">
                 Câu Hỏi
               </span>
             )}
             {entry.questionCategory && (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 text-[10px] font-medium border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded-full bg-gold/15 text-gold text-[10px] font-medium border border-gold/30">
                 {entry.questionCategory}
               </span>
             )}

@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
 
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
 
 const PlayCircleIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className={className}>
@@ -36,8 +33,7 @@ export default function VideosPage() {
   const filtered = videos.filter((v) => activeCat === "Tất cả" || v.category === activeCat);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
       <main className="py-16">
         <div className="container mx-auto px-6">
 
@@ -102,8 +98,6 @@ export default function VideosPage() {
           </div>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }

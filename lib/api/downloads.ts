@@ -45,7 +45,7 @@ export async function fetchDownloads(params?: {
     pagination: { pageSize: params?.pageSize ?? 100 },
     populate: ['thumbnail'],
     filters,
-    noCache: true, // Tạm thời để lấy dữ liệu realtime tránh lỗi cache 404
+    next: { revalidate: 3600, tags: ['downloads'] },
   })
 
   const items: DownloadItem[] = (data.data || []).map((item: any) => ({

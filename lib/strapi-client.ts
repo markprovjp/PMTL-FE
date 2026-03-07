@@ -44,7 +44,7 @@ export async function clientFetch<T = unknown>(
   Object.entries(params).forEach(([k, v]) => {
     if (v !== undefined && v !== null) qs.set(k, String(v))
   })
-  const url = `${API}/api${path}${qs.toString() ? `?${qs}` : ''}`
+  const url = `/api${path}${qs.toString() ? `?${qs}` : ''}`
   const res = await fetch(url)
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
@@ -71,7 +71,7 @@ export async function uploadFile(file: File): Promise<{
 }> {
   const formData = new FormData()
   formData.append('files', file)
-  const res = await fetch(`${API}/api/upload`, {
+  const res = await fetch(`/api/upload`, {
     method: 'POST',
     body: formData,
   })
@@ -98,35 +98,12 @@ export async function uploadMultipleFiles(files: File[]): Promise<Array<{
   return Promise.all(files.map((f) => uploadFile(f)))
 }
 
-// ─── Like / View ──────────────────────────────────────────────
-
-/** Tăng lượt thích cho một bài viết hoặc tài nguyên */
-export async function likeItem(endpoint: string, id: string | number): Promise<number> {
-  const res = await fetch(`${API}/api/${endpoint}/like/${id}`, {
-    method: 'POST',
-  })
-  if (!res.ok) throw new Error('Không thể thích')
-  const json = await res.json()
-  return json.likes ?? 0
-}
-
-/** Tăng lượt xem — fire-and-forget, không cần await */
-export function trackView(endpoint: string, id: string | number): void {
-  fetch(`${API}/api/${endpoint}/${id}/view`, {
-    method: 'POST',
-    headers: buildAuthHeaders(),
-  }).catch(() => { }) // silent fail
-}
-
 // ─── Media URL (client-side) ─────────────────────────────────
 
 /** Resolve URL ảnh/file từ Strapi media object, client-side version */
 export function resolveUrl(media: any): string | null {
   if (!media) return null
-  const url =
-    media?.url ??
-    media?.data?.url ??
-    null
+  const url = media?.url ?? null
   if (!url) return null
   return url.startsWith('http') ? url : `${API}${url}`
 }

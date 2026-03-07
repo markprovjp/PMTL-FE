@@ -131,14 +131,24 @@ export async function getPostById(documentId: string): Promise<BlogPost | null> 
 
 /** Get all slugs (for generateStaticParams) */
 export async function getAllPostSlugs(): Promise<string[]> {
-  const res = await strapiFetch<StrapiList<Pick<BlogPost, 'slug'>>>('/blog-posts', {
-    populate: [],
-    fields: ['slug'],
-    pagination: { page: 1, pageSize: 200 },
-    sort: ['publishedAt:desc'],
-    next: { revalidate: 3600, tags: ['blog-posts-slugs'] },
-  } as never)
-  return res.data.map((p) => p.slug)
+  const slugs: string[] = []
+  let page = 1
+  let pageCount = 1
+
+  while (page <= pageCount) {
+    const res = await strapiFetch<StrapiList<Pick<BlogPost, 'slug'>>>('/blog-posts', {
+      populate: [],
+      fields: ['slug'],
+      pagination: { page, pageSize: 100 },
+      sort: ['publishedAt:desc'],
+      next: { revalidate: 3600, tags: ['blog-posts-slugs'] },
+    } as never)
+
+    slugs.push(...(res.data || []).map((p) => p.slug))
+    pageCount = res.meta?.pagination?.pageCount ?? 1
+    page++
+  }
+  return slugs
 }
 
 /**
@@ -146,12 +156,12 @@ export async function getAllPostSlugs(): Promise<string[]> {
  * Returns the existing post if found.
  */
 export async function checkDuplicatePost(
-  source: string,
+  sourceUrl: string,
   excludeDocumentId?: string
 ): Promise<BlogPost | null> {
   try {
     const filters: Record<string, unknown> = {
-      sourceUrl: { $eq: source },
+      sourceUrl: { $eq: sourceUrl },
     }
     if (excludeDocumentId) {
       filters['documentId'] = { $ne: excludeDocumentId }
@@ -211,13 +221,22 @@ export async function incrementPostViews(documentId: string): Promise<void> {
  */
 export async function getCategories(): Promise<Category[]> {
   try {
-    const res = await strapiFetch<StrapiList<Category>>('/categories', {
-      sort: ['order:asc', 'name:asc'],
-      populate: ['parent'],
-      pagination: { page: 1, pageSize: 1000 },
-      next: { revalidate: 3600, tags: ['categories'] },
-    })
-    return res.data ?? []
+    const allCategories: Category[] = []
+    let page = 1
+    let pageCount = 1
+
+    while (page <= pageCount) {
+      const res = await strapiFetch<StrapiList<Category>>('/categories', {
+        sort: ['order:asc', 'name:asc'],
+        populate: ['parent'],
+        pagination: { page, pageSize: 100 },
+        next: { revalidate: 3600, tags: ['categories'] },
+      })
+      allCategories.push(...(res.data || []))
+      pageCount = res.meta?.pagination?.pageCount ?? 1
+      page++
+    }
+    return allCategories
   } catch (err) {
     console.error('Failed to fetch categories:', err)
     return []
@@ -231,12 +250,21 @@ export async function getCategories(): Promise<Category[]> {
  */
 export async function getAllTags(): Promise<BlogTag[]> {
   try {
-    const res = await strapiFetch<StrapiList<BlogTag>>('/blog-tags', {
-      sort: ['name:asc'],
-      pagination: { page: 1, pageSize: 500 },
-      next: { revalidate: 3600, tags: ['blog-tags'] }, // Cache for 1 hour
-    })
-    return res.data ?? []
+    const allTags: BlogTag[] = []
+    let page = 1
+    let pageCount = 1
+
+    while (page <= pageCount) {
+      const res = await strapiFetch<StrapiList<BlogTag>>('/blog-tags', {
+        sort: ['name:asc'],
+        pagination: { page, pageSize: 100 },
+        next: { revalidate: 3600, tags: ['blog-tags'] },
+      })
+      allTags.push(...(res.data || []))
+      pageCount = res.meta?.pagination?.pageCount ?? 1
+      page++
+    }
+    return allTags
   } catch (err) {
     console.error('Failed to fetch tags:', err)
     return []

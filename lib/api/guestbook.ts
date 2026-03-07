@@ -6,7 +6,7 @@ import { strapiFetch } from '@/lib/strapi'
 import type { GuestbookList } from '@/types/strapi'
 
 export async function getGuestbookEntries(page = 1, pageSize = 20): Promise<GuestbookList> {
-  return strapiFetch<GuestbookList>('/guestbook-entries/list', {
+  return strapiFetch<GuestbookList>(`/guestbook-entries/list?page=${page}&pageSize=${pageSize}`, {
     noCache: true,
   })
 }

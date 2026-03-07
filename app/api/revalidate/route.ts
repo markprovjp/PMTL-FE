@@ -134,8 +134,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     })
   }
 
-  // ── 4. Invalidate each tag ─────────────────────────────────
   for (const tag of tagsToInvalidate) {
+    // @ts-expect-error Types in Next 14 may be misaligned temporarily
     revalidateTag(tag)
   }
 

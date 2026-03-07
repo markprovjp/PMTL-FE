@@ -9,9 +9,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
+
 import { ArrowRightIcon } from "@/components/icons/ZenIcons";
 import { resolveUrl } from "@/lib/strapi-client";
 import type { BeginnerGuide, StrapiMedia } from "@/types/strapi";
@@ -74,8 +72,7 @@ export default function BeginnerGuideClient({ initialGuides }: BeginnerGuideClie
   const progress = displayGuides.length > 0 ? Math.round((completedSteps.length / displayGuides.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
       <main className="py-16">
         <div className="container mx-auto px-6">
 
@@ -239,8 +236,6 @@ export default function BeginnerGuideClient({ initialGuides }: BeginnerGuideClie
           </AnimatePresence>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }

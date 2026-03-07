@@ -38,7 +38,7 @@ export const DEFAULT_SETTINGS: SiteSetting = {
 export async function getSiteSettings(): Promise<SiteSetting> {
   try {
     const res = await strapiFetch<StrapiSingle<SiteSetting>>('/setting', {
-      populate: ['logo', 'logo.formats'],
+      populate: ['logo', 'awards'],
       next: { revalidate: 3600, tags: ['settings'] }, // cache 1hr — rarely changes
     })
     return res.data ?? DEFAULT_SETTINGS

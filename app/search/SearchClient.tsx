@@ -12,9 +12,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import Header from '@/components/Header'
-import Footer from '@/components/Footer'
-import StickyBanner from '@/components/StickyBanner'
+
 import { SearchIcon, ArrowRightIcon } from '@/components/icons/ZenIcons'
 import { searchPostsAndCategories } from '@/app/actions/search'
 import type { BlogPost, Category, BlogTag } from '@/types/strapi'
@@ -399,8 +397,7 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
   // ─────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-background selection:bg-gold/20 selection:text-gold flex flex-col">
-      <Header />
+    <>
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 sm:px-6">
 
@@ -705,8 +702,6 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
           </div>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   )
 }

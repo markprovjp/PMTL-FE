@@ -95,7 +95,7 @@ function DownloadCard({ item }: { item: DownloadItem }) {
           )}
 
           {item.isUpdating && (
-            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-1 rounded-md">
+            <span className="inline-flex items-center gap-1 text-[10px] text-amber-500 font-semibold bg-amber-500/10 px-2 py-1 rounded-md">
               <RefreshCw className="w-2.5 h-2.5" /> Cập nhật
             </span>
           )}

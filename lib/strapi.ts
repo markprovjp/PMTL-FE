@@ -103,14 +103,6 @@ export async function strapiFetch<T>(
       throw new StrapiAPIError(json.error.status, errMsg, path)
     }
 
-    // Normalize non-standard Strapi response: {results, pagination} → {data, meta}
-    if (json && typeof json === 'object' && Array.isArray(json.results) && !Array.isArray(json.data)) {
-      return {
-        data: json.results,
-        meta: { pagination: json.pagination ?? {} },
-      } as T
-    }
-
     return json as T
   } catch (error) {
     if (error instanceof StrapiAPIError) throw error
@@ -146,16 +138,4 @@ export class StrapiAPIError extends Error {
   }
 }
 
-/**
- * @deprecated Use strapiFetch() instead.
- * Kept for backward compatibility only.
- */
-export async function strapiGet<T = unknown>(
-  path: string,
-  query?: Record<string, unknown>
-): Promise<{ data: T; meta?: unknown }> {
-  return strapiFetch<{ data: T; meta?: unknown }>(path, {
-    ...(query ?? {}),
-    noCache: true,
-  })
-}
+

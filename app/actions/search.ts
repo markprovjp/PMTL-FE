@@ -49,7 +49,7 @@ export const fetchAllTags = unstable_cache(
     return await getAllTags()
   },
   ['all-tags'],
-  { revalidate: 3600, tags: ['tags'] }
+  { revalidate: 3600, tags: ['blog-tags'] }
 )
 
 export async function incrementViewAction(documentId: string): Promise<{ success: boolean; status?: number; error?: string }> {

@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import Header from "@/components/Header";
 
-import Footer from "@/components/Footer";
-import StickyBanner from "@/components/StickyBanner";
 import { SearchIcon, PlayIcon } from "@/components/icons/ZenIcons";
 
 const MicIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -63,8 +60,7 @@ export default function RadioPage() {
   const featured = episodes.filter((ep) => ep.isFeatured);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
       <main className="py-16">
         <div className="container mx-auto px-6">
 
@@ -203,8 +199,6 @@ export default function RadioPage() {
           </div>
         </div>
       </main>
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }

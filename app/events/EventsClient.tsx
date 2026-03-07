@@ -275,6 +275,11 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
                         </a>
                       </Button>
                     )}
+                    <Button asChild variant="ghost" size="icon" className="rounded-xl h-11 w-11 shrink-0 text-muted-foreground hover:text-gold hover:bg-gold/5">
+                      <Link href={`/events/${event.slug}`}>
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               </motion.div>

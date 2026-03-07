@@ -8,6 +8,7 @@ import HeroSection from "@/components/HeroSection";
 import PhaoBaoSection from "@/components/PhaoBaoSection";
 import ActionCards from "@/components/ActionCards";
 import AboutSection from "@/components/AboutSection";
+import AwardsSection from "@/components/AwardsSection";
 import HallGallery from "@/components/HallGallery";
 import VideoSection from "@/components/VideoSection";
 import ContentFeeds from "@/components/ContentFeeds";
@@ -22,6 +23,7 @@ import {
   FALLBACK_PHAP_BAO,
   FALLBACK_ACTION_CARDS,
   FALLBACK_VIDEOS,
+  FALLBACK_AWARDS,
   FALLBACK_GALLERY,
   FALLBACK_STICKY_BANNER,
 } from "@/lib/api/homepage";
@@ -66,6 +68,7 @@ export default async function HomePage() {
   const phapBao = settings?.phapBao ?? FALLBACK_PHAP_BAO
   const actionCards = settings?.actionCards ?? FALLBACK_ACTION_CARDS
   const featuredVideos = settings?.featuredVideos ?? FALLBACK_VIDEOS
+  const awards = settings?.awards ?? FALLBACK_AWARDS
   const gallerySlides = settings?.gallerySlides ?? FALLBACK_GALLERY
   const stickyBanner = settings?.stickyBanner ?? FALLBACK_STICKY_BANNER
 
@@ -87,6 +90,10 @@ export default async function HomePage() {
 
         {/* Giới thiệu Pháp Môn & Đài Trưởng */}
         <AboutSection />
+        <div className="zen-divider max-w-xs mx-auto" />
+
+        {/* Giải thưởng & vinh danh quốc tế */}
+        <AwardsSection awards={awards} />
         <div className="zen-divider max-w-xs mx-auto" />
 
         {/* Slideshow hội trường trang nghiêm */}

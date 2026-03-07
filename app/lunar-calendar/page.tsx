@@ -6,9 +6,7 @@
 // ─────────────────────────────────────────────────────────────────
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import StickyBanner from '@/components/StickyBanner';
+
 import {
   Dialog,
   DialogContent,
@@ -321,7 +319,7 @@ function DayDrawer({ detail, onClose }: { detail: DayDetail | null; onClose: () 
                   <p className="text-xs text-muted-foreground leading-relaxed mb-3">
                     {m.description}
                   </p>
-                  
+
                   {/* Blog liên quan tu admin */}
                   {m.relatedBlogs && m.relatedBlogs.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-white/10">
@@ -355,8 +353,8 @@ function DayDrawer({ detail, onClose }: { detail: DayDetail | null; onClose: () 
           >
             <BellIcon className="w-4 h-4" /> Nhắc trước 1 ngày
           </button>
-          <button 
-            onClick={onClose} 
+          <button
+            onClick={onClose}
             className="px-4 py-2 rounded-lg bg-secondary text-xs text-foreground hover:bg-border transition-colors"
           >
             Đóng
@@ -516,8 +514,7 @@ export default function LunarCalendarPage() {
     day === now.getDate() && month === now.getMonth() + 1 && year === now.getFullYear();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <>
 
       <main className="pb-24">
         {/* ── Hero compact ────────────────────────────────────── */}
@@ -699,8 +696,6 @@ export default function LunarCalendarPage() {
       </main>
 
       <DayDrawer detail={selectedDay} onClose={() => setSelectedDay(null)} />
-      <Footer />
-      <StickyBanner />
-    </div>
+    </>
   );
 }
