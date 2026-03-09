@@ -6,17 +6,21 @@
 import { useState, useEffect, useCallback, useRef, useTransition } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, MoreHorizontal, CheckCircle2, Info, Pin, ImageIcon, Globe, SlidersHorizontal, X, Loader2, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal, CheckCircle2, Info, Pin, ImageIcon, Globe, SlidersHorizontal, X, Loader2, Check, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { PAGINATION, getPaginationRange } from '@/lib/config/pagination';
 import { cn } from '@/lib/utils';
+import { getErrorMessage } from '@/lib/http-error';
 import {
   fetchPosts,
+  fetchPostById,
   likePost,
   submitPost,
   submitComment,
   likeComment,
+  reportComment,
+  reportPost,
   viewPost,
   uploadFile,
   type CommunityPost,
@@ -25,8 +29,10 @@ import {
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select as ShadcnSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const CATEGORIES = ['Tất cả', 'Sức Khoẻ', 'Gia Đình', 'Sự Nghiệp', 'Hôn Nhân', 'Tâm Linh', 'Thi Cử', 'Kinh Doanh', 'Mất Ngủ', 'Mối Quan Hệ'];
+const REPORT_REASON_OPTIONS = ['spam', 'abuse', 'off-topic', 'unsafe'] as const;
 
 /* ── Icons ────────────────────────────────────────────────── */
 const HeartIcon = ({ filled, className = 'w-4 h-4' }: { filled?: boolean; className?: string }) => (
@@ -148,6 +154,48 @@ const TypeBadge = ({ type }: { type: string }) => {
   const t = map[type] || map.story;
   return <span className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-sm ${t.color}`}>{t.label}</span>;
 };
+
+const REPORT_REASON_LABELS: Record<(typeof REPORT_REASON_OPTIONS)[number], string> = {
+  spam: 'Spam / quảng cáo',
+  abuse: 'Thiếu tôn trọng',
+  'off-topic': 'Sai chủ đề',
+  unsafe: 'Nội dung không phù hợp',
+};
+
+function ReportMenu({
+  disabled,
+  onSelect,
+  compact = false,
+}: {
+  disabled?: boolean;
+  onSelect: (reason: (typeof REPORT_REASON_OPTIONS)[number]) => void;
+  compact?: boolean;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          disabled={disabled}
+          title="Báo nội dung không phù hợp"
+          className={compact
+            ? "inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-amber-400 transition-colors disabled:opacity-50"
+            : "inline-flex h-11 items-center justify-center rounded-xl border border-border px-4 text-muted-foreground hover:border-amber-400/40 hover:text-amber-400 transition-colors disabled:opacity-50"}
+        >
+          <Flag className={compact ? "w-3 h-3" : "w-4 h-4"} />
+          {compact ? (disabled ? 'Đã báo cáo' : 'Báo cáo') : null}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        {REPORT_REASON_OPTIONS.map((reason) => (
+          <DropdownMenuItem key={reason} onClick={() => onSelect(reason)}>
+            {REPORT_REASON_LABELS[reason]}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 /* ══════════════════════ POST CARD ══════════════════════════════ */
 interface PostCardProps {
@@ -279,7 +327,15 @@ const PostCard = ({ post, onOpen, onLike, liked }: PostCardProps) => {
 };
 
 /* ══════════════════════ COMMENT ITEM ═══════════════════════════ */
-const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: string | number }) => {
+interface CommentItemProps {
+  comment: CommunityComment;
+  postId: string | number;
+  allComments: CommunityComment[];
+  depth?: number;
+  onRefresh?: () => Promise<void>;
+}
+
+const CommentItem = ({ comment, postId, allComments, depth = 0, onRefresh }: CommentItemProps) => {
   const { user } = useAuth();
   const [likes, setLikes] = useState(comment.likes);
   const [liked, setLiked] = useState(false);
@@ -287,6 +343,8 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
   const [reply, setReply] = useState('');
   const [replyName, setReplyName] = useState('');
   const [sending, setSending] = useState(false);
+  const [reported, setReported] = useState(false);
+  const replyInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user) {
@@ -297,6 +355,20 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!showReply) return;
+
+    const timer = window.setTimeout(() => {
+      replyInputRef.current?.focus();
+      replyInputRef.current?.select();
+    }, 50);
+
+    return () => window.clearTimeout(timer);
+  }, [showReply]);
+
+  const replies = allComments.filter((item) => item.parent?.documentId === comment.documentId);
+  const visualDepth = Math.min(depth, 2);
+
   const handleLike = async () => {
     if (liked) return;
     setLiked(true);
@@ -304,10 +376,21 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
     try {
       await likeComment(comment.documentId);
       toast.success('Đã thích bình luận');
-    } catch {
+    } catch (error) {
       setLiked(false);
       setLikes((l) => l - 1);
-      toast.error('Không thể thích bình luận');
+      toast.error(getErrorMessage(error, 'Không thể thích bình luận'));
+    }
+  };
+
+  const handleReport = async (reason: (typeof REPORT_REASON_OPTIONS)[number]) => {
+    if (reported) return;
+    try {
+      const message = await reportComment(comment.documentId, reason);
+      setReported(true);
+      toast.success(message);
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Không thể báo cáo bình luận'));
     }
   };
 
@@ -327,38 +410,48 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
         parentDocumentId: comment.documentId,
         author_avatar: user?.avatar_url || undefined
       });
-      toast.success('Trả lời đã được gửi và đang chờ duyệt');
+      toast.success('Trả lời đã được đăng');
       setReply('');
       if (!user) localStorage.setItem('pmtl_author_name', finalName);
       setShowReply(false);
-    } catch {
-      toast.error('Gửi trả lời thất bại');
+      await onRefresh?.();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Gửi trả lời thất bại'));
     } finally {
       setSending(false);
     }
   };
 
   return (
-    <div className="flex gap-3">
+    <div
+      className={cn(
+        "flex max-w-full gap-3",
+        visualDepth === 1 && "ml-5 border-l border-gold/15 pl-4",
+        visualDepth >= 2 && "ml-3 border-l border-gold/10 pl-3"
+      )}
+    >
       {comment.author_avatar ? (
         <img src={comment.author_avatar} alt={comment.author_name} className="w-8 h-8 rounded-full object-cover" />
       ) : (
         <div className={avatar(comment.author_name, 8)}>{initials(comment.author_name)}</div>
       )}
       <div className="flex-1 min-w-0">
-        <div className="bg-secondary/50 rounded-xl px-4 py-3">
+        <div className="max-w-full bg-secondary/50 rounded-xl px-4 py-3">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="text-xs font-semibold text-foreground/90">{comment.author_name}</span>
           </div>
-          <p className="text-sm text-foreground/75 leading-relaxed">{comment.content}</p>
+          <p className="max-w-full text-sm text-foreground/75 leading-relaxed break-words [overflow-wrap:anywhere]">
+            {comment.content}
+          </p>
         </div>
         <div className="flex items-center gap-4 mt-1.5 ml-2">
-          <button onClick={handleLike} className={`flex items-center gap-1 text-xs transition-colors ${liked ? 'text-rose-400' : 'text-muted-foreground hover:text-rose-400'}`}>
+          <button type="button" onClick={handleLike} className={`flex items-center gap-1 text-xs transition-colors ${liked ? 'text-rose-400' : 'text-muted-foreground hover:text-rose-400'}`}>
             <HeartIcon filled={liked} className="w-3 h-3" />{likes}
           </button>
-          <button onClick={() => setShowReply((s) => !s)} className="text-xs text-muted-foreground hover:text-gold transition-colors">
+          <button type="button" onClick={() => setShowReply((s) => !s)} className="text-xs text-muted-foreground hover:text-gold transition-colors">
             Trả lời
           </button>
+          <ReportMenu disabled={reported} onSelect={handleReport} compact />
           <span className="text-[10px] text-muted-foreground/50">{timeAgo(comment.createdAt)}</span>
         </div>
         {showReply && (
@@ -374,6 +467,7 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
             )}
             <div className="flex gap-2">
               <input
+                ref={replyInputRef}
                 value={reply}
                 onChange={(e) => setReply(e.target.value)}
                 placeholder={user || replyName ? `Trả lời ${comment.author_name}...` : "Viết trả lời..."}
@@ -390,23 +484,46 @@ const CommentItem = ({ comment, postId }: { comment: CommunityComment; postId: s
             </div>
           </form>
         )}
+        {replies.length > 0 && (
+          <div className="mt-3 space-y-3">
+            {replies.map((replyComment) => (
+              <CommentItem
+                key={replyComment.documentId}
+                comment={replyComment}
+                postId={postId}
+                allComments={allComments}
+                depth={depth + 1}
+                onRefresh={onRefresh}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
 /* ══════════════════════ DETAIL MODAL ══════════════════════════ */
-interface DetailModalProps { post: CommunityPost | null; onClose: () => void; onLike: (id: string | number) => void; liked: boolean; }
-const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
+interface DetailModalProps {
+  post: CommunityPost | null;
+  onClose: () => void;
+  onLike: (id: string | number) => void;
+  liked: boolean;
+  onRefreshPost: (documentId: string) => Promise<CommunityPost>;
+}
+
+const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModalProps) => {
   const [comments, setComments] = useState<CommunityComment[]>([]);
   const [commentText, setCommentText] = useState('');
   const [commentName, setCommentName] = useState('');
   const [sending, setSending] = useState(false);
+  const [reportedPost, setReportedPost] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
     if (!post) return;
     setComments(post.comments || []);
+    setReportedPost(false);
 
     if (user) {
       setCommentName(user.fullName || user.username || '');
@@ -415,6 +532,26 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
       if (saved) setCommentName(saved);
     }
   }, [post, user]);
+
+  const refreshCurrentPost = useCallback(async () => {
+    if (!post?.documentId) return;
+
+    const refreshedPost = await onRefreshPost(post.documentId);
+    setComments(refreshedPost.comments || []);
+  }, [onRefreshPost, post?.documentId]);
+
+  const rootComments = comments.filter((item) => !item.parent?.documentId);
+
+  const handleReportPost = async (reason: (typeof REPORT_REASON_OPTIONS)[number]) => {
+    if (!post || reportedPost) return;
+    try {
+      const message = await reportPost(post.documentId, reason);
+      setReportedPost(true);
+      toast.success(message);
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Không thể báo cáo bài viết'));
+    }
+  };
 
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -428,11 +565,12 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
         author_name: finalName,
         author_avatar: user?.avatar_url || undefined
       });
-      toast.success('Bình luận đã được gửi và đang chờ duyệt');
+      toast.success('Bình luận đã được đăng');
       setCommentText('');
       if (!user) localStorage.setItem('pmtl_author_name', finalName);
-    } catch {
-      toast.error('Gửi bình luận thất bại');
+      await refreshCurrentPost();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Gửi bình luận thất bại'));
     } finally {
       setSending(false);
     }
@@ -548,10 +686,16 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
                     <ChatIcon className="w-5 h-5 text-gold" /> Bình luận ({comments.length})
                   </h3>
 
-                  {comments.length > 0 ? (
+                  {rootComments.length > 0 ? (
                     <div className="space-y-4">
-                      {comments.map((c) => (
-                        <CommentItem key={c.documentId} comment={c} postId={post.documentId} />
+                      {rootComments.map((c) => (
+                        <CommentItem
+                          key={c.documentId}
+                          comment={c}
+                          postId={post.documentId}
+                          allComments={comments}
+                          onRefresh={refreshCurrentPost}
+                        />
                       ))}
                     </div>
                   ) : (
@@ -568,7 +712,7 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
                     </div>
                     <textarea value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Chia sẻ cảm nghĩ, kinh nghiệm của bạn..." required rows={3} className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 transition-colors resize-none" />
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground">Bình luận được Admin duyệt trong 24h</p>
+                      <p className="text-xs text-muted-foreground">Bình luận hiển thị ngay. Nếu bị nhiều báo cáo, hệ thống sẽ tạm ẩn để kiểm tra.</p>
                       <button type="submit" disabled={sending} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm hover:bg-primary/90 disabled:opacity-50 transition-colors">
                         <SendIcon />{sending ? 'Đang gửi...' : 'Bình luận'}
                       </button>
@@ -597,6 +741,7 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
                 <ChatIcon className="w-5 h-5" />
                 Bình luận
               </button>
+              <ReportMenu disabled={reportedPost} onSelect={handleReportPost} />
             </div>
           </div>
         )}
@@ -609,13 +754,21 @@ const DetailModal = ({ post, onClose, onLike, liked }: DetailModalProps) => {
 const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolean; onOpenChange: (open: boolean) => void; user: any; availableTags: string[] }) => {
   const [form, setForm] = useState({
     title: '', content: '', type: 'story', category: 'Tâm Linh',
-    author_name: user ? (user.fullName || user.username) : '',
+    author_name: user ? (user.fullName || user.username || user.email || '') : '',
     video_url: '', tags: '',
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setForm((prev) => ({
+      ...prev,
+      author_name: user ? (user.fullName || user.username || user.email || '') : prev.author_name,
+    }));
+  }, [user, open]);
 
   // Cleanup state when modal closes
   const handleOpenChange = (newOpen: boolean) => {
@@ -624,7 +777,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
       setTimeout(() => {
         setForm({
           title: '', content: '', type: 'story', category: 'Tâm Linh',
-          author_name: user ? (user.fullName || user.username) : '',
+          author_name: user ? (user.fullName || user.username || user.email || '') : '',
           video_url: '', tags: '',
         });
         setCoverFile(null);
@@ -660,21 +813,27 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
     e.preventDefault();
     setSending(true);
     try {
+      const finalAuthorName = user ? (user.fullName || user.username || user.email || '') : form.author_name;
+      if (!finalAuthorName.trim()) {
+        toast.error('Thiếu tên người đăng bài');
+        return;
+      }
       let cover_image;
       if (coverFile) {
         cover_image = await uploadFile(coverFile);
       }
       await submitPost({
         ...form,
+        author_name: finalAuthorName,
         video_url: form.video_url || undefined,
         tags: form.tags || undefined,
         cover_image: cover_image || undefined,
         author_avatar: user?.avatar_url || undefined,
       });
-      toast.success('Bài viết đã được gửi và đang chờ duyệt');
+      toast.success('Bài viết đã được đăng');
       setSent(true);
-    } catch {
-      toast.error('Gửi bài viết thất bại');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Gửi bài viết thất bại'));
     } finally {
       setSending(false);
     }
@@ -696,7 +855,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
           </div>
 
           <div
-            className="flex-1 min-h-0 overflow-y-auto overscroll-contain custom-scrollbar touch-pan-y"
+            className="flex flex-1 min-h-0 flex-col overflow-hidden"
             data-lenis-prevent
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
@@ -706,7 +865,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
                   <CheckCircle2 className="w-8 h-8 mx-auto mb-4" />
                   <AlertTitle className="text-xl font-display mb-2">Cảm ơn bạn đã chia sẻ!</AlertTitle>
                   <AlertDescription className="text-sm">
-                    Bài viết của bạn đã được tiếp nhận và đang chờ Admin duyệt.
+                    Bài viết của bạn đã được đăng thành công.
                     Mọi chia sẻ của bạn đều là hạt mầm thiện lành truyền cảm hứng tới cộng đồng.
                   </AlertDescription>
                 </Alert>
@@ -785,8 +944,19 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
-                      <label className="text-xs text-muted-foreground">Họ tên *</label>
-                      <input name="author_name" value={form.author_name} onChange={handleChange} required placeholder="Tên của bạn..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+                      {!user ? (
+                        <>
+                          <label className="text-xs text-muted-foreground">Họ tên *</label>
+                          <input name="author_name" value={form.author_name} onChange={handleChange} required placeholder="Tên của bạn..." className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50" />
+                        </>
+                      ) : (
+                        <>
+                          <label className="text-xs text-muted-foreground">Tài khoản đăng bài</label>
+                          <div className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground">
+                            {form.author_name}
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="flex flex-col gap-1">
@@ -812,14 +982,21 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
                           ))}
                         </div>
                       )}
+                      <input
+                        name="tags"
+                        value={form.tags}
+                        onChange={handleChange}
+                        placeholder="vd: niệm-phật, trị-bệnh, cảm-ngộ"
+                        className="px-3 py-2 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/50"
+                      />
                     </div>
                   </div>
 
                   <Alert className="bg-amber-500/5 border-amber-500/20 text-amber-500">
                     <Info className="w-4 h-4" />
-                    <AlertTitle className="text-xs font-semibold">Lưu ý kiểm duyệt</AlertTitle>
+                    <AlertTitle className="text-xs font-semibold">Lưu ý cộng đồng</AlertTitle>
                     <AlertDescription className="text-[10px] leading-relaxed">
-                      Để đảm bảo chất lượng nội dung, bài viết sẽ được Admin duyệt trong vòng 24 giờ trước khi hiển thị công khai.
+                      Bài viết hiển thị ngay. Nếu bị nhiều người báo cáo hoặc có dấu hiệu spam, hệ thống sẽ tạm ẩn để kiểm tra.
                     </AlertDescription>
                   </Alert>
                 </div>
@@ -852,7 +1029,17 @@ const SkeletonCard = () => (
 );
 
 /* ══════════════════════ MAIN PAGE ══════════════════════════════ */
-export default function SharesClient({ initialPosts = [], initialTotal = 0, initialPage = 1 }: { initialPosts?: CommunityPost[], initialTotal?: number, initialPage?: number }) {
+export default function SharesClient({
+  initialPosts = [],
+  initialTotal = 0,
+  initialPage = 1,
+  availableTags = [],
+}: {
+  initialPosts?: CommunityPost[],
+  initialTotal?: number,
+  initialPage?: number,
+  availableTags?: string[],
+}) {
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -976,14 +1163,14 @@ export default function SharesClient({ initialPosts = [], initialTotal = 0, init
     try {
       await likePost(sid);
       toast.success('Đã thích bài viết');
-    } catch {
+    } catch (error) {
       setLikedIds((prev) => {
         const n = new Set(prev);
         n.delete(sid);
         localStorage.setItem('pmtl_liked_community', JSON.stringify(Array.from(n)));
         return n;
       });
-      toast.error('Không thể thích bài viết');
+      toast.error(getErrorMessage(error, 'Không thể thích bài viết'));
     }
   };
 
@@ -998,6 +1185,15 @@ export default function SharesClient({ initialPosts = [], initialTotal = 0, init
       }
     } catch { }
   };
+
+  const refreshSelectedPost = useCallback(async (documentId: string) => {
+    const refreshedPost = await fetchPostById(documentId);
+    setSelectedPost(refreshedPost);
+    setPosts((current) =>
+      current.map((item) => (item.documentId === documentId ? { ...item, comments: refreshedPost.comments || [] } : item))
+    );
+    return refreshedPost;
+  }, []);
 
   const pinned = posts.filter((p) => p.pinned);
   const regular = posts.filter((p) => !p.pinned);
@@ -1415,9 +1611,10 @@ export default function SharesClient({ initialPosts = [], initialTotal = 0, init
         onClose={() => setSelectedPost(null)}
         onLike={handleLike}
         liked={selectedPost ? likedIds.has(selectedPost.documentId) : false}
+        onRefreshPost={refreshSelectedPost}
       />
 
-      <SubmitModal open={showSubmit} onOpenChange={setShowSubmit} user={user} availableTags={Array.from(new Set(posts.flatMap(p => p.tags || [])))} />
+      <SubmitModal open={showSubmit} onOpenChange={setShowSubmit} user={user} availableTags={availableTags} />
     </>
   );
 }

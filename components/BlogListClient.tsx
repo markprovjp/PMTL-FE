@@ -202,17 +202,17 @@ export default function BlogListClient({
                 <ScrollArea className="h-[250px] pr-4 -mr-4">
                   <div className="flex flex-col gap-3 pl-1">
                     {archives.map((arch) => (
-                      <div key={arch.year}>
-                        <p className="text-sm font-semibold text-foreground/80 mb-1">{arch.year}</p>
-                        <div className="grid grid-cols-2 gap-1 pl-2 border-l-2 border-border/40">
+                      <div key={arch.year} className="rounded-2xl border border-gold/10 bg-gold/[0.03] px-3 py-3">
+                        <p className="mb-2 text-sm font-semibold text-foreground/85">{arch.year}</p>
+                        <div className="grid grid-cols-2 gap-2 pl-2 border-l border-gold/20">
                           {arch.months.map((m) => (
                             <Link
                               key={`${arch.year}-${m.month}`}
                               href={`/blog/archive/${arch.year}/${m.month}`}
-                              className="text-xs py-1 px-2 rounded-lg text-muted-foreground hover:bg-secondary/60 hover:text-foreground transition-colors flex justify-between"
+                              className="flex justify-between rounded-full border border-gold/10 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-gold/30 hover:bg-gold/5 hover:text-foreground"
                             >
-                              <span>T{m.month}</span>
-                              <span className="opacity-50">({m.count})</span>
+                              <span>Th.{m.month}</span>
+                              <span className="opacity-60">{m.count}</span>
                             </Link>
                           ))}
                         </div>
@@ -336,8 +336,8 @@ export default function BlogListClient({
 
       {/* ── DESKTOP: Sidebar ── */}
       <aside className="hidden lg:block lg:w-72 shrink-0">
-        <div className="sticky top-24 space-y-5">
-          <div>
+        <div className="sticky top-24">
+          <div className="rounded-[1.75rem] border border-gold/12 bg-card/95 p-5 shadow-[0_12px_30px_-24px_rgba(212,175,55,0.35)]">
             <h3 className="font-display text-base text-foreground mb-4">Bộ Lọc & Tìm Kiếm</h3>
             <FilterPanel />
           </div>

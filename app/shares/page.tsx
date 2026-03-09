@@ -1,9 +1,13 @@
 import { Metadata } from 'next'
 import SharesClient from '@/components/shares/SharesClient'
 import { fetchPosts } from '@/lib/api/community'
+import { getAllTags } from '@/lib/api/blog'
 import HeaderServer from '@/components/HeaderServer'
 import Footer from '@/components/Footer'
 import StickyBanner from '@/components/StickyBanner'
+
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export const metadata: Metadata = {
   title: 'Người Thật Việc Thật - Chia sẻ cộng đồng | Phật Pháp Mật Tông',
@@ -25,6 +29,7 @@ export default async function SharesPage({
     sort,
     pageSize: 12,
   }).catch(() => null);
+  const tagRes = await getAllTags().catch(() => []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,6 +38,7 @@ export default async function SharesPage({
         initialPosts={res?.posts || []}
         initialTotal={res?.total || 0}
         initialPage={parseInt(page, 10)}
+        availableTags={tagRes.map((tag) => tag.name).filter(Boolean)}
       />
       <Footer />
       <StickyBanner />

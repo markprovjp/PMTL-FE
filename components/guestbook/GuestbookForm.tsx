@@ -1,16 +1,17 @@
 // components/guestbook/GuestbookForm.tsx — Client component
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface GuestbookFormProps {
   onSuccess: () => void
 }
 
 export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
+  const { user } = useAuth()
   const [authorName, setAuthorName] = useState('')
-  const [country, setCountry] = useState('')
   const [message, setMessage] = useState('')
   const [entryType, setEntryType] = useState<'message' | 'question'>('message')
   const [questionCategory, setQuestionCategory] = useState('')
@@ -18,11 +19,21 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
   const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
 
+  useEffect(() => {
+    if (user) {
+      setAuthorName(user.dharmaName || user.fullName || user.username || user.email || '')
+    }
+  }, [user])
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
 
-    if (!authorName.trim()) {
+    const finalAuthorName = user
+      ? (user.dharmaName || user.fullName || user.username || user.email || '').trim()
+      : authorName.trim()
+
+    if (!finalAuthorName) {
       setError('Vui lòng nhập tên của bạn.')
       return
     }
@@ -37,8 +48,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            authorName: authorName.trim(),
-            country: country.trim() || undefined,
+            authorName: finalAuthorName,
             message: message.trim(),
             entryType,
             questionCategory: entryType === 'question' ? (questionCategory || 'Dharma') : undefined
@@ -56,8 +66,9 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
         }
 
         setSuccess(true)
-        setAuthorName('')
-        setCountry('')
+        if (!user) {
+          setAuthorName('')
+        }
         setMessage('')
         setTimeout(() => {
           setSuccess(false)
@@ -78,7 +89,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       >
         <p className="font-display text-lg text-gold mb-1">Cảm ơn bạn!</p>
         <p className="text-sm text-muted-foreground">
-          Lưu bút của bạn đã được nhận và sẽ hiển thị sau khi được xét duyệt.
+          Lưu bút của bạn đã được ghi lại và hiển thị ngay trên trang.
         </p>
       </motion.div>
     )
@@ -108,7 +119,14 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {user ? (
+        <div className="rounded-2xl border border-gold/20 bg-gold/5 px-4 py-3">
+          <p className="mb-1 text-[11px] uppercase tracking-[0.2em] text-gold/70">Tài khoản gửi lưu bút</p>
+          <p className="text-sm font-medium text-foreground">
+            {user.dharmaName || user.fullName || user.username || user.email}
+          </p>
+        </div>
+      ) : (
         <div>
           <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="gb-name">
             Tên của bạn *
@@ -124,22 +142,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
             disabled={isPending}
           />
         </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1.5" htmlFor="gb-country">
-            Quốc gia (tuỳ chọn)
-          </label>
-          <input
-            id="gb-country"
-            type="text"
-            placeholder="Việt Nam, Hoa Kỳ, ..."
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            maxLength={100}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-            disabled={isPending}
-          />
-        </div>
-      </div>
+      )}
 
       {entryType === 'question' && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">

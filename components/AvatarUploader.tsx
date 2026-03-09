@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useState } from 'react';
-import { uploadAvatarFile, updateMe } from '@/lib/api/user';
+import { toast } from 'sonner';
+import { getErrorMessage, uploadAvatarFile, updateMe } from '@/lib/api/user';
 
 export default function AvatarUploader({ initialUrl }: { initialUrl?: string }) {
   const [preview, setPreview] = useState<string | null>(initialUrl ?? null);
@@ -13,10 +14,11 @@ export default function AvatarUploader({ initialUrl }: { initialUrl?: string }) 
     try {
       const data = await uploadAvatarFile(file);
       // Update user avatar_url field
-      await updateMe({ avatar_url: data.url });
+      await updateMe({ avatar_url: data.id });
       setPreview(data.url);
+      toast.success('Đã cập nhật ảnh đại diện');
     } catch (err) {
-      console.error('Avatar upload error:', err);
+      toast.error(getErrorMessage(err, 'Tải ảnh đại diện thất bại'));
     } finally {
       setUploading(false);
     }

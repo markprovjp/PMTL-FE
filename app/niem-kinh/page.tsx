@@ -13,15 +13,17 @@ import Footer from '@/components/Footer';
 import StickyBanner from '@/components/StickyBanner';
 import { fetchTodayChant } from '@/lib/api/chanting';
 import type { TodayChantResponse } from '@/lib/api/chanting';
+import { CHANTING_ADMIN_COPY } from '@/lib/config/chanting';
 import ChantingRunner from './ChantingRunner';
 import { ChantingNotesSection } from '@/components/ChantingNotesSection';
 import { Moon } from 'lucide-react';
 
+
 export const revalidate = 3600; // Cache 1 hour, auto-revalidate
 
 export const metadata: Metadata = {
-  title: 'Niệm Kinh — Lịch Tu Học Hôm Nay',
-  description: 'Theo dõi khoá tu niệm kinh hằng ngày: kinh, chú, nghi thức theo lịch âm.',
+  title: 'Niệm Kinh — Lịch Trình Niệm Hôm Nay',
+  description: 'Theo dõi đúng chant plan đang cấu hình trong admin: bài niệm, tiến độ thực hành và sự kiện âm lịch trong ngày.',
 };
 
 // ── Tính ngày trong timezone Asia/Bangkok ────────────────────
@@ -67,7 +69,7 @@ export default async function NiemKinhPage({
 }: {
   searchParams: Promise<{ plan?: string }>;
 }) {
-  const { plan: planSlug = 'daily-newbie' } = await searchParams;
+  const { plan: planSlug } = await searchParams;
   const { isoDate, year, month, day, serverNow } = getTodayBKK();
   const lunar = await getLunarDate(year, month, day);
 
@@ -91,10 +93,13 @@ export default async function NiemKinhPage({
           {/* ── Header Section ────────────────────────────────── */}
           <div className="mb-12">
             <div className="flex flex-col items-center text-center mb-8">
-              <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">Niệm Kinh Hàng Ngày</p>
+              <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">{CHANTING_ADMIN_COPY.pageEyebrow}</p>
               <h1 className="font-display text-3xl md:text-4xl text-foreground mb-4 leading-tight">
-                Lịch Tu & Niệm Kinh Hôm Nay
+                {CHANTING_ADMIN_COPY.pageTitle}
               </h1>
+              <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                {CHANTING_ADMIN_COPY.pageDescription}
+              </p>
               <p className="text-muted-foreground text-base">
                 {solarLabel}
                 {lunar && (
@@ -145,14 +150,19 @@ export default async function NiemKinhPage({
   );
 }
 
-function EmptyState({ planSlug }: { planSlug: string }) {
+function EmptyState({ planSlug }: { planSlug?: string }) {
   return (
     <div className="relative rounded-2xl border border-dashed border-muted-foreground/30 bg-card/30 p-12 text-center">
-      <h2 className="text-lg font-semibold text-foreground mb-2">Chưa có kế hoạch niệm kinh</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-2">Chưa có lịch trình niệm để hiển thị</h2>
       <p className="text-muted-foreground text-sm mb-4">
-        Admin hãy tạo plan{' '}
-        <code className="bg-muted px-2 py-1 rounded text-xs font-mono">{planSlug}</code>
-        {' '}trong Strapi và thêm các bài niệm vào phần <span className="font-semibold">Plan Items</span>.
+        Trong Strapi Admin, hãy kiểm tra{' '}
+        <span className="font-semibold">{CHANTING_ADMIN_COPY.collectionName}</span>
+        {planSlug ? (
+          <>
+            {' '}ở slug <code className="bg-muted px-2 py-1 rounded text-xs font-mono">{planSlug}</code>
+          </>
+        ) : null}
+        {' '}và bảo đảm entry đó đã có <span className="font-semibold">{CHANTING_ADMIN_COPY.itemComponent}</span>.
       </p>
       <a href="/lunar-calendar" className="inline-block text-sm text-amber-500 hover:text-amber-600 font-medium transition-colors">
         Xem lịch tu học →

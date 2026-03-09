@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────
 //  POST /api/auth/register — Đăng ký với Strapi
 // ─────────────────────────────────────────────────────────────
-import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { normalizeApiErrorMessage } from '@/lib/http-error'
 
 interface RegisterRequestBody {
   username: string
@@ -46,27 +47,25 @@ export async function POST(req: Request) {
 
     if (!res.ok) {
       const error = data as StrapiErrorResponse
-      return Response.json(
-        { error: error.error.message || 'Đăng ký thất bại' },
-        { status: res.status }
-      )
+      return NextResponse.json({ error: normalizeApiErrorMessage(error, res.status, 'Đăng ký thất bại') }, { status: res.status })
     }
 
     const auth = data as StrapiAuthResponse
-    const cookieStore = await cookies()
-    cookieStore.set('auth_token', auth.jwt, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-    })
-
-    return Response.json({
+    const response = NextResponse.json({
       success: true,
       user: auth.user,
     })
+    response.cookies.set('auth_token', auth.jwt, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 days
+    })
+
+    return response
   } catch (err) {
     console.error('Register error:', err)
-    return Response.json({ error: 'Lỗi máy chủ' }, { status: 500 })
+    return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500 })
   }
 }

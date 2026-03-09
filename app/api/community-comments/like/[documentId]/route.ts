@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { normalizeApiErrorMessage, parseResponseBody } from '@/lib/http-error'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -24,10 +25,13 @@ export async function POST(
       headers,
     });
 
-    const data = await res.json()
+    const data = await parseResponseBody(res)
 
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status })
+      return NextResponse.json(
+        { error: normalizeApiErrorMessage(data, res.status, 'Không thể thích bình luận') },
+        { status: res.status }
+      )
     }
 
     return NextResponse.json(data)

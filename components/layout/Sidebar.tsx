@@ -1,6 +1,6 @@
 // components/layout/Sidebar.tsx — Server component
 // CMS-configurable sidebar: conditionally renders widgets based on SidebarConfig
-import { Suspense } from 'react'
+import { Suspense, type ReactNode } from 'react'
 import { getSidebarConfig } from '@/lib/api/sidebar'
 import SearchWidget from './widgets/SearchWidget'
 import CategoryWidget from './widgets/CategoryWidget'
@@ -8,6 +8,8 @@ import ArchiveWidget from './widgets/ArchiveWidget'
 import LatestCommentsWidget from './widgets/LatestCommentsWidget'
 import DownloadLinksWidget from './widgets/DownloadLinksWidget'
 import SocialLinksWidget from './widgets/SocialLinksWidget'
+import { Card as UICard, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 // Fallback: show all widgets if CMS config is unavailable
 const DEFAULT_CONFIG = {
@@ -24,58 +26,64 @@ const DEFAULT_CONFIG = {
 export default async function Sidebar() {
   const config = (await getSidebarConfig()) ?? DEFAULT_CONFIG
 
+  const Card = ({ children }: { children: ReactNode }) => (
+    <UICard className="overflow-hidden rounded-[1.75rem] border-border/70 bg-card/75 shadow-[0_18px_35px_-30px_rgba(37,24,12,0.22)]">
+      <CardContent className="p-6">{children}</CardContent>
+    </UICard>
+  )
+
   return (
     <aside className="hidden lg:block w-72 shrink-0">
-      <div className="sticky top-24 space-y-8">
+      <div className="sticky top-24 space-y-5">
         {/* Search */}
         {config.showSearch && (
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <Card>
             <SearchWidget />
-          </div>
+          </Card>
         )}
 
         {/* Category tree */}
         {config.showCategoryTree && (
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <Suspense fallback={<div className="h-20 animate-pulse bg-muted rounded-xl" />}>
+          <Card>
+            <Suspense fallback={<Skeleton className="h-20 rounded-xl" />}>
               <CategoryWidget />
             </Suspense>
-          </div>
+          </Card>
         )}
 
         {/* Archive */}
         {config.showArchive && (
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <Suspense fallback={<div className="h-24 animate-pulse bg-muted rounded-xl" />}>
+          <Card>
+            <Suspense fallback={<Skeleton className="h-24 rounded-xl" />}>
               <ArchiveWidget />
             </Suspense>
-          </div>
+          </Card>
         )}
 
         {/* Latest comments */}
         {config.showLatestComments && (
-          <div className="rounded-2xl border border-border bg-card p-5">
-            <Suspense fallback={<div className="h-20 animate-pulse bg-muted rounded-xl" />}>
+          <Card>
+            <Suspense fallback={<Skeleton className="h-20 rounded-xl" />}>
               <LatestCommentsWidget />
             </Suspense>
-          </div>
+          </Card>
         )}
 
         {/* Download links */}
         {config.showDownloadLinks && config.downloadLinks?.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <Card>
             <DownloadLinksWidget links={config.downloadLinks} />
-          </div>
+          </Card>
         )}
 
         {/* Social links + QR */}
         {(config.socialLinks?.length > 0 || config.qrImages?.length) && (
-          <div className="rounded-2xl border border-border bg-card p-5">
+          <Card>
             <SocialLinksWidget
               socialLinks={config.socialLinks ?? []}
               qrImages={config.qrImages}
             />
-          </div>
+          </Card>
         )}
       </div>
     </aside>

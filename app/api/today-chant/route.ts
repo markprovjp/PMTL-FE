@@ -1,20 +1,21 @@
 // ─────────────────────────────────────────────────────────────
 //  app/api/today-chant/route.ts
 //
-//  GET /api/today-chant?date=YYYY-MM-DD&planSlug=daily-newbie
+//  GET /api/today-chant?date=YYYY-MM-DD&planSlug=<optional>
 //
 //  1) Tính lunarMonth/lunarDay từ date dùng @forvn/vn-lunar-calendar
 //  2) Gọi Strapi aggregator và trả về kết quả cho client
 // ─────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchTodayChant } from '@/lib/api/chanting';
+import { CHANTING_ADMIN_COPY } from '@/lib/config/chanting';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    const planSlug = searchParams.get('planSlug') ?? 'daily-newbie';
+    const planSlug = searchParams.get('planSlug');
 
     // ── Xác định ngày hôm nay (Asia/Bangkok = UTC+7) ──
     const dateParam = searchParams.get('date');
@@ -52,7 +53,11 @@ export async function GET(req: NextRequest) {
 
     if (!data) {
       return NextResponse.json(
-        { error: 'Chưa khởi tạo dữ liệu niệm kinh. Hãy tạo plan "daily-newbie" trong Strapi Admin.' },
+        {
+          error: planSlug
+            ? `Chưa có dữ liệu cho slug "${planSlug}". Hãy kiểm tra entry trong "${CHANTING_ADMIN_COPY.collectionName}" và bảo đảm đã gắn "${CHANTING_ADMIN_COPY.itemComponent}".`
+            : `Chưa có plan publish nào có dữ liệu. Hãy kiểm tra "${CHANTING_ADMIN_COPY.collectionName}" và bảo đảm đã gắn "${CHANTING_ADMIN_COPY.itemComponent}".`,
+        },
         { status: 404 }
       );
     }

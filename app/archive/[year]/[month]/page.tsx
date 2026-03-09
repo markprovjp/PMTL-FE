@@ -58,7 +58,7 @@ export default async function ArchiveMonthPage({ params }: { params: Promise<Par
     <div className="min-h-screen bg-background">
       <HeaderServer />
       <main className="py-24">
-        <div className="container max-w-3xl mx-auto px-6">
+        <div className="container mx-auto max-w-5xl px-6">
           <div className="flex items-center gap-2 mb-10">
             <Link
               href={`/archive/${year}`}
@@ -69,7 +69,7 @@ export default async function ArchiveMonthPage({ params }: { params: Promise<Par
             </Link>
           </div>
 
-          <div className="mb-12">
+          <div className="mb-10">
             <p className="text-gold text-xs font-medium tracking-widest uppercase mb-3">Kho Lưu Trữ</p>
             <h1 className="font-display text-4xl md:text-5xl text-foreground">{monthLabel}</h1>
           </div>

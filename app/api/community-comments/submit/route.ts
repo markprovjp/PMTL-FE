@@ -1,5 +1,7 @@
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { normalizeApiErrorMessage, parseResponseBody } from '@/lib/http-error'
+import { enqueuePushJobSafe } from '@/lib/push-jobs'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -29,14 +31,39 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    const data = await res.json()
+    const data = await parseResponseBody(res)
 
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status })
+      return NextResponse.json(
+        {
+          error: normalizeApiErrorMessage(data, res.status, 'Gửi bình luận thất bại'),
+          details: data,
+        },
+        { status: res.status }
+      )
     }
 
+    const content = typeof body?.content === 'string' ? body.content.trim() : ''
+    const postDocumentId = typeof body?.postDocumentId === 'string' ? body.postDocumentId : null
+    const isReply = typeof body?.parentDocumentId === 'string' && body.parentDocumentId.length > 0
+
+    await enqueuePushJobSafe({
+      kind: 'community',
+      title: isReply ? 'Có phản hồi mới trong thảo luận' : 'Có bình luận mới trong cộng đồng',
+      body: content
+        ? `${content.slice(0, 96)}${content.length > 96 ? '...' : ''}`
+        : 'Một đạo hữu vừa gửi thêm nội dung mới trong cộng đồng.',
+      url: '/shares',
+      tag: isReply ? 'community-reply' : 'community-comment',
+      payload: {
+        entity: 'community-comment',
+        postDocumentId,
+        isReply,
+      },
+    })
+
     return NextResponse.json(data)
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500 })
   }
 }

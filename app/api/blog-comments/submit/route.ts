@@ -3,6 +3,7 @@
 //  POST — gửi bình luận mới
 // ─────────────────────────────────────────────────────────────
 import { NextRequest } from 'next/server'
+import { normalizeApiErrorMessage, parseResponseBody } from '@/lib/http-error'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL ?? 'http://localhost:1337'
 
@@ -39,7 +40,16 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     })
 
-    const data = await res.json()
+    const data = await parseResponseBody(res)
+    if (!res.ok) {
+      return Response.json(
+        {
+          error: normalizeApiErrorMessage(data, res.status, 'Gửi bình luận thất bại'),
+          details: data,
+        },
+        { status: res.status }
+      )
+    }
     return Response.json(data, { status: res.status })
   } catch {
     return Response.json({ error: 'Lỗi server.' }, { status: 500 })

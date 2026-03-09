@@ -32,6 +32,7 @@ import {
   ChevronLeft, Check, Info, Star, X
 } from 'lucide-react';
 import { PAGINATION } from '@/lib/config/pagination';
+import { CHANTING_ADMIN_COPY } from '@/lib/config/chanting';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // ── Guest localStorage helpers ────────────────────────────────
@@ -363,7 +364,11 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
       <div className="text-center py-16 text-muted-foreground">
         <p className="text-4xl mb-4">*</p>
         <p className="font-semibold mb-1">Chưa có bài niệm kinh</p>
-        <p className="text-sm">Admin hãy thêm planItems vào <code className="bg-muted px-1 rounded">daily-newbie</code>.</p>
+        <p className="text-sm">
+          Entry này chưa có <span className="font-semibold">{CHANTING_ADMIN_COPY.itemComponent}</span>.
+          Hãy tạo bài trong <span className="font-semibold">Niệm Kinh · Danh Mục Bài Niệm</span>, rồi quay lại{' '}
+          <span className="font-semibold">{CHANTING_ADMIN_COPY.collectionName}</span> để gắn vào `planItems`.
+        </p>
       </div>
     );
   }

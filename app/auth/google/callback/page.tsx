@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 
 function CallbackHandler() {
   const router = useRouter()
@@ -36,16 +37,22 @@ function CallbackHandler() {
           throw new Error('Không có dữ liệu người dùng từ server')
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Lỗi xác thực Google')
+        const message = err instanceof Error ? err.message : 'Lỗi xác thực Google'
+        toast.error(message)
+        setError(message)
       }
     }
 
     if (errorParam) {
-      setError(`${errorParam}: ${errorDescription || 'Không rõ lý do'}`)
+      const message = `${errorParam}: ${errorDescription || 'Không rõ lý do'}`
+      toast.error(message)
+      setError(message)
     } else if (accessToken) {
       handleGoogleAuth()
     } else {
-      setError('Không tìm thấy token truy cập (access_token) từ Strapi.')
+      const message = 'Không tìm thấy token truy cập (access_token) từ Strapi.'
+      toast.error(message)
+      setError(message)
     }
   }, [searchParams, login, router])
 

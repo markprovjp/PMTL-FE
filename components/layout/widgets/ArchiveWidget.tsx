@@ -23,28 +23,28 @@ export default async function ArchiveWidget() {
   const years = data.slice(0, 3)
 
   return (
-    <div>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+    <div className="space-y-4">
+      <h3 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.28em] text-gold/80">
         <ArchiveIcon className="w-3.5 h-3.5" />
         Lưu trữ
       </h3>
 
       <div className="space-y-4">
         {years.map((y) => (
-          <div key={y.year}>
+          <div key={y.year} className="rounded-[1.5rem] bg-background/70 px-4 py-4">
             <Link
               href={`/archive/${y.year}`}
-              className="flex items-center justify-between text-sm font-medium text-foreground hover:text-gold transition-colors mb-2"
+              className="mb-3 flex items-center justify-between text-sm font-medium text-foreground transition-colors hover:text-gold"
             >
               <span>{y.year}</span>
-              <span className="text-xs text-muted-foreground/60">{y.total} bài</span>
+              <span className="text-xs text-muted-foreground/70">{y.total} bài</span>
             </Link>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-2">
               {y.months.map((m) => (
                 <Link
                   key={m.month}
                   href={`/archive/${y.year}/${m.month}`}
-                  className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:border-gold/40 hover:text-gold hover:bg-gold/5 transition-all"
+                  className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] text-muted-foreground transition-all hover:border-gold/25 hover:text-foreground"
                   title={`${MONTH_VI_SHORT[m.month]} — ${m.count} bài`}
                 >
                   {MONTH_VI_SHORT[m.month]}
@@ -58,7 +58,7 @@ export default async function ArchiveWidget() {
 
       <Link
         href="/archive"
-        className="mt-4 block text-xs text-muted-foreground hover:text-gold transition-colors"
+        className="block text-xs text-muted-foreground transition-colors hover:text-foreground"
       >
         Xem toàn bộ lưu trữ →
       </Link>

@@ -27,13 +27,13 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="rounded-2xl border border-border/50 bg-card p-6 shadow-sm hover:border-gold/20 transition-colors duration-300"
+        className="rounded-[1.75rem] border border-gold/12 bg-card/95 p-6 shadow-[0_12px_30px_-24px_rgba(212,175,55,0.35)] transition-colors duration-300 hover:border-gold/20"
       >
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
           <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
             <CalendarDaysIcon className="w-5 h-5 text-gold" />
           </div>
-          <h3 className="font-display text-lg text-foreground">Tra Cứu Theo Quý Tháng</h3>
+          <h3 className="font-display text-lg text-foreground">Lưu trữ theo tháng</h3>
         </div>
 
         <div className="space-y-5">
@@ -54,13 +54,11 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="p-4 rounded-xl bg-gradient-to-br from-gold/10 to-amber-500/5 border border-gold/20 relative overflow-hidden"
+            className="rounded-2xl border border-gold/18 bg-gold/[0.04] p-4"
           >
-            {/* hoạ tiết nhẹ */}
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gold/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
-            <h4 className="text-[10px] font-bold text-gold uppercase tracking-[0.2em] mb-2 px-0.5 relative z-10">Đặt Câu Hỏi</h4>
-            <p className="text-xs text-muted-foreground/90 leading-relaxed italic relative z-10">
-              Có thắc mắc về tu học? Ban Quản Trị sẽ phản hồi một cách trang trọng trong thời gian sớm nhất.
+            <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold">Đặt câu hỏi</h4>
+            <p className="text-xs leading-relaxed text-muted-foreground/90">
+              Có thắc mắc về tu học? Ban Quản Trị sẽ phản hồi khi cần thiết ngay trong mục lưu bút này.
             </p>
           </motion.div>
 

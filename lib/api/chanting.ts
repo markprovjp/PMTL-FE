@@ -75,11 +75,12 @@ export async function fetchTodayChant(params: {
   date: string;
   lunarMonth?: number | null;
   lunarDay?: number | null;
-  planSlug?: string;
+  planSlug?: string | null;
 }): Promise<TodayChantResponse | null> {
-  const { date, lunarMonth, lunarDay, planSlug = 'daily-newbie' } = params;
+  const { date, lunarMonth, lunarDay, planSlug } = params;
   try {
-    const qs = new URLSearchParams({ date, planSlug });
+    const qs = new URLSearchParams({ date });
+    if (planSlug) qs.set('planSlug', planSlug);
     if (lunarMonth) qs.set('lunarMonth', String(lunarMonth));
     if (lunarDay) qs.set('lunarDay', String(lunarDay));
 
@@ -105,12 +106,13 @@ export async function fetchTodayChant(params: {
  */
 export async function fetchPracticeLog(params: {
   date: string;
-  planSlug?: string;
+  planSlug?: string | null;
   jwt: string;
 }): Promise<PracticeLog | null> {
-  const { date, planSlug = 'daily-newbie', jwt } = params;
+  const { date, planSlug, jwt } = params;
   try {
-    const qs = new URLSearchParams({ date, planSlug });
+    const qs = new URLSearchParams({ date });
+    if (planSlug) qs.set('planSlug', planSlug);
     const res = await fetch(`${STRAPI_URL}/api/practice-logs/my?${qs}`, {
       headers: { Authorization: `Bearer ${jwt}` },
       cache: 'no-store',
@@ -127,11 +129,11 @@ export async function fetchPracticeLog(params: {
  */
 export async function upsertPracticeLog(params: {
   date: string;
-  planSlug?: string;
+  planSlug?: string | null;
   itemsProgress: ProgressMap;
   jwt: string;
 }): Promise<PracticeLog | null> {
-  const { date, planSlug = 'daily-newbie', itemsProgress, jwt } = params;
+  const { date, planSlug, itemsProgress, jwt } = params;
   try {
     const res = await fetch(`${STRAPI_URL}/api/practice-logs/my`, {
       method: 'PUT',

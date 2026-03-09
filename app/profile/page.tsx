@@ -7,10 +7,12 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
+import { toast } from 'sonner'
 
 import { useAuth } from '@/contexts/AuthContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
-import { updateMe, uploadAvatarFile } from '@/lib/api/user'
+import { getErrorMessage, updateMe, uploadAvatarFile } from '@/lib/api/user'
+import PushNotificationButton from '@/components/PushNotificationButton'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -64,8 +66,6 @@ export default function ProfilePage() {
     bio: '',
   })
   const [saving, setSaving] = useState(false)
-  const [saveMssg, setSaveMssg] = useState<string | null>(null)
-
   // State avatar
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
@@ -120,7 +120,6 @@ export default function ProfilePage() {
   // ─── Lưu thông tin hồ sơ ─────────────────────────────────
   const handleSave = async () => {
     setSaving(true)
-    setSaveMssg(null)
     try {
       await updateMe({
         fullName: form.fullName || null,
@@ -130,13 +129,11 @@ export default function ProfilePage() {
         bio: form.bio || null,
       })
       await refetch()
-      setSaveMssg('Đã lưu thông tin!')
+      toast.success('Đã lưu thông tin hồ sơ')
     } catch (err) {
-      setSaveMssg('Lưu thất bại, thử lại.')
-      console.error(err)
+      toast.error(getErrorMessage(err, 'Lưu thất bại, thử lại.'))
     } finally {
       setSaving(false)
-      setTimeout(() => setSaveMssg(null), 3000)
     }
   }
 
@@ -160,13 +157,11 @@ export default function ProfilePage() {
       // 4. Cập nhật lại UI với URL thật từ server
       setAvatarPreview(remoteUrl)
       await refetch()
-      setSaveMssg('Đã cập nhật ảnh đại diện!')
+      toast.success('Đã cập nhật ảnh đại diện')
     } catch (err) {
-      console.error('Lỗi upload avatar:', err)
-      setSaveMssg('Tải ảnh thất bại.')
+      toast.error(getErrorMessage(err, 'Tải ảnh thất bại.'))
     } finally {
       setUploadingAvatar(false)
-      setTimeout(() => setSaveMssg(null), 3000)
     }
   }
 
@@ -323,12 +318,19 @@ export default function ProfilePage() {
               >
                 {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
               </button>
-              {saveMssg && (
-                <span className={`text-xs ${saveMssg.includes('thất bại') ? 'text-red-400' : 'text-green-400'}`}>
-                  {saveMssg}
-                </span>
-              )}
             </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mt-6"
+          >
+            <PushNotificationButton
+              title="Thông báo tu học trên thiết bị này"
+              description="Bật nhắc niệm kinh, nhận bài mới hoặc sự kiện quan trọng theo múi giờ và khung giờ yên tĩnh của anh."
+            />
           </motion.div>
         </div>
       </main>

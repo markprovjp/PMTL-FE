@@ -4,6 +4,8 @@
 import { useState, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { SearchIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 export default function SearchWidget() {
   const [query, setQuery] = useState('')
@@ -22,25 +24,27 @@ export default function SearchWidget() {
 
   return (
     <div>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+      <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.28em] text-muted-foreground">
         Tìm kiếm
       </h3>
       <form onSubmit={handleSubmit} className="relative">
-        <input
+        <Input
           ref={inputRef}
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Nhập từ khoá..."
-          className="w-full bg-background border border-border rounded-xl pl-4 pr-10 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-colors"
+          className="h-12 rounded-full border-border bg-background/80 pl-4 pr-14 text-sm placeholder:text-muted-foreground/60"
         />
-        <button
+        <Button
           type="submit"
           aria-label="Tìm kiếm"
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-gold transition-colors"
+          variant="ghost"
+          size="icon"
+          className="absolute right-2 top-1/2 h-9 w-9 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
         >
           <SearchIcon className="w-4 h-4" />
-        </button>
+        </Button>
       </form>
     </div>
   )

@@ -2,12 +2,15 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDownIcon, ChevronUpIcon, HeartIcon, CornerDownRightIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, HeartIcon, CornerDownRightIcon, FlagIcon } from 'lucide-react'
 import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import type { BlogComment } from '@/types/strapi'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import CommentForm from './CommentForm'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { toast } from 'sonner'
+import { createHttpError, getErrorMessage } from '@/lib/http-error'
 
 interface CommentItemProps {
   comment: BlogComment
@@ -44,6 +47,7 @@ export default function CommentItem({
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [showReplies, setShowReplies] = useState(true)
   const [liked, setLiked] = useState(false)
+  const [reported, setReported] = useState(false)
   const [localLikes, setLocalLikes] = useState(comment.likes)
 
   const avatarUrl = comment.authorAvatar
@@ -65,9 +69,11 @@ export default function CommentItem({
     setLocalLikes((n) => n + 1)
     try {
       await onLike(comment.documentId)
+      toast.success('Đã thích bình luận')
     } catch {
       setLiked(false)
       setLocalLikes((n) => n - 1)
+      toast.error('Không thể thích bình luận')
     }
   }, [liked, comment.documentId, onLike])
 
@@ -75,6 +81,25 @@ export default function CommentItem({
     setShowReplyForm(false)
     onReplySuccess()
   }, [onReplySuccess])
+
+  const submitReport = useCallback(async (reason: 'spam' | 'abuse' | 'off-topic' | 'unsafe') => {
+    if (reported) return
+
+    try {
+      const res = await fetch(`/api/blog-comments/report/${encodeURIComponent(comment.documentId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      })
+      if (!res.ok) {
+        throw await createHttpError(res, 'Không thể báo cáo bình luận')
+      }
+      setReported(true)
+      toast.success('Đã ghi nhận báo cáo')
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Không thể báo cáo bình luận'))
+    }
+  }, [comment.documentId, reported])
 
   const hasReplies = !isReply && comment.replies && comment.replies.length > 0
 
@@ -158,6 +183,25 @@ export default function CommentItem({
                   Trả lời
                 </button>
               )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={reported}
+                    title="Báo nội dung không phù hợp"
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-amber-400 transition-colors disabled:opacity-50"
+                  >
+                    <FlagIcon className="w-3.5 h-3.5" />
+                    {reported ? 'Đã báo cáo' : 'Báo cáo'}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-52">
+                  <DropdownMenuItem onClick={() => submitReport('spam')}>Spam / quảng cáo</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => submitReport('abuse')}>Thiếu tôn trọng</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => submitReport('off-topic')}>Sai chủ đề</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => submitReport('unsafe')}>Nội dung không phù hợp</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
               {hasReplies && (
                 <button

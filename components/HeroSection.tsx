@@ -1,184 +1,146 @@
 'use client'
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { SearchIcon } from "@/components/icons/ZenIcons";
 import type { HeroSlide, StatItem } from "@/types/strapi";
 
 interface HeroSectionProps {
-  slides: HeroSlide[]
-  stats: StatItem[]
+  slides: HeroSlide[];
+  stats: StatItem[];
 }
 
-const HeroSection = ({ slides, stats }: HeroSectionProps) => {
+export default function HeroSection({ slides, stats }: HeroSectionProps) {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 7000);
+
     return () => clearInterval(timer);
   }, [slides.length]);
 
   const slide = slides[current];
 
   return (
-    <section className="relative min-h-[92vh] flex flex-col items-center justify-center overflow-hidden bg-background">
-      {/* Background Slideshow */}
+    <section className="relative overflow-hidden bg-background text-white">
       <AnimatePresence mode="wait">
         <motion.div
           key={current}
-          initial={{ opacity: 0, scale: 1.08 }}
+          initial={{ opacity: 0, scale: 1.03 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
+          transition={{ duration: 1.1, ease: "easeOut" }}
           className="absolute inset-0"
         >
           <Image
             src={slide.src}
             alt="Pháp Môn Tâm Linh"
             fill
-            className="object-cover object-center"
             priority
             sizes="100vw"
+            className="object-cover object-center"
           />
-          {/* Multi-layer overlay for guaranteed readability on any image */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,12,7,0.34)_0%,rgba(19,12,7,0.68)_48%,rgba(19,12,7,0.9)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,208,56,0.22),transparent_30%)]" />
+          <div className="absolute inset-y-0 left-0 w-[58%] bg-[linear-gradient(90deg,rgba(16,11,7,0.88)_0%,rgba(16,11,7,0.55)_55%,rgba(16,11,7,0)_100%)]" />
         </motion.div>
       </AnimatePresence>
 
-      {/* Main Content Container */}
-      <div className="relative z-10 container mx-auto px-6 pt-20 pb-32 flex flex-col lg:flex-row items-center justify-between gap-12">
-        {/* Left Column: Text & Search */}
-        <div className="flex-1 max-w-5xl">
+      <div className="relative container mx-auto px-6 pb-10 pt-28 md:pb-16 md:pt-36 lg:pt-40">
+        <div className="max-w-5xl">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-md"
           >
-            {/* Elegant Badge */}
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-black/40 backdrop-blur-md border border-white/20 mb-8 shadow-2xl">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
-              <span className="text-xs text-white/90 font-medium tracking-[0.2em] uppercase">心灵法门 · Pháp Môn Tâm Linh</span>
-            </div>
+            <span className="h-2 w-2 rounded-full bg-gold" />
+            <span className="text-[11px] uppercase tracking-[0.3em] text-white/88">
+              心灵法门 · Pháp Môn Tâm Linh
+            </span>
+          </motion.div>
 
-            {/* Title with Masked Gradient */}
-            <AnimatePresence mode="wait">
-              <motion.h1
-                key={current}
-                initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, y: -20, filter: "blur(10px)" }}
-                transition={{ duration: 0.8 }}
-                className="font-display text-5xl md:text-7xl lg:text-[5.5rem] leading-[1.1] text-white mb-6 drop-shadow-2xl"
-              >
-                {slide.title} <br />
-                <span className="bg-gradient-to-r from-gold via-amber-200 to-gold bg-clip-text text-transparent filter drop-shadow-[0_0_15px_rgba(234,179,8,0.3)]">
-                  {slide.highlight}
-                </span>
-              </motion.h1>
-            </AnimatePresence>
-
-            <div className="w-24 h-px bg-gradient-to-r from-gold to-transparent mb-8" />
-
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={`sub-${current}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-                className="font-body text-lg md:text-xl text-white/80 max-w-2xl mb-12 leading-relaxed font-light drop-shadow-lg"
-              >
-                {slide.sub}
-              </motion.p>
-            </AnimatePresence>
-
-            {/* Actions: Search & Buttons */}
+          <AnimatePresence mode="wait">
             <motion.div
+              key={`copy-${current}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="space-y-6"
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.6 }}
+              className="mt-8 space-y-6"
             >
-              {/* Search Bar */}
-              <div
-                className="max-w-xl relative group cursor-pointer"
-                onClick={() => window.location.href = '/search'}
-              >
-                <div className="absolute inset-0 bg-gold/20 rounded-2xl blur group-hover:bg-gold/30 transition-colors opacity-50" />
-                <div className="relative flex items-center  backdrop-blur-xl border border-white/10 rounded-2xl p-2 transition-all group-hover:border-gold/50 shadow-2xl">
-                  <SearchIcon className="w-6 h-6 ml-4 text-white hidden sm:block" />
-                  <input
-                    type="text"
-                    disabled
-                    placeholder="Tìm kiếm kinh văn, khai thị, hoặc từ khóa..."
-                    className="w-full bg-transparent px-4 py-3 focus:outline-none text-white/80 cursor-pointer placeholder:text-white/60"
-                  />
-                  <button className="px-6 py-3 rounded-xl bg-gold text-black font-medium hover:bg-gold-glow transition-colors shrink-0">
-                    Tra Cứu
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Links */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <Link
-                  href="/beginner-guide"
-                  className="inline-flex items-center gap-2 text-sm text-gold hover:text-gold-glow transition-colors font-medium tracking-wide uppercase"
-                >
-                  <span className="w-8 h-px bg-current" />
-                  Bắt Đầu Tu Tập
-                </Link>
-                <span className="text-white/30 hidden sm:block">•</span>
-                <Link
-                  href="/library"
-                  className="inline-flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors tracking-wide"
-                >
-                  Thư Viện Pháp Bảo
-                </Link>
-              </div>
+              <h1 className="max-w-5xl font-display text-[clamp(3rem,10vw,6.6rem)] leading-[0.92] tracking-[-0.04em] text-white">
+                <span className="block">{slide.title}</span>
+                <span className="mt-2 block text-gold">{slide.highlight}</span>
+              </h1>
+              <div className="h-px w-24 bg-gradient-to-r from-gold to-transparent" />
+              <p className="max-w-5xl font-body text-base leading-relaxed text-white/74 md:text-xl">
+                {slide.sub}
+              </p>
             </motion.div>
-          </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-8 flex flex-col gap-4 md:mt-10 md:flex-row md:items-center">
+            <Link
+              href="/search"
+              className="group flex w-full max-w-xl items-center gap-3 rounded-full border border-white/12 bg-black/30 px-4 py-3 backdrop-blur-md transition-colors hover:border-gold/35 hover:bg-black/36"
+            >
+              <SearchIcon className="h-5 w-5 text-gold" />
+              <span className="flex-1 text-left text-sm text-white/68 md:text-base">
+                Tìm kinh văn, khai thị, pháp bảo hoặc chủ đề tu học
+              </span>
+              <span className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-black transition-transform group-hover:scale-[1.02]">
+                Tra cứu
+              </span>
+            </Link>
+
+            <div className="flex flex-wrap gap-3 text-sm">
+              <Link href="/beginner-guide" className="rounded-full border border-white/15 px-5 py-3 text-white/90 transition-colors hover:border-gold/35 hover:text-gold">
+                Hướng dẫn sơ học
+              </Link>
+              <Link href="/library" className="rounded-full border border-transparent px-1 py-3 text-white/68 transition-colors hover:text-white">
+                Thư viện pháp bảo
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 grid gap-3 md:grid-cols-3 lg:mt-16 lg:max-w-5xl">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.16 + index * 0.08 }}
+              className="rounded-[1.75rem] border border-white/10 bg-black/38 p-5 backdrop-blur-md"
+            >
+              <p className="text-[10px] uppercase tracking-[0.24em] text-gold/78">{stat.label}</p>
+              <p className="mt-3 font-display text-4xl leading-none text-white md:text-5xl">{stat.value}</p>
+              <p className="mt-4 text-sm leading-relaxed text-white/52">{stat.detail}</p>
+            </motion.div>
+          ))}
         </div>
       </div>
 
-      {/* Floating Glass Stats Bar */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 1 }}
-        className="absolute bottom-4 lg:bottom-8 left-4 right-4 sm:left-6 sm:right-6 lg:left-1/3 lg:-translate-x-1/2 lg:w-full lg:max-w-4xl z-20"
-      >
-        <div className="grid grid-cols-3 gap-px bg-white/10 backdrop-blur-2xl rounded-2xl border border-white/15 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-black/50 px-3 py-4 sm:px-5 sm:py-5 md:p-6 lg:p-8 flex flex-col justify-center relative group hover:bg-black/70 transition-colors">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-gold/5 rounded-full blur-2xl group-hover:bg-gold/10 transition-colors pointer-events-none" />
-              <h4 className="font-display text-xl sm:text-2xl lg:text-4xl text-white mb-0.5 lg:mb-2 relative z-10 leading-none">{stat.value}</h4>
-              <p className="text-[9px] sm:text-[10px] lg:text-xs text-gold uppercase tracking-wider font-semibold mb-0.5 relative z-10 leading-tight">{stat.label}</p>
-              <p className="hidden sm:block text-[9px] lg:text-xs text-white/40 relative z-10 leading-tight">{stat.detail}</p>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Slide Navigation Dots */}
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden lg:flex flex-col gap-3 z-20">
-        {slides.map((_: HeroSlide, i: number) => (
+      <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 lg:flex lg:flex-col lg:gap-3">
+        {slides.map((_, index) => (
           <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`transition-all duration-500 rounded-full border border-white/20 ${i === current ? "h-12 w-2 bg-gold border-gold relative shadow-[0_0_10px_rgba(234,179,8,0.8)]" : "h-2 w-2 bg-white/20 hover:bg-white/50"
-              }`}
-            aria-label={`Go to slide ${i + 1}`}
+            key={index}
+            onClick={() => setCurrent(index)}
+            className={[
+              "pointer-events-auto rounded-full border transition-all duration-300",
+              index === current
+                ? "h-11 w-2 border-gold bg-gold shadow-[0_0_14px_rgba(234,179,8,0.45)]"
+                : "h-2.5 w-2.5 border-white/20 bg-white/25 hover:bg-white/45",
+            ].join(" ")}
+            aria-label={`Go to slide ${index + 1}`}
           />
         ))}
       </div>
     </section>
   );
-};
-
-export default HeroSection;
+}

@@ -1,14 +1,42 @@
 'use client'
-// ─────────────────────────────────────────────────────────────
-//  components/PushNotificationButton.tsx
-//  Nút đăng ký / huỷ nhận thông báo nhắc niệm kinh
-//
-//  Yêu cầu:
-//   - NEXT_PUBLIC_VAPID_PUBLIC_KEY trong .env.local
-//   - Service worker (/sw.js) đã đăng ký
-// ─────────────────────────────────────────────────────────────
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import { Bell, BellOff, Loader2, ShieldAlert, Sparkles } from 'lucide-react'
+import { toast } from 'sonner'
+import { useAuth } from '@/contexts/AuthContext'
+import { createHttpError, getErrorMessage } from '@/lib/http-error'
 import { cn } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Switch } from '@/components/ui/switch'
+
+const NOTIFICATION_TYPES = [
+  { value: 'daily_chant', label: 'Thông báo tu học' },
+  { value: 'content_update', label: 'Bài viết mới' },
+  { value: 'event_reminder', label: 'Sự kiện sắp diễn ra' },
+  { value: 'community', label: 'Cập nhật cộng đồng' },
+] as const
+
+type NotificationType = (typeof NOTIFICATION_TYPES)[number]['value']
+type Status =
+  | 'unsupported'
+  | 'loading'
+  | 'permission_required'
+  | 'ready_to_subscribe'
+  | 'subscribed'
+  | 'saving'
+  | 'error'
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -17,164 +45,421 @@ function urlBase64ToUint8Array(base64String: string) {
   return new Uint8Array(Array.from(rawData).map((c) => c.charCodeAt(0)))
 }
 
-interface Props {
-  className?: string
-  /** Giờ nhắc (0-23, mặc định 6 sáng) */
-  defaultHour?: number
+function statusCopy(status: Status, message: string | null) {
+  switch (status) {
+    case 'unsupported':
+      return {
+        title: 'Thiết bị hiện tại chưa hỗ trợ web push',
+        description: 'Tính năng này cần Notification, Service Worker và Push API trên trình duyệt.',
+      }
+    case 'permission_required':
+      return {
+        title: 'Chưa cấp quyền thông báo',
+        description: 'Anh cần cho phép thông báo trong trình duyệt trước khi bật tính năng này.',
+      }
+    case 'subscribed':
+      return {
+        title: 'Đã bật thông báo',
+        description: 'Thiết bị này sẽ nhận đúng các nhóm nội dung anh đã tick, không còn phụ thuộc giờ cố định.',
+      }
+    case 'error':
+      return {
+        title: 'Thiết lập thông báo chưa hoàn tất',
+        description: message || 'Có lỗi khi lưu cấu hình push.',
+      }
+    case 'saving':
+      return {
+        title: 'Đang lưu cấu hình thông báo',
+        description: 'Hệ thống đang đồng bộ subscription và nhóm thông báo đã chọn.',
+      }
+    case 'ready_to_subscribe':
+      return {
+        title: 'Có thể bật thông báo ngay',
+        description: 'Chọn nhóm muốn nhận rồi bật cho thiết bị này.',
+      }
+    default:
+      return {
+        title: 'Đang kiểm tra cấu hình thông báo',
+        description: 'Hệ thống đang xác định trạng thái push trên trình duyệt và máy chủ.',
+      }
+  }
 }
 
-export default function PushNotificationButton({ className, defaultHour = 6 }: Props) {
-  const [status, setStatus] = useState<'unsupported' | 'loading' | 'denied' | 'subscribed' | 'unsubscribed'>('loading')
-  const [reminderHour, setReminderHour] = useState(defaultHour)
+function statusBadge(status: Status) {
+  switch (status) {
+    case 'subscribed':
+      return { label: 'Đã bật', variant: 'default' as const }
+    case 'saving':
+      return { label: 'Đang lưu', variant: 'secondary' as const }
+    case 'permission_required':
+      return { label: 'Cần cấp quyền', variant: 'secondary' as const }
+    case 'unsupported':
+      return { label: 'Không hỗ trợ', variant: 'destructive' as const }
+    case 'error':
+      return { label: 'Lỗi cấu hình', variant: 'destructive' as const }
+    case 'ready_to_subscribe':
+      return { label: 'Sẵn sàng', variant: 'outline' as const }
+    default:
+      return { label: 'Đang kiểm tra', variant: 'secondary' as const }
+  }
+}
+
+function alertVariant(status: Status) {
+  return status === 'error' || status === 'unsupported' ? 'destructive' : 'default'
+}
+
+export default function PushNotificationButton({
+  className,
+  compact = false,
+  title = 'Thông báo tu học trên thiết bị này',
+  description = 'Chọn đúng loại muốn nhận. Khi có bài mới, hoạt động cộng đồng hoặc sự kiện được phát hành, hệ thống sẽ gửi ngay.',
+}: {
+  className?: string
+  compact?: boolean
+  title?: string
+  description?: string
+}) {
+  const { user } = useAuth()
+  const [status, setStatus] = useState<Status>('loading')
+  const [message, setMessage] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [notificationTypes, setNotificationTypes] = useState<NotificationType[]>(['community'])
+  const [endpoint, setEndpoint] = useState<string | null>(null)
+
+  const statusText = useMemo(() => statusCopy(status, message), [status, message])
+  const badge = useMemo(() => statusBadge(status), [status])
+  const isSubscribed = status === 'subscribed'
+  const disabled = saving || status === 'unsupported'
 
   useEffect(() => {
-    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-      setStatus('unsupported')
-      return
+    let mounted = true
+
+    async function bootstrap() {
+      if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+        if (mounted) setStatus('unsupported')
+        return
+      }
+
+      if (Notification.permission === 'denied') {
+        if (mounted) setStatus('permission_required')
+        return
+      }
+
+      try {
+        const reg = await navigator.serviceWorker.ready
+        const subscription = await reg.pushManager.getSubscription()
+        const currentEndpoint = subscription?.endpoint ?? null
+        if (mounted) setEndpoint(currentEndpoint)
+
+        if (!currentEndpoint) {
+          if (mounted) {
+            setStatus(Notification.permission === 'granted' ? 'ready_to_subscribe' : 'permission_required')
+          }
+          return
+        }
+
+        const res = await fetch('/api/push/status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: currentEndpoint }),
+        })
+
+        if (!res.ok) throw await createHttpError(res, 'Không thể đọc cấu hình push')
+        const data = await res.json()
+        const record = data?.data
+
+        if (mounted && record) {
+          setNotificationTypes(
+            Array.isArray(record.notificationTypes) && record.notificationTypes.length > 0
+              ? record.notificationTypes
+              : ['community']
+          )
+          setStatus(record.isActive === false ? 'ready_to_subscribe' : 'subscribed')
+        } else if (mounted) {
+          setStatus('subscribed')
+        }
+      } catch (error) {
+        if (mounted) {
+          setMessage(getErrorMessage(error, 'Không thể khởi tạo cấu hình push'))
+          setStatus('error')
+        }
+      }
     }
-    if (Notification.permission === 'denied') {
-      setStatus('denied')
-      return
+
+    bootstrap()
+    return () => {
+      mounted = false
     }
-    // Kiểm tra trạng thái subscription hiện tại
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        setStatus(sub ? 'subscribed' : 'unsubscribed')
-      })
-    })
   }, [])
 
-  const subscribe = async () => {
+  const persistSubscription = async (subscription: PushSubscription) => {
+    const res = await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        notificationTypes,
+        userId: user?.id,
+      }),
+    })
+
+    if (!res.ok) throw await createHttpError(res, 'Lưu cấu hình thông báo thất bại')
+  }
+
+  const handleSubscribe = async () => {
     const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
     if (!vapidKey) {
-      console.error('NEXT_PUBLIC_VAPID_PUBLIC_KEY chưa được cấu hình')
+      setMessage('Thiếu NEXT_PUBLIC_VAPID_PUBLIC_KEY.')
+      setStatus('error')
+      toast.error('Thiếu cấu hình thông báo đẩy trên môi trường hiện tại.')
       return
     }
 
     setSaving(true)
+    setStatus('saving')
+    setMessage(null)
+
     try {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
-        setStatus('denied')
+        setStatus('permission_required')
+        toast.error('Anh chưa cấp quyền thông báo cho trình duyệt.')
         return
       }
 
       const reg = await navigator.serviceWorker.ready
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidKey),
-      })
+      const existing = await reg.pushManager.getSubscription()
+      const subscription =
+        existing ??
+        (await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidKey),
+        }))
 
-      // Lưu subscription lên server
-      const res = await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub.toJSON(), reminderHour }),
-      })
-
-      if (res.ok) setStatus('subscribed')
-    } catch (err) {
-      console.error('Subscribe push failed:', err)
+      await persistSubscription(subscription)
+      setEndpoint(subscription.endpoint)
+      setStatus('subscribed')
+      toast.success('Đã bật thông báo và lưu cấu hình push.')
+    } catch (error) {
+      const nextMessage = getErrorMessage(error, 'Đăng ký thông báo thất bại')
+      setMessage(nextMessage)
+      setStatus('error')
+      toast.error(nextMessage)
     } finally {
       setSaving(false)
     }
   }
 
-  const unsubscribe = async () => {
+  const handleUpdate = async () => {
+    if (!endpoint) return handleSubscribe()
+
     setSaving(true)
+    setStatus('saving')
+    setMessage(null)
+
     try {
       const reg = await navigator.serviceWorker.ready
-      const sub = await reg.pushManager.getSubscription()
-      if (sub) {
-        await sub.unsubscribe()
-        await fetch('/api/push/subscribe', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ endpoint: sub.endpoint }),
-        })
+      const subscription = await reg.pushManager.getSubscription()
+      if (!subscription) {
+        setStatus('ready_to_subscribe')
+        toast.error('Subscription trên trình duyệt đã mất, cần bật lại.')
+        return
       }
-      setStatus('unsubscribed')
-    } catch (err) {
-      console.error('Unsubscribe push failed:', err)
+
+      await persistSubscription(subscription)
+      setStatus('subscribed')
+      toast.success('Đã cập nhật cài đặt thông báo.')
+    } catch (error) {
+      const nextMessage = getErrorMessage(error, 'Cập nhật thông báo thất bại')
+      setMessage(nextMessage)
+      setStatus('error')
+      toast.error(nextMessage)
     } finally {
       setSaving(false)
     }
   }
 
-  if (status === 'unsupported') return null
+  const handleUnsubscribe = async () => {
+    setSaving(true)
+    setStatus('saving')
+    setMessage(null)
 
-  if (status === 'denied') {
-    return (
-      <p className={cn('text-xs text-muted-foreground', className)}>
-        Thông báo đã bị tắt trong trình duyệt. Bật lại trong cài đặt trình duyệt.
-      </p>
-    )
+    try {
+      const reg = await navigator.serviceWorker.ready
+      const subscription = await reg.pushManager.getSubscription()
+      if (subscription) {
+        await subscription.unsubscribe()
+        const res = await fetch('/api/push/subscribe', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subscription.endpoint }),
+        })
+
+        if (!res.ok) throw await createHttpError(res, 'Tắt thông báo thất bại')
+      }
+
+      setEndpoint(null)
+      setStatus(Notification.permission === 'granted' ? 'ready_to_subscribe' : 'permission_required')
+      toast.success('Đã tắt thông báo trên thiết bị này.')
+    } catch (error) {
+      const nextMessage = getErrorMessage(error, 'Tắt thông báo thất bại')
+      setMessage(nextMessage)
+      setStatus('error')
+      toast.error(nextMessage)
+    } finally {
+      setSaving(false)
+    }
   }
 
-  if (status === 'loading') {
-    return (
-      <div className={cn('flex items-center gap-2', className)}>
-        <div className="w-4 h-4 rounded-full border-2 border-gold border-t-transparent animate-spin" />
-        <span className="text-xs text-muted-foreground">Đang kiểm tra...</span>
-      </div>
-    )
+  const handleToggle = async (checked: boolean) => {
+    if (checked) {
+      await handleSubscribe()
+      return
+    }
+
+    await handleUnsubscribe()
   }
 
   return (
-    <div className={cn('flex flex-col gap-3', className)}>
-      {status === 'unsubscribed' && (
-        <div className="flex items-center gap-2">
-          <label htmlFor="remind-hour" className="text-xs text-muted-foreground whitespace-nowrap">
-            Nhắc lúc:
-          </label>
-          <select
-            id="remind-hour"
-            value={reminderHour}
-            onChange={(e) => setReminderHour(Number(e.target.value))}
-            className="text-xs bg-secondary border border-border rounded px-2 py-1 text-foreground"
-          >
-            {Array.from({ length: 24 }, (_, i) => (
-              <option key={i} value={i}>
-                {String(i).padStart(2, '0')}:00
-              </option>
-            ))}
-          </select>
+    <Card
+      className={cn(
+        'overflow-hidden border-border/80 bg-card/90 shadow-elevated',
+        compact ? 'rounded-2xl' : 'rounded-3xl',
+        className
+      )}
+    >
+      <CardHeader className={cn(compact ? 'p-5' : 'p-6 md:p-7')}>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="flex min-w-0 items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-background text-foreground">
+              {status === 'subscribed' ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+            </div>
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/80">Push Web</p>
+                <Badge variant={badge.variant}>{badge.label}</Badge>
+              </div>
+              <CardTitle className="max-w-2xl font-display text-2xl leading-tight md:text-3xl">{title}</CardTitle>
+              <CardDescription className="max-w-2xl text-sm leading-relaxed md:text-base">{description}</CardDescription>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 rounded-[1.5rem] border border-border/70 bg-background/75 px-4 py-3">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Bật trên thiết bị này</p>
+              <p className="text-xs text-muted-foreground">
+                {isSubscribed ? 'Thiết bị đang nhận thông báo đã chọn.' : 'Thiết bị chưa nhận thông báo.'}
+              </p>
+            </div>
+            <Switch
+              checked={isSubscribed}
+              disabled={disabled}
+              onCheckedChange={(checked) => void handleToggle(checked)}
+              aria-label="Bật thông báo"
+            />
+          </div>
         </div>
-      )}
+      </CardHeader>
 
-      <button
-        onClick={status === 'subscribed' ? unsubscribe : subscribe}
-        disabled={saving}
-        className={cn(
-          'flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all',
-          status === 'subscribed'
-            ? 'bg-secondary border border-border text-muted-foreground hover:border-red-500/50 hover:text-red-400'
-            : 'bg-gold text-black hover:opacity-90',
-          'disabled:opacity-50 disabled:cursor-wait'
-        )}
-      >
-        {saving ? (
-          <span className="w-4 h-4 rounded-full border-2 border-current border-t-transparent animate-spin" />
-        ) : (
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-        )}
-        {status === 'subscribed'
-          ? 'Tắt nhắc nhở'
-          : `Nhắc niệm kinh lúc ${String(reminderHour).padStart(2, '0')}:00`}
-      </button>
+      <CardContent className={cn('space-y-5', compact ? 'px-5 pb-5' : 'px-6 pb-6 md:px-7 md:pb-7')}>
+        <Alert variant={alertVariant(status)} className="rounded-[1.5rem] border-border/70 bg-background/60">
+          {status === 'saving' ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : status === 'error' || status === 'unsupported' ? (
+            <ShieldAlert className="h-4 w-4" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
+          <AlertTitle>{statusText.title}</AlertTitle>
+          <AlertDescription>{statusText.description}</AlertDescription>
+        </Alert>
 
-      {status === 'subscribed' && (
-        <p className="text-xs text-green-400 flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
-          Đang nhắc nhở mỗi ngày lúc {String(reminderHour).padStart(2, '0')}:00
-        </p>
+        {status !== 'unsupported' && (
+          <>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  <ShieldAlert className="h-3.5 w-3.5" />
+                  Loại thông báo
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Chỉ nhóm nào được tick mới nhận push. Khi bài viết, thảo luận hoặc sự kiện được phát hành, hệ thống sẽ gửi ngay.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                {NOTIFICATION_TYPES.map((item) => {
+                  const checked = notificationTypes.includes(item.value)
+                  return (
+                    <label
+                      key={item.value}
+                      className={cn(
+                        'flex cursor-pointer items-start gap-3 rounded-[1.5rem] border p-4 transition-colors',
+                        checked
+                          ? 'border-gold/30 bg-gold/5'
+                          : 'border-border/70 bg-background/70 hover:bg-muted/20'
+                      )}
+                    >
+                      <Checkbox
+                        checked={checked}
+                        disabled={saving}
+                        onCheckedChange={(nextChecked) => {
+                          setNotificationTypes((prev) => {
+                            if (nextChecked) return Array.from(new Set([...prev, item.value]))
+                            const next = prev.filter((value) => value !== item.value)
+                            return next.length > 0 ? next : ['community']
+                          })
+                        }}
+                      />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium leading-none">{item.label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {item.value === 'daily_chant' && 'Dùng cho các đợt phát thông báo tu học chung hoặc lời nhắc do hệ thống tạo.'}
+                          {item.value === 'content_update' && 'Khi có bài viết hoặc nội dung mới được phát hành, thiết bị này sẽ nhận ngay.'}
+                          {item.value === 'event_reminder' && 'Khi có sự kiện quan trọng được publish hoặc gửi thủ công, thiết bị này sẽ nhận ngay.'}
+                          {item.value === 'community' && 'Khi có bài chia sẻ mới hoặc phản hồi mới trong cộng đồng, thiết bị này sẽ nhận ngay.'}
+                        </p>
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            </div>
+          </>
+        )}
+      </CardContent>
+
+      {status !== 'unsupported' && (
+        <CardFooter
+          className={cn(
+            'flex flex-wrap items-center justify-between gap-3 border-t border-border/70',
+            compact ? 'px-5 py-4' : 'px-6 py-5 md:px-7'
+          )}
+        >
+          <p className="text-sm text-muted-foreground">
+            {isSubscribed
+              ? 'Sau khi đổi nhóm thông báo, anh lưu lại là hệ thống dùng cấu hình mới ngay.'
+              : 'Bật thông báo để lưu subscription và bắt đầu nhận các nhóm nội dung đã chọn trên thiết bị này.'}
+          </p>
+
+          <div className="flex flex-wrap gap-3">
+            {isSubscribed ? (
+              <>
+                <Button type="button" onClick={() => void handleUpdate()} disabled={saving} size="lg">
+                  {saving ? 'Đang lưu...' : 'Lưu cài đặt'}
+                </Button>
+                <Button type="button" onClick={() => void handleUnsubscribe()} disabled={saving} size="lg" variant="outline">
+                  Tắt thông báo
+                </Button>
+              </>
+            ) : (
+              <Button type="button" onClick={() => void handleSubscribe()} disabled={saving} size="lg">
+                {saving ? 'Đang bật thông báo...' : 'Bật thông báo'}
+              </Button>
+            )}
+          </div>
+        </CardFooter>
       )}
-    </div>
+    </Card>
   )
 }

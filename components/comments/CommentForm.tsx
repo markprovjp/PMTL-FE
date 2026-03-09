@@ -4,6 +4,8 @@ import { useState, useTransition, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
+import { createHttpError, getErrorMessage } from '@/lib/http-error'
 
 function avatar(name: string, size = 9) {
   const colors = [
@@ -45,7 +47,7 @@ export default function CommentForm({
 
   useEffect(() => {
     if (user) {
-      setAuthorName(user.fullName || user.username || '')
+      setAuthorName(user.fullName || user.username || user.email || '')
     } else {
       const saved = localStorage.getItem('pmtl_author_name')
       if (saved) setAuthorName(saved)
@@ -56,7 +58,11 @@ export default function CommentForm({
     e.preventDefault()
     setError(null)
 
-    if (!authorName.trim()) {
+    const finalAuthorName = user
+      ? (user.fullName || user.username || user.email || '').trim()
+      : authorName.trim()
+
+    if (!finalAuthorName) {
       setError('Vui lòng nhập tên của bạn.')
       return
     }
@@ -73,34 +79,39 @@ export default function CommentForm({
           body: JSON.stringify({
             postSlug,
             content: content.trim(),
-            authorName: authorName.trim(),
+            authorName: finalAuthorName,
             parentDocumentId: parentDocumentId ?? undefined,
-            authorAvatar: user?.avatar_url || undefined,
           }),
         })
 
         if (res.status === 429) {
-          setError('Bạn gửi bình luận quá nhanh. Vui lòng thử lại sau một phút.')
+          const err = await res.json().catch(() => ({}))
+          setError((err as { error?: string }).error ?? 'Bạn gửi bình luận quá nhanh. Vui lòng thử lại sau.')
+          toast.error((err as { error?: string }).error ?? 'Bạn gửi bình luận quá nhanh. Vui lòng thử lại sau.')
           return
         }
 
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}))
-          setError((data as { error?: string }).error ?? 'Lỗi khi gửi bình luận. Vui lòng thử lại.')
+          const error = await createHttpError(res, 'Lỗi khi gửi bình luận. Vui lòng thử lại.')
+          setError(error.message)
+          toast.error(error.message)
           return
         }
 
         setSuccess(true)
+        toast.success(parentDocumentId ? 'Trả lời đã được đăng' : 'Bình luận đã được đăng')
         if (!user) {
-          localStorage.setItem('pmtl_author_name', authorName.trim())
+          localStorage.setItem('pmtl_author_name', finalAuthorName)
         }
         setContent('')
         setTimeout(() => {
           setSuccess(false)
           onSuccess()
         }, 2000)
-      } catch {
-        setError('Không thể kết nối máy chủ. Vui lòng thử lại.')
+      } catch (error) {
+        const message = getErrorMessage(error, 'Không thể kết nối máy chủ. Vui lòng thử lại.')
+        setError(message)
+        toast.error(message)
       }
     })
   }
@@ -112,7 +123,7 @@ export default function CommentForm({
         animate={{ opacity: 1, y: 0 }}
         className="rounded-2xl bg-gold/10 border border-gold/30 px-5 py-4 text-sm text-gold font-medium"
       >
-        Cảm ơn bạn! Bình luận đang chờ duyệt và sẽ hiển thị sau khi được xét duyệt.
+        Cảm ơn bạn! Bình luận đã được đăng. Nếu nội dung bị nhiều người báo cáo, hệ thống sẽ tạm ẩn để kiểm tra.
       </motion.div>
     )
   }
@@ -159,7 +170,7 @@ export default function CommentForm({
           )}
 
           <textarea
-            placeholder={user ? `Bình luận dưới tên ${user.fullName || user.username}...` : "Chia sẻ suy nghĩ của bạn..."}
+            placeholder={user ? `Bình luận dưới tên ${user.fullName || user.username || user.email}...` : "Chia sẻ suy nghĩ của bạn..."}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={2000}

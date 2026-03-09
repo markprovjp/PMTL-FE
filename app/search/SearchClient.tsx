@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -309,6 +310,7 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
       }
     } catch (err) {
       console.error('Search failed:', err)
+      toast.error('Không thể tải kết quả tìm kiếm. Vui lòng thử lại.')
     } finally {
       setLoading(false)
     }
@@ -337,7 +339,7 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognitionAPI) {
-      alert('Trình duyệt của bạn không hỗ trợ tìm kiếm bằng giọng nói.')
+      toast.error('Trình duyệt của bạn không hỗ trợ tìm kiếm bằng giọng nói.')
       return
     }
     if (isListening) {
@@ -371,7 +373,7 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
       console.error('Speech recognition error:', event.error)
       setIsListening(false)
       if (event.error === 'not-allowed') {
-        alert('Vui lòng cho phép quyền truy cập micro để sử dụng tính năng này.')
+        toast.error('Vui lòng cho phép quyền truy cập micro để sử dụng tính năng này.')
       }
     }
 

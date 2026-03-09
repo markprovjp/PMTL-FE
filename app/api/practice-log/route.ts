@@ -12,6 +12,14 @@ import { STRAPI_URL } from '@/lib/strapi';
 
 export const dynamic = 'force-dynamic';
 
+function proxyJsonOrEmpty(res: Response, data: unknown) {
+  if (res.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
+
+  return NextResponse.json(data, { status: res.status });
+}
+
 async function getUserJwt(): Promise<string | null> {
   const cookieStore = await cookies()
   return cookieStore.get('auth_token')?.value ?? null
@@ -23,12 +31,13 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = req.nextUrl;
   const date = searchParams.get('date');
-  const planSlug = searchParams.get('planSlug') ?? 'daily-newbie';
+  const planSlug = searchParams.get('planSlug');
 
   if (!date) return NextResponse.json({ error: 'Thiếu date' }, { status: 400 });
 
   try {
-    const qs = new URLSearchParams({ date, planSlug });
+    const qs = new URLSearchParams({ date });
+    if (planSlug) qs.set('planSlug', planSlug);
     const res = await fetch(`${STRAPI_URL}/api/practice-logs/my?${qs}`, {
       headers: { Authorization: `Bearer ${jwt}` },
       cache: 'no-store',
@@ -43,7 +52,7 @@ export async function GET(req: NextRequest) {
       data = { error: text || 'Unknown backend error' };
     }
 
-    return NextResponse.json(data, { status: res.status });
+    return proxyJsonOrEmpty(res, data);
   } catch (err) {
     console.error('[api/practice-log GET]', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
@@ -74,7 +83,7 @@ export async function PUT(req: NextRequest) {
       data = { error: text || 'Unknown backend error' };
     }
 
-    return NextResponse.json(data, { status: res.status });
+    return proxyJsonOrEmpty(res, data);
   } catch (err) {
     console.error('[api/practice-log PUT]', err);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

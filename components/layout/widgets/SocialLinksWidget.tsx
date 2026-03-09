@@ -34,7 +34,24 @@ function SocialIcon({ name }: { name: string | null }) {
 }
 
 export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinksWidgetProps) {
-  const hasSocial = socialLinks && socialLinks.length > 0
+  const normalizedSocialLinks = (socialLinks ?? [])
+    .filter((link) => link?.url)
+    .map((link, index) => {
+      const fallbackLabel = (() => {
+        try {
+          return new URL(link.url).hostname.replace(/^www\./, '')
+        } catch {
+          return `Kênh ${index + 1}`
+        }
+      })()
+
+      return {
+        ...link,
+        label: link.label?.trim() || fallbackLabel,
+      }
+    })
+
+  const hasSocial = normalizedSocialLinks.length > 0
   const hasQr = qrImages && qrImages.length > 0
 
   if (!hasSocial && !hasQr) return null
@@ -43,11 +60,11 @@ export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinks
     <div>
       {hasSocial && (
         <>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.28em] text-gold/80">
             Mạng xã hội
           </h3>
           <div className="flex flex-wrap gap-2 mb-4">
-            {socialLinks.map((link) => (
+            {normalizedSocialLinks.map((link) => (
               <a
                 key={link.id}
                 href={link.url}
@@ -55,7 +72,7 @@ export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinks
                 rel="noopener noreferrer"
                 aria-label={link.label}
                 title={link.label}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-gold hover:border-gold/40 hover:bg-gold/5 transition-all"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs text-muted-foreground transition-all hover:text-foreground"
               >
                 <SocialIcon name={link.iconName} />
                 <span>{link.label}</span>
@@ -67,7 +84,7 @@ export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinks
 
       {hasQr && (
         <>
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          <h3 className="mb-3 text-[11px] font-medium uppercase tracking-[0.28em] text-gold/80">
             QR tham gia
           </h3>
           <div className="flex flex-wrap gap-3">

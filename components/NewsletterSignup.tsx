@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const digestItems = [
+  "Lịch pháp sự và thời khóa cần lưu ý",
+  "Bài giảng mới được chọn lọc",
+  "Liên kết nhanh tới thư viện và radio",
+];
 
 const NewsletterSignup = () => {
   const [email, setEmail] = useState("");
@@ -9,62 +18,81 @@ const NewsletterSignup = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
-      setSubmitted(true);
-      setEmail("");
-    }
+    if (!email.trim()) return;
+    setSubmitted(true);
+    setEmail("");
   };
 
   return (
-    <section className="py-16 px-6">
-      <div className="container mx-auto">
+    <section className="py-16 md:py-24">
+      <div className="container mx-auto px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-2xl mx-auto text-center p-8 md:p-12 rounded-2xl bg-gradient-to-br from-gold/5 via-amber-500/5 to-gold/5 border border-gold/10"
+          transition={{ duration: 0.45 }}
+          className="rounded-[2rem] border border-border/80 bg-card/70 p-8 shadow-elevated md:p-12"
         >
-          <span className="text-3xl mb-4 block text-gold">✦</span>
-          <h2 className="font-display text-2xl md:text-3xl text-foreground mb-3">
-            Nhận Bản Tin Phật Pháp
-          </h2>
-          <p className="text-sm text-muted-foreground mb-6 max-w-md mx-auto">
-            Nhận bài giảng mới, lịch tu học, và câu chuyện đồng tu mỗi tuần. Hoàn toàn miễn phí.
-          </p>
-
-          {submitted ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-4 rounded-xl bg-green-500/10 border border-green-500/20"
-            >
-              <p className="text-sm text-green-400 font-medium">✓ Đăng ký thành công!</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Bạn sẽ nhận email xác nhận trong vài phút.
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <div className="space-y-5">
+              <p className="text-gold text-xs font-medium uppercase tracking-[0.28em]">
+                Pháp Âm Mỗi Tuần
               </p>
-            </motion.div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Nhập email của bạn..."
-                required
-                className="flex-1 px-4 py-3 rounded-xl bg-card border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-gold/30"
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-gold/10 text-gold rounded-xl text-sm font-medium hover:bg-gold/20 transition-colors whitespace-nowrap"
-              >
-                Đăng Ký
-              </button>
-            </form>
-          )}
+              <div className="space-y-4">
+                <h2 className="max-w-2xl font-display text-3xl leading-tight text-foreground md:text-5xl">
+                  Nhận một bản tổng hợp ngắn, đủ để theo kịp nhịp tu học trong tuần.
+                </h2>
+                <p className="max-w-2xl font-body text-base leading-relaxed text-muted-foreground">
+                  Không phải newsletter kiểu marketing. Đây là một bản nhắc nhẹ, giúp anh theo dõi lịch,
+                  bài giảng mới và các tài nguyên cần mở lại khi cần.
+                </p>
+              </div>
+              <div className="zen-divider max-w-sm" />
+              <ul className="grid gap-3 text-sm text-foreground md:grid-cols-3 md:gap-4">
+                {digestItems.map((item, index) => (
+                  <li key={item} className="rounded-2xl border border-border/70 bg-background/55 px-4 py-4">
+                    <span className="block text-[10px] uppercase tracking-[0.24em] text-gold/80">
+                      Mục 0{index + 1}
+                    </span>
+                    <span className="mt-2 block leading-6">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-          <p className="text-xs text-muted-foreground/50 mt-4">
-            Chúng tôi tôn trọng sự riêng tư. Bạn có thể hủy bất cứ lúc nào.
-          </p>
+            <div className="rounded-[1.75rem] border border-gold/15 bg-background/65 p-6 md:p-7">
+              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                Đăng ký nhận bản tổng hợp
+              </p>
+              <div className="mt-4 space-y-4">
+                {submitted ? (
+                  <Alert className="rounded-[1.25rem] border-emerald-500/20 bg-emerald-500/10">
+                    <AlertTitle>Đã ghi nhận email</AlertTitle>
+                    <AlertDescription>
+                      Khi hệ thống gửi bản tổng hợp đầu tiên, email xác nhận sẽ xuất hiện trước.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-3">
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="email@domain.com"
+                      required
+                      className="h-12 rounded-2xl border-border bg-card"
+                    />
+                    <Button type="submit" variant="default" size="lg" className="w-full rounded-full">
+                      Nhận bản tổng hợp
+                    </Button>
+                  </form>
+                )}
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  Mỗi tuần một lần. Không gửi dồn, không dùng cho mục đích khác.
+                </p>
+              </div>
+            </div>
+          </div>
         </motion.div>
       </div>
     </section>

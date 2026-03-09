@@ -17,7 +17,14 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
     ? getStrapiMediaUrl(link.thumbnail.formats?.small?.url ?? link.thumbnail.url)
     : null
 
-  const isExternal = link.kind === 'external'
+  const normalizedUrl = (link.url ?? '').trim()
+  const isExternal = link.kind === 'external' || /^https?:\/\//i.test(normalizedUrl)
+  const internalHref =
+    normalizedUrl.startsWith('/')
+      ? normalizedUrl
+      : /^[A-Za-z0-9/_-]+$/.test(normalizedUrl)
+        ? `/${normalizedUrl}`
+        : null
 
   // Card personality theo theme
   const getThemeClass = () => {
@@ -59,7 +66,7 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
         {/* context tag nếu không có thumbnail */}
         {!thumbnailUrl && (
           <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-gold/50 mb-2">
-            {isExternal ? 'Liên Kết Ngoài' : 'Bài Viết'}
+            {isExternal ? 'Liên Kết Ngoài' : internalHref ? 'Bài Viết' : 'Liên Kết CMS'}
           </span>
         )}
 
@@ -96,9 +103,13 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
     </>
   )
 
+  if (!normalizedUrl || (!isExternal && !internalHref)) {
+    return <div className={wrapperClass}>{inner}</div>
+  }
+
   return isExternal ? (
     <a
-      href={link.url}
+      href={normalizedUrl}
       target="_blank"
       rel="noopener noreferrer"
       className={wrapperClass}
@@ -106,7 +117,7 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
       {inner}
     </a>
   ) : (
-    <Link href={link.url} className={wrapperClass}>
+    <Link href={internalHref as string} className={wrapperClass}>
       {inner}
     </Link>
   )

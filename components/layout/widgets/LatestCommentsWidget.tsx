@@ -14,8 +14,8 @@ export default async function LatestCommentsWidget() {
   if (comments.length === 0) return null
 
   return (
-    <div>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+    <div className="space-y-3">
+      <h3 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.28em] text-gold/80">
         <MessageSquareIcon className="w-3.5 h-3.5" />
         Bình luận gần đây
       </h3>
@@ -25,12 +25,12 @@ export default async function LatestCommentsWidget() {
           const postTitle = (c as any).post?.title as string | undefined
           const snippet = c.content.slice(0, 60) + (c.content.length > 60 ? '…' : '')
           return (
-            <li key={c.documentId} className="text-xs leading-relaxed">
-              <span className="font-medium text-foreground/80">{c.authorName}</span>
+            <li key={c.documentId} className="rounded-[1.5rem] bg-background/70 px-4 py-4 text-xs leading-relaxed">
+              <span className="font-medium text-foreground">{c.authorName}</span>
               {postSlug ? (
                 <Link
                   href={`/blog/${postSlug}#comments`}
-                  className="block text-muted-foreground hover:text-gold transition-colors mt-0.5 line-clamp-2"
+                  className="mt-1 block line-clamp-2 text-muted-foreground transition-colors hover:text-foreground"
                 >
                   {snippet}
                 </Link>

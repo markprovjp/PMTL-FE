@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     const res = await fetch(
       `${STRAPI}/api/blog-comments/latest?limit=${encodeURIComponent(limit)}`,
-      { next: { revalidate: 60 } }
+      { cache: 'no-store' }
     )
     const data = await res.json()
     return NextResponse.json(data, { status: res.status })

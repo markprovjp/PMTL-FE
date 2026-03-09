@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
+const NO_STORE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+}
 
 export async function GET(
   req: NextRequest,
@@ -16,17 +19,17 @@ export async function GET(
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      next: { revalidate: 60, tags: [`community-post-${documentId}`] },
+      cache: 'no-store',
     })
 
     const data = await res.json()
 
     if (!res.ok) {
-      return NextResponse.json(data, { status: res.status })
+      return NextResponse.json(data, { status: res.status, headers: NO_STORE_HEADERS })
     }
 
-    return NextResponse.json(data)
+    return NextResponse.json(data, { headers: NO_STORE_HEADERS })
   } catch (error) {
-    return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500 })
+    return NextResponse.json({ error: 'Lỗi máy chủ' }, { status: 500, headers: NO_STORE_HEADERS })
   }
 }

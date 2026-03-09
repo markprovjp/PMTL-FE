@@ -3,6 +3,8 @@
 //  API client cho profile — proxy qua Next.js routes để dùng httpOnly cookie
 // ─────────────────────────────────────────────────────────────
 
+import { createHttpError, getErrorMessage } from '@/lib/http-error'
+
 /**
  * Cập nhật thông tin: Lưu tên, bio... HOẶC truyền ID của Media vào avatar_url
  * Proxy qua /api/user/update (server đọc JWT từ httpOnly cookie)
@@ -14,8 +16,7 @@ export async function updateMe(data: Record<string, unknown>): Promise<unknown> 
     body: JSON.stringify(data),
   })
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err?.error || 'Cập nhật thất bại')
+    throw await createHttpError(res, 'Cập nhật thất bại')
   }
   return res.json()
 }
@@ -32,10 +33,8 @@ export async function uploadAvatarFile(file: File): Promise<{ id: number; url: s
     method: 'POST',
     body: form,
   })
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}))
-    throw new Error(err?.error || 'Upload thất bại')
-  }
+  if (!res.ok) throw await createHttpError(res, 'Upload thất bại')
   return res.json()
 }
 
+export { getErrorMessage }

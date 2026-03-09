@@ -23,7 +23,7 @@ export async function GET() {
     if (!res.ok) {
       // Token không hợp lệ — xóa cookie
       const response = NextResponse.json(null, { status: 401 })
-      response.cookies.delete('auth_token')
+      response.cookies.delete({ name: 'auth_token', path: '/' })
       return response
     }
 

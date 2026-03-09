@@ -4,6 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { normalizeApiErrorMessage, parseResponseBody } from '@/lib/http-error'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -25,11 +26,11 @@ export async function PUT(req: NextRequest) {
       body: JSON.stringify({ data: body }),
     })
 
-    const data = await res.json()
+    const data = await parseResponseBody(res)
 
     if (!res.ok) {
       return NextResponse.json(
-        { error: data?.error?.message || 'Cập nhật thất bại' },
+        { error: normalizeApiErrorMessage(data, res.status, 'Cập nhật thất bại') },
         { status: res.status }
       )
     }

@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────
 //  public/sw.js — Service Worker cho PWA
-//  Cache-first cho static assets, network-first cho API
+//  Cache-first cho static assets, network-only cho API/pages
 // ─────────────────────────────────────────────────────────────
 
-const CACHE_NAME = 'pmtl-v1'
+const CACHE_NAME = 'pmtl-v2'
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -42,23 +42,12 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return
   if (url.origin !== self.location.origin) return
 
-  // 1. API & Navigation (Pages): Network-First
+  // 1. API & Navigation (Pages): Network-only để tránh Ctrl+R lấy cache cũ
   const isApi = url.pathname.startsWith('/api/')
   const isPage = event.request.mode === 'navigate'
 
   if (isApi || isPage) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // Chỉ cache nếu response ok
-          if (response.ok && response.status === 200) {
-            const copy = response.clone()
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy))
-          }
-          return response
-        })
-        .catch(() => caches.match(event.request))
-    )
+    event.respondWith(fetch(event.request))
     return
   }
 

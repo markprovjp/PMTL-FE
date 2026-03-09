@@ -5,6 +5,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { toast } from 'sonner'
+import { createHttpError, getErrorMessage } from '@/lib/http-error'
 
 const EyeIcon = ({ open }: { open: boolean }) =>
   open ? (
@@ -78,19 +80,20 @@ const LoginForm = () => {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await res.json()
-
       if (!res.ok) {
-        setErrors({ submit: data.error || 'Đăng nhập thất bại' })
-        setLoading(false)
-        return
+        throw await createHttpError(res, 'Đăng nhập thất bại')
       }
 
+      const data = await res.json()
+
       login(data.user)
+      toast.success('Đăng nhập thành công')
       setSuccess(true)
       setTimeout(() => router.push('/'), 1500)
-    } catch {
-      setErrors({ submit: 'Lỗi kết nối máy chủ' })
+    } catch (error) {
+      const message = getErrorMessage(error, 'Lỗi kết nối máy chủ')
+      setErrors({ submit: message })
+      toast.error(message)
       setLoading(false)
     }
   }
@@ -227,19 +230,20 @@ const RegisterForm = () => {
         }),
       })
 
-      const data = await res.json()
-
       if (!res.ok) {
-        setErrors({ submit: data.error || 'Đăng ký thất bại' })
-        setLoading(false)
-        return
+        throw await createHttpError(res, 'Đăng ký thất bại')
       }
 
+      const data = await res.json()
+
       login(data.user)
+      toast.success('Đăng ký thành công')
       setSuccess(true)
       setTimeout(() => router.push('/'), 2000)
-    } catch {
-      setErrors({ submit: 'Lỗi kết nối máy chủ' })
+    } catch (error) {
+      const message = getErrorMessage(error, 'Lỗi kết nối máy chủ')
+      setErrors({ submit: message })
+      toast.error(message)
       setLoading(false)
     }
   }

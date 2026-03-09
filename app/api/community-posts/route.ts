@@ -5,6 +5,11 @@
 import { buildStrapiUrl } from '@/lib/strapi'
 import type { StrapiList } from '@/types/strapi'
 
+const NO_STORE_HEADERS = {
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+}
+
 export async function GET(request: Request) {
   try {
     const token = process.env.STRAPI_API_TOKEN
@@ -39,7 +44,7 @@ export async function GET(request: Request) {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      next: { revalidate: 60, tags: ['community-posts'] },
+      cache: 'no-store',
     })
 
     if (!res.ok) {
@@ -47,20 +52,20 @@ export async function GET(request: Request) {
       console.error('[CommunityPosts Proxy] Error from Strapi:', res.status, errorData)
       return new Response(
         JSON.stringify({ error: 'Failed to fetch community posts', status: res.status, details: errorData }),
-        { status: res.status, headers: { 'Content-Type': 'application/json' } }
+        { status: res.status, headers: NO_STORE_HEADERS }
       )
     }
 
     const data = await res.json()
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: NO_STORE_HEADERS,
     })
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : String(error)
     return new Response(
       JSON.stringify({ error: 'Internal server error', message: errMsg }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: NO_STORE_HEADERS }
     )
   }
 }

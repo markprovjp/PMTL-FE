@@ -7,25 +7,26 @@ interface DownloadLinksWidgetProps {
 }
 
 export default function DownloadLinksWidget({ links }: DownloadLinksWidgetProps) {
-  if (!links || links.length === 0) return null
+  const validLinks = (links ?? []).filter((link) => link?.url)
+  if (validLinks.length === 0) return null
 
   return (
-    <div>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 flex items-center gap-1.5">
+    <div className="space-y-3">
+      <h3 className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.28em] text-gold/80">
         <DownloadIcon className="w-3.5 h-3.5" />
         Tài liệu tải về
       </h3>
-      <ul className="space-y-1.5">
-        {links.map((link, i) => (
+      <ul className="space-y-2">
+        {validLinks.map((link, i) => (
           <li key={i}>
             <a
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-sm text-foreground/80 hover:text-gold transition-colors group"
+              className="group flex items-center gap-3 rounded-[1.25rem] bg-background/70 px-4 py-3 text-sm text-foreground transition-colors hover:bg-background"
             >
               <DownloadIcon className="w-3.5 h-3.5 shrink-0 text-muted-foreground/50 group-hover:text-gold/60 transition-colors" />
-              <span className="line-clamp-1">{link.title}</span>
+              <span className="line-clamp-1">{link.title?.trim() || `Tài liệu ${i + 1}`}</span>
             </a>
           </li>
         ))}
