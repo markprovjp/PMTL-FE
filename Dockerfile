@@ -9,6 +9,8 @@ COPY package*.json ./
 # ARG để nhận API URL lúc build
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 
 # Install dependencies
 RUN npm ci --legacy-peer-deps
@@ -18,7 +20,7 @@ COPY . .
 
 # Build Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=1536"
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 RUN npm run build
 
 # Production stage
@@ -48,7 +50,7 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_OPTIONS="--max-old-space-size=256 --max-semi-space-size=32"
+ENV NODE_OPTIONS="--max-old-space-size=768 --max-semi-space-size=64"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=5 \
