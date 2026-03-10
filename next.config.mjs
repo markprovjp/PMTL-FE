@@ -1,34 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // 🚀 Tối ưu cho VPS 2GB - Cực nhẹ & Bỏ qua check lỗi lúc Build
+  // 🚀 Tối ưu Standalone cho VPS 2GB
   output: 'standalone',
   reactCompiler: true,
 
+  // Bỏ qua check lúc build để dành RAM cho việc Build chính
   typescript: {
     ignoreBuildErrors: true,
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
 
-  // ── Redis ISR Cache (production) ──────────────────────────────
-  ...(process.env.REDIS_URL
-    ? {
-      cacheHandler: new URL('./cache-handler.js', import.meta.url).pathname,
-      cacheMaxMemorySize: 0,
-    }
-    : {}),
+  // Tắt tele cho nhẹ
+  telemetry: false,
 
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true, // Tiết kiệm công sức xử lý ảnh cho CPU yếu
     remotePatterns: [
       { protocol: 'https', hostname: 'img.youtube.com' },
       { protocol: 'https', hostname: 'i.ytimg.com' },
       { protocol: 'https', hostname: 'picsum.photos' },
-      { protocol: 'http', hostname: 'localhost', port: '1337', pathname: '/uploads/**' },
-      { protocol: 'http', hostname: '127.0.0.1', port: '1337', pathname: '/uploads/**' },
-      { protocol: 'http', hostname: '::1', port: '1337', pathname: '/uploads/**' },
-      { protocol: 'https', hostname: 'api.phapmontamlinh.vn', pathname: '/uploads/**' },
+      { protocol: 'http', hostname: '**' },
+      { protocol: 'https', hostname: '**' },
     ],
   },
 };
