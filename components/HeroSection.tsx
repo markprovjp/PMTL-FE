@@ -14,14 +14,19 @@ interface HeroSectionProps {
 
 export default function HeroSection({ slides, stats }: HeroSectionProps) {
   const [current, setCurrent] = useState(0);
+  const hasSlides = slides.length > 0;
 
   useEffect(() => {
+    if (!hasSlides) return;
+
     const timer = setInterval(() => {
       setCurrent((prev) => (prev + 1) % slides.length);
     }, 7000);
 
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [hasSlides, slides.length]);
+
+  if (!hasSlides) return null;
 
   const slide = slides[current];
 
@@ -44,22 +49,23 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
             sizes="100vw"
             className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,12,7,0.34)_0%,rgba(19,12,7,0.68)_48%,rgba(19,12,7,0.9)_100%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,208,56,0.22),transparent_30%)]" />
-          <div className="absolute inset-y-0 left-0 w-[58%] bg-[linear-gradient(90deg,rgba(16,11,7,0.88)_0%,rgba(16,11,7,0.55)_55%,rgba(16,11,7,0)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(19,12,7,0.46)_0%,rgba(19,12,7,0.72)_42%,rgba(19,12,7,0.9)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,208,56,0.18),transparent_28%)]" />
+
+          <div className="absolute inset-x-0 bottom-0 h-32 bg-[linear-gradient(180deg,transparent,rgba(16,11,7,0.38)_45%,rgba(16,11,7,0.74)_100%)]" />
         </motion.div>
       </AnimatePresence>
 
-      <div className="relative container mx-auto px-6 pb-10 pt-28 md:pb-16 md:pt-36 lg:pt-40">
-        <div className="max-w-5xl">
+      <div className="relative container mx-auto px-5 pb-10 pt-24 md:px-6 md:pb-16 md:pt-32 lg:pt-36">
+        <div className="max-w-4xl">
           <motion.div
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-md"
+            className="inline-flex items-center gap-3 rounded-md border border-white/15 bg-black/18 px-4 py-2 backdrop-blur-sm"
           >
-            <span className="h-2 w-2 rounded-full bg-gold" />
-            <span className="text-[11px] uppercase tracking-[0.3em] text-white/88">
+            <span className="size-2 rounded-full bg-gold" />
+            <span className="text-[11px] uppercase tracking-[0.28em] text-white/88">
               心灵法门 · Pháp Môn Tâm Linh
             </span>
           </motion.div>
@@ -71,64 +77,64 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -12 }}
               transition={{ duration: 0.6 }}
-              className="mt-8 space-y-6"
+              className="mt-7 space-y-5 md:mt-8 md:space-y-6"
             >
-              <h1 className="max-w-5xl font-display text-[clamp(3rem,10vw,6.6rem)] leading-[0.92] tracking-[-0.04em] text-white">
-                <span className="block">{slide.title}</span>
-                <span className="mt-2 block text-gold">{slide.highlight}</span>
+              <h1 className="max-w-4xl ant-title text-[clamp(3.1rem,8vw,6rem)] leading-[0.96] tracking-[-0.03em] text-white">
+                <span className="block text-balance">{slide.title}</span>
+                <span className="mt-1.5 block text-balance text-gold md:mt-2">{slide.highlight}</span>
               </h1>
-              <div className="h-px w-24 bg-gradient-to-r from-gold to-transparent" />
-              <p className="max-w-5xl font-body text-base leading-relaxed text-white/74 md:text-xl">
+              <div className="h-px w-20 bg-gradient-to-r from-gold to-transparent md:w-24" />
+              <p className="max-w-3xl font-body text-[1.05rem] leading-relaxed text-white/82 md:text-xl">
                 {slide.sub}
               </p>
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-8 flex flex-col gap-4 md:mt-10 md:flex-row md:items-center">
+          <div className="mt-8 flex flex-col gap-3 md:mt-10 md:gap-4">
             <Link
               href="/search"
-            className="group flex w-full max-w-xl items-center gap-3 rounded-md border border-white/12 bg-black/30 px-4 py-3 backdrop-blur-md transition-colors hover:border-gold/35 hover:bg-black/36"
+              className="group flex w-full max-w-3xl items-center gap-3 rounded-md border border-white/15 bg-black/34 px-4 py-3.5 backdrop-blur-sm transition-colors hover:border-gold/35 hover:bg-black/40 md:px-5"
             >
-              <SearchIcon className="h-5 w-5 text-gold" />
-              <span className="flex-1 text-left text-sm text-white/68 md:text-base">
+              <SearchIcon className="h-5 w-5 shrink-0 text-gold" />
+              <span className="flex-1 text-left text-sm leading-relaxed text-white/78 md:text-base">
                 Tìm kinh văn, khai thị, pháp bảo hoặc chủ đề tu học
               </span>
-              <span className="rounded-md bg-gold px-5 py-2 text-sm font-medium text-black transition-transform group-hover:scale-[1.02]">
+              <span className="shrink-0 rounded-md bg-gold px-4 py-2.5 text-sm font-semibold text-black transition-transform group-hover:scale-[1.02] md:px-6">
                 Tra cứu
               </span>
             </Link>
 
-            <div className="flex flex-wrap gap-3 text-sm">
-              <Link href="/beginner-guide" className="rounded-md border border-white/15 px-5 py-3 text-white/90 transition-colors hover:border-gold/35 hover:text-gold">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link href="/beginner-guide" className="inline-flex items-center justify-center rounded-md border border-white/15 bg-black/12 px-5 py-3 text-sm font-medium text-white/90 transition-colors hover:border-gold/35 hover:text-gold">
                 Hướng dẫn sơ học
               </Link>
-              <Link href="/library" className="rounded-full border border-transparent px-1 py-3 text-white/68 transition-colors hover:text-white">
+              <Link href="/library" className="inline-flex items-center justify-center rounded-md border border-white/10 bg-transparent px-5 py-3 text-sm font-medium text-white/72 transition-colors hover:border-white/20 hover:text-white">
                 Thư viện pháp bảo
               </Link>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 grid gap-3 md:grid-cols-3 lg:mt-16 lg:max-w-5xl">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:mt-14 lg:max-w-5xl lg:grid-cols-3">
           {stats.map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.16 + index * 0.08 }}
-              className="rounded-lg border border-white/10 bg-black/38 p-5 backdrop-blur-md"
+              className="rounded-md border border-white/12 bg-black/32 p-5 backdrop-blur-sm"
             >
               <p className="ant-label text-gold/78">{stat.label}</p>
-              <p className="ant-number mt-3 text-3xl leading-none text-white md:text-4xl">
+              <p className="ant-number mt-3 text-[2rem] leading-none text-white md:text-[2.4rem]">
                 {stat.value}
               </p>
-              <p className="mt-3 text-sm leading-relaxed text-white/60">{stat.detail}</p>
+              <p className="mt-3 text-sm leading-relaxed text-white/64">{stat.detail}</p>
             </motion.div>
           ))}
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-6 top-1/2 hidden -translate-y-1/2 lg:flex lg:flex-col lg:gap-3">
+      <div className="pointer-events-none absolute bottom-5 left-1/2 flex -translate-x-1/2 gap-2 md:bottom-6 lg:left-auto lg:right-6 lg:top-1/2 lg:translate-x-0 lg:-translate-y-1/2 lg:flex-col lg:gap-3">
         {slides.map((_, index) => (
           <button
             key={index}
@@ -136,7 +142,7 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
             className={[
               "pointer-events-auto rounded-full border transition-all duration-300",
               index === current
-                ? "h-11 w-2 border-gold bg-gold shadow-[0_0_14px_rgba(234,179,8,0.45)]"
+                ? "h-2.5 w-7 border-gold bg-gold shadow-[0_0_14px_rgba(234,179,8,0.45)] lg:h-11 lg:w-2"
                 : "h-2.5 w-2.5 border-white/20 bg-white/25 hover:bg-white/45",
             ].join(" ")}
             aria-label={`Go to slide ${index + 1}`}
