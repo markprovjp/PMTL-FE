@@ -178,7 +178,7 @@ export default async function BlogPostPage({ params }: Props) {
                 </div>
 
                 {/* Title */}
-                <h1 className="font-display text-3xl md:text-4xl text-foreground mb-3 leading-tight">
+                <h1 className="ant-title mb-3 text-3xl leading-tight text-foreground md:text-4xl">
                   {post.title}
                 </h1>
 
@@ -249,7 +249,7 @@ export default async function BlogPostPage({ params }: Props) {
               {/* ── Content (HTML from CKEditor) ── */}
               <article
                 className="prose dark:prose-invert prose-gold max-w-none mb-10 whitespace-pre-wrap
-              prose-headings:font-display prose-headings:text-foreground
+              prose-headings:font-serif prose-headings:text-foreground
               prose-p:text-muted-foreground prose-p:leading-relaxed
               prose-a:text-gold hover:prose-a:underline
               prose-strong:text-foreground
@@ -261,7 +261,7 @@ export default async function BlogPostPage({ params }: Props) {
               {/* ── Gallery ── */}
               {post.gallery && post.gallery.length > 0 && (
                 <div className="mb-10">
-                  <h3 className="font-display text-lg text-foreground mb-4">Hình ảnh minh họa</h3>
+                  <h3 className="ant-title mb-4 text-lg text-foreground">Hình ảnh minh họa</h3>
                   <div className={`grid gap-3 ${post.gallery.length === 1 ? 'grid-cols-1' : post.gallery.length === 2 ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-3'}`}>
                     {post.gallery.map((img) => {
                       const imgUrl = getStrapiMediaUrl(img.formats?.medium?.url ?? img.url)
@@ -289,7 +289,7 @@ export default async function BlogPostPage({ params }: Props) {
                     href={sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary/10 text-gold text-sm font-medium border border-gold/20 hover:bg-gold hover:text-black transition-all shadow-sm"
+                    className="inline-flex items-center gap-2 rounded-md border border-gold/20 bg-primary/10 px-4 py-2.5 text-sm font-medium text-gold transition-all shadow-sm hover:bg-gold hover:text-black"
                   >
                     <ArrowRightIcon className="w-4 h-4 translate-y-px" />
                     Xem bài viết gốc
@@ -309,7 +309,7 @@ export default async function BlogPostPage({ params }: Props) {
                       <Link
                         key={tag.id}
                         href={`/tag/${tag.slug}`}
-                        className="px-3 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-gold/10 hover:text-gold transition-colors"
+                        className="rounded-md bg-secondary px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-gold/10 hover:text-gold"
                       >
                         #{tag.name}
                       </Link>
@@ -321,7 +321,7 @@ export default async function BlogPostPage({ params }: Props) {
               {/* ── Related posts ── */}
               {related.length > 0 && (
                 <div className="mt-12 pt-8 border-t border-border">
-                  <h3 className="font-display text-lg text-foreground mb-6">Bài viết liên quan</h3>
+                  <h3 className="ant-title mb-6 text-lg text-foreground">Bài viết liên quan</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {related.map((rp) => {
                       const rpThumb = rp.thumbnail

@@ -385,16 +385,16 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
           exit={{ opacity: 0, height: 0, marginBottom: 0 }}
           className="overflow-hidden"
         >
-          <div className="relative overflow-hidden rounded-2xl border border-amber-500/10 bg-gradient-to-br from-amber-50/80 to-transparent p-4 dark:from-amber-500/5 dark:to-transparent">
+          <div className="relative overflow-hidden rounded-xl border border-amber-500/10 bg-gradient-to-br from-amber-50/80 to-transparent p-4 dark:from-amber-500/5 dark:to-transparent">
             <button
               onClick={hideInstruction}
-              className="absolute top-2 right-2 p-1.5 rounded-full hover:bg-amber-500/10 text-amber-500/50 hover:text-amber-500 transition-colors z-10"
+              className="absolute top-2 right-2 z-10 rounded-md p-1.5 text-amber-500/50 transition-colors hover:bg-amber-500/10 hover:text-amber-500"
               title="Đóng hướng dẫn"
             >
               <X className="w-4 h-4" />
             </button>
             <div className="flex gap-3 pr-6">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-amber-500/10">
                 <Info className="h-4 w-4 text-amber-500" />
               </div>
               <div className="space-y-1.5">
@@ -548,9 +548,9 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
                       <a
                         key={blog.slug}
                         href={`/blog/${blog.slug}`}
-                        className="flex items-center gap-4 px-4 py-3 rounded-2xl border border-border/70 bg-card hover:border-amber-400/50 hover:bg-amber-500/5 transition-all group shadow-sm"
+                        className="group flex items-center gap-4 rounded-xl border border-border/70 bg-card px-4 py-3 shadow-sm transition-all hover:border-amber-400/50 hover:bg-amber-500/5"
                       >
-                        <div className="w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/20 transition-colors">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-amber-500/10 transition-colors group-hover:bg-amber-500/20">
                           <BookOpen className="w-4 h-4 text-amber-500" />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -648,7 +648,7 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
                     <a
                       key={blog.slug}
                       href={`/blog/${blog.slug}`}
-                      className="flex items-center gap-3 px-4 py-3 rounded-2xl border border-border/70 bg-card active:scale-[0.98] transition-all shadow-sm"
+                      className="flex items-center gap-3 rounded-xl border border-border/70 bg-card px-4 py-3 shadow-sm transition-all active:scale-[0.98]"
                     >
                       <BookOpen className="w-4 h-4 text-amber-500/70 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
@@ -719,10 +719,10 @@ function DesktopCounterPanel({
 
   if (item.kind === 'step') {
     return (
-      <div className="rounded-2xl border bg-card p-6 space-y-4">
+      <div className="space-y-4 rounded-xl border bg-card p-6 shadow-ant">
         <h2 className="text-xl font-semibold">{item.title}</h2>
         {item.openingPrayer && (
-          <div className="text-xs text-amber-600/80 dark:text-amber-400/80 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/60 dark:border-amber-500/20 rounded-xl px-3 py-2.5 leading-relaxed italic flex gap-2">
+          <div className="flex gap-2 rounded-lg border border-amber-200/60 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-600/80 italic dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-400/80">
             <BookOpen className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
             <span>{item.openingPrayer}</span>
           </div>
@@ -742,14 +742,14 @@ function DesktopCounterPanel({
   }
 
   return (
-    <div className="rounded-2xl border bg-card p-5 space-y-4">
+      <div className="space-y-4 rounded-xl border bg-card p-5 shadow-ant">
       <div>
         <h2 className="text-lg font-bold leading-tight">{item.title}</h2>
         {item.target && (
           <div className="flex items-center gap-2 mt-1.5">
-            <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-md bg-muted">
               <div
-                className={`h-full rounded-full transition-all duration-500 ${done ? 'bg-green-500' : 'bg-amber-400'
+                className={`h-full rounded-md transition-all duration-500 ${done ? 'bg-green-500' : 'bg-amber-400'
                   }`}
                 style={{ width: `${pct}%` }}
               />
@@ -767,14 +767,14 @@ function DesktopCounterPanel({
 
       {/* Lời cầu nguyện mở đầu */}
       {item.openingPrayer && (
-        <div className="text-xs text-amber-700/80 dark:text-amber-300/80 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-3 py-2.5 leading-relaxed italic flex gap-2">
+        <div className="flex gap-2 rounded-lg border border-amber-200/50 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-700/80 italic dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300/80">
           <BookOpen className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
           <span>{item.openingPrayer}</span>
         </div>
       )}
 
       {violated && (
-        <div className="flex items-center gap-2 text-xs text-orange-400 bg-orange-400/10 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 rounded-md bg-orange-400/10 px-3 py-2 text-xs text-orange-400">
           <AlertTriangle className="w-3.5 h-3.5" />
           {message}
         </div>
@@ -784,7 +784,7 @@ function DesktopCounterPanel({
       <button
         onClick={() => onIncrement(1)}
         disabled={atCap}
-        className={`w-full rounded-2xl border-2 flex flex-col items-center justify-center transition-all select-none gap-1
+        className={`flex w-full select-none flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all
           ${done
             ? 'border-green-500/40 bg-green-500/5 cursor-not-allowed'
             : atCap
@@ -807,20 +807,20 @@ function DesktopCounterPanel({
       <div className="flex gap-3">
         <button
           onClick={() => onDecrement()}
-          className="flex-1 h-12 rounded-xl border bg-muted hover:bg-accent text-xl font-bold transition-colors"
+          className="h-12 flex-1 rounded-md border bg-muted text-xl font-bold transition-colors hover:bg-accent"
         >
           −
         </button>
         <button
           onClick={onReset}
-          className="px-4 h-12 rounded-xl border bg-muted hover:bg-destructive/10 text-sm text-muted-foreground transition-colors"
+          className="h-12 rounded-md border bg-muted px-4 text-sm text-muted-foreground transition-colors hover:bg-destructive/10"
         >
           Reset
         </button>
         <button
           onClick={() => onIncrement(1)}
           disabled={atCap}
-          className="flex-1 h-12 rounded-xl border bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white text-xl font-bold transition-colors"
+          className="h-12 flex-1 rounded-md border bg-amber-500 text-xl font-bold text-white transition-colors hover:bg-amber-400 disabled:opacity-40"
         >
           +
         </button>
@@ -833,7 +833,7 @@ function DesktopCounterPanel({
             key={p}
             onClick={() => onIncrement(p)}
             disabled={atCap}
-            className="px-3 py-1 rounded-full border text-sm hover:bg-accent disabled:opacity-40 transition-colors"
+            className="rounded-md border px-3 py-1 text-sm transition-colors hover:bg-accent disabled:opacity-40"
           >
             +{p}
           </button>

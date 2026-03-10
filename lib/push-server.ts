@@ -139,12 +139,24 @@ export async function fetchPushSubscriptionsPage(start: number, limit: number) {
     `pagination[start]=${start}`,
     `pagination[limit]=${limit}`,
     'sort[0]=updatedAt:asc',
+    'populate[user][fields][0]=id',
+    'populate[user][fields][1]=documentId',
   ].join('&')
 
   return strapiAdminFetch<{ data: PushSubscriptionRecord[]; meta?: { pagination?: { total?: number } } }>(
     `/push-subscriptions?${query}`,
     { method: 'GET' }
   )
+}
+
+export async function fetchRecentNotifications(limit = 24) {
+  const query = [
+    'filters[status][$eq]=completed',
+    'sort[0]=createdAt:desc',
+    `pagination[limit]=${Math.max(1, Math.min(100, limit))}`,
+  ].join('&')
+
+  return strapiAdminFetch<{ data: PushJobRecord[] }>(`/push-jobs?${query}`, { method: 'GET' })
 }
 
 export async function markSubscriptionDelivery(documentId: string, data: Record<string, unknown>) {

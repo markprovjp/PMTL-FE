@@ -94,7 +94,7 @@ export default async function NiemKinhPage({
           <div className="mb-12">
             <div className="flex flex-col items-center text-center mb-8">
               <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">{CHANTING_ADMIN_COPY.pageEyebrow}</p>
-              <h1 className="font-display text-3xl md:text-4xl text-foreground mb-4 leading-tight">
+              <h1 className="ant-title mb-4 text-3xl leading-tight text-foreground md:text-4xl">
                 {CHANTING_ADMIN_COPY.pageTitle}
               </h1>
               <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -117,7 +117,7 @@ export default async function NiemKinhPage({
                 {data.todayEvents.map((ev) => (
                   <span
                     key={ev.id}
-                    className="text-xs md:text-sm px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 font-medium"
+                    className="rounded-md border border-amber-500/20 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-600 dark:text-amber-400 md:text-sm"
                   >
                     {ev.title}
                   </span>
@@ -152,7 +152,7 @@ export default async function NiemKinhPage({
 
 function EmptyState({ planSlug }: { planSlug?: string }) {
   return (
-    <div className="relative rounded-2xl border border-dashed border-muted-foreground/30 bg-card/30 p-12 text-center">
+    <div className="relative rounded-xl border border-dashed border-muted-foreground/30 bg-card/30 p-12 text-center">
       <h2 className="text-lg font-semibold text-foreground mb-2">Chưa có lịch trình niệm để hiển thị</h2>
       <p className="text-muted-foreground text-sm mb-4">
         Trong Strapi Admin, hãy kiểm tra{' '}

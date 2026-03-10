@@ -65,7 +65,7 @@ function DownloadCard({ item }: { item: DownloadItem }) {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(212, 175, 55, 0.1)' }}
-      className="group flex items-start gap-3 p-4 rounded-xl bg-card border border-border hover:border-gold/40 transition-all duration-200"
+      className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-gold/40 hover:shadow-ant"
     >
       <motion.div
         className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${typeBadgeClass(item.fileType)} group-hover:scale-105`}
@@ -124,16 +124,16 @@ function DownloadGroupSection({ group }: { group: DownloadGroup }) {
 
   return (
     <motion.div
-      className="rounded-2xl border border-border overflow-hidden bg-card hover:border-gold/20 transition-colors"
+      className="overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-gold/20"
       whileHover={{ boxShadow: '0 0 20px rgba(212, 175, 55, 0.1)' }}
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-6 py-5 bg-card hover:bg-secondary/50 transition-all"
+        className="flex w-full items-center justify-between bg-card px-6 py-5 transition-all hover:bg-secondary/50"
       >
         <div className="flex items-center gap-4 text-left">
           <motion.div
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/10 to-amber-500/5 flex items-center justify-center"
+            className="flex h-10 w-10 items-center justify-center rounded-md bg-gradient-to-br from-gold/10 to-amber-500/5"
             whileHover={{ scale: 1.05 }}
           >
             <Archive className="w-5 h-5 text-gold" />
@@ -223,7 +223,7 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
         className="flex flex-col items-center text-center mb-12"
       >
         <p className="text-gold text-xs font-medium tracking-widest uppercase mb-4">Thư Viện Tài Liệu Miễn Phí</p>
-        <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground mb-5">Tài Liệu Tu Học</h1>
+        <h1 className="ant-title mb-5 text-4xl text-foreground md:text-5xl lg:text-6xl">Tài Liệu Tu Học</h1>
         <p className="text-muted-foreground text-base leading-relaxed max-w-2xl mx-auto">
           Kinh điển, khai thị, audio, video và tài liệu tu học của Pháp Môn Tâm Linh.
           Tất cả phát hành <strong className="text-foreground">hoàn toàn miễn phí</strong>.
@@ -244,7 +244,7 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
             placeholder="Tìm kiếm tài liệu, kinh điển..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-4 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/50 shadow-sm transition-colors"
+            className="w-full rounded-lg border border-border bg-card py-4 pl-12 pr-4 text-sm text-foreground shadow-sm transition-colors placeholder:text-muted-foreground focus:border-gold/50 focus:outline-none"
           />
         </div>
       </motion.div>
@@ -260,7 +260,7 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
           <button
             key={cat}
             onClick={() => setCategory(cat)}
-            className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-medium transition-all ${category === cat
+            className={`whitespace-nowrap rounded-md px-4 py-2 text-xs font-medium transition-all ${category === cat
                 ? 'bg-gold text-black shadow-sm'
                 : 'bg-card border border-border text-muted-foreground hover:border-gold/30 hover:text-foreground'
               }`}
@@ -280,7 +280,7 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20 rounded-2xl bg-card border border-border"
+            className="rounded-xl border border-border bg-card py-20 text-center"
           >
             <Download className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
             <p className="text-foreground font-medium mb-2">
@@ -296,7 +296,7 @@ export default function LibraryClient({ initialItems, categories }: LibraryClien
             <div className="flex items-center gap-3 mb-8">
               <div>
                 <p className="text-xs font-medium tracking-widest text-gold/70 uppercase mb-1">Thư Viện</p>
-                <h2 className="font-display text-2xl md:text-3xl text-foreground">Kho Tài Liệu</h2>
+                <h2 className="ant-title text-2xl text-foreground md:text-3xl">Kho Tài Liệu</h2>
               </div>
               <div className="flex-1 h-px bg-gradient-to-r from-gold/20 to-transparent" />
             </div>

@@ -69,28 +69,28 @@ export default function RadioPage() {
               <MicIcon className="w-5 h-5 text-gold" />
               <p className="text-gold text-sm font-medium tracking-widest uppercase">Đài Phật Pháp</p>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Chương Trình Phát Thanh</h1>
+            <h1 className="ant-title mb-4 text-4xl text-foreground md:text-5xl">Chương Trình Phát Thanh</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">3,000+ giờ ghi âm bài giảng Phật pháp từ Sư Phụ Lư Quân Hoành. Nghe miễn phí, mọi lúc mọi nơi.</p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="flex flex-wrap justify-center gap-2 mb-8">
             {platformLinks.map((p) => (
-              <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-card border border-border hover:border-gold/40 text-sm text-muted-foreground hover:text-gold transition-all">{p.name}</a>
+              <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm text-muted-foreground transition-all hover:border-gold/40 hover:text-gold">{p.name}</a>
             ))}
-            <a href="https://xinlingfamen.info/radio" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-gold/30 text-sm text-gold hover:bg-primary/20 transition-all font-medium">
+            <a href="https://xinlingfamen.info/radio" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md border border-gold/30 bg-primary/10 px-4 py-2 text-sm font-medium text-gold transition-all hover:bg-primary/20">
               <MicIcon className="w-3.5 h-3.5" />Nghe Radio Trực Tiếp
             </a>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10 p-5 rounded-xl bg-gradient-to-r from-primary/10 via-card to-primary/10 border border-gold/20">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10 rounded-xl border border-gold/20 bg-gradient-to-r from-primary/10 via-card to-primary/10 p-5 shadow-ant">
             <div className="flex flex-col md:flex-row items-center gap-4">
               <div className="flex items-center gap-3">
-                <div className="relative"><div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center"><div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" /></div></div>
+                <div className="relative"><div className="flex size-12 items-center justify-center rounded-md bg-red-500/20"><div className="h-3 w-3 rounded-sm bg-red-500 animate-pulse" /></div></div>
                 <div><p className="text-sm font-medium text-foreground">Radio Trực Tiếp — Đài Đông Phương</p><p className="text-xs text-muted-foreground">Phát thanh hàng ngày từ Sydney, Australia</p></div>
               </div>
               <div className="flex-1" />
               <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Hotline:</span><a href="tel:+61292832758" className="text-gold font-medium">+61 2 9283 2758</a></div>
-              <a href="https://xinlingfamen.info/radio" target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors flex items-center gap-2">
+              <a href="https://xinlingfamen.info/radio" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-md bg-red-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-700">
                 <HeadphonesIcon className="w-4 h-4" />Nghe Ngay
               </a>
             </div>
@@ -100,18 +100,18 @@ export default function RadioPage() {
             <div className="flex-1 min-w-0">
               {featured.length > 0 && (
                 <div className="mb-10">
-                  <h2 className="font-display text-2xl text-foreground mb-5">Bài Giảng Nổi Bật</h2>
+                  <h2 className="ant-title mb-5 text-2xl text-foreground">Bài Giảng Nổi Bật</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                     {featured.map((ep, i) => (
-                      <motion.div key={ep.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }} className="relative p-5 rounded-xl bg-card border border-border hover:border-gold/30 transition-all group cursor-pointer" onClick={() => setPlayingId(playingId === ep.id ? null : ep.id)}>
+                      <motion.div key={ep.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.05 }} className="group relative cursor-pointer rounded-xl border border-border bg-card p-5 transition-all hover:border-gold/30 hover:shadow-ant" onClick={() => setPlayingId(playingId === ep.id ? null : ep.id)}>
                         <div className="flex items-start gap-3 mb-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors ${playingId === ep.id ? "bg-gold text-black" : "bg-secondary group-hover:bg-primary/10 text-muted-foreground group-hover:text-gold"}`}><PlayIcon className="w-4 h-4" /></div>
+                          <div className={`flex size-10 shrink-0 items-center justify-center rounded-md transition-colors ${playingId === ep.id ? "bg-gold text-black" : "bg-secondary group-hover:bg-primary/10 text-muted-foreground group-hover:text-gold"}`}><PlayIcon className="w-4 h-4" /></div>
                           <div className="min-w-0"><p className="text-xs text-gold/70 mb-0.5">{ep.category}</p><h3 className="text-sm font-medium text-foreground leading-snug line-clamp-2">{ep.title}</h3></div>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-muted-foreground"><span>{ep.duration}</span><span>•</span><span>{ep.listenerCount.toLocaleString()} lượt nghe</span></div>
                         {playingId === ep.id && (
                           <div className="mt-3 space-y-2">
-                            <div className="w-full h-1.5 bg-border rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-gold to-amber-400 rounded-full" initial={{ width: "0%" }} animate={{ width: "35%" }} transition={{ duration: 2 }} /></div>
+                            <div className="h-1.5 w-full overflow-hidden rounded-md bg-border"><motion.div className="h-full rounded-md bg-gradient-to-r from-gold to-amber-400" initial={{ width: "0%" }} animate={{ width: "35%" }} transition={{ duration: 2 }} /></div>
                             <p className="text-xs text-muted-foreground">Đang phát...</p>
                           </div>
                         )}
@@ -124,22 +124,22 @@ export default function RadioPage() {
               <div className="flex flex-col sm:flex-row gap-3 mb-6">
                 <div className="relative flex-1">
                   <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input type="text" placeholder="Tìm kiếm bài giảng..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/40" />
+                  <input type="text" placeholder="Tìm kiếm bài giảng..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full rounded-md border border-border bg-secondary py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/40" />
                 </div>
-                <span className="px-4 py-2.5 rounded-lg bg-card border border-border text-sm text-muted-foreground whitespace-nowrap">{filtered.length} bài giảng</span>
+                <span className="rounded-md border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground whitespace-nowrap">{filtered.length} bài giảng</span>
               </div>
 
               <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
                 {categories.map((cat) => (
-                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all ${activeCategory === cat ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{cat}</button>
+                  <button key={cat} onClick={() => setActiveCategory(cat)} className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-all ${activeCategory === cat ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{cat}</button>
                 ))}
               </div>
 
               <div className="space-y-3">
                 {filtered.map((ep) => (
-                  <motion.div key={ep.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`p-4 rounded-xl border transition-all cursor-pointer ${playingId === ep.id ? "bg-primary/5 border-gold/30" : "bg-card border-border hover:border-gold/20"}`} onClick={() => setPlayingId(playingId === ep.id ? null : ep.id)}>
+                  <motion.div key={ep.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className={`cursor-pointer rounded-xl border p-4 transition-all ${playingId === ep.id ? "border-gold/30 bg-primary/5 shadow-ant" : "border-border bg-card hover:border-gold/20 hover:shadow-ant"}`} onClick={() => setPlayingId(playingId === ep.id ? null : ep.id)}>
                     <div className="flex gap-4">
-                      <button className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 transition-colors ${playingId === ep.id ? "bg-gold text-black" : "bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-gold"}`}>
+                      <button className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-md transition-colors ${playingId === ep.id ? "bg-gold text-black" : "bg-secondary hover:bg-primary/10 text-muted-foreground hover:text-gold"}`}>
                         {playingId === ep.id ? (
                           <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><rect x="6" y="4" width="4" height="16" rx="1" /><rect x="14" y="4" width="4" height="16" rx="1" /></svg>
                         ) : (
@@ -148,7 +148,7 @@ export default function RadioPage() {
                       </button>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">{ep.category}</span>
+                          <span className="rounded-md bg-secondary px-2 py-0.5 text-xs text-muted-foreground">{ep.category}</span>
                           <span className="text-xs text-muted-foreground">{ep.date}</span>
                         </div>
                         <h3 className="text-sm font-medium text-foreground leading-snug mb-1.5">{ep.title}</h3>
@@ -158,7 +158,7 @@ export default function RadioPage() {
                           <div className="flex gap-1">{ep.tags.map((t) => (<span key={t} className="text-gold/50">#{t}</span>))}</div>
                         </div>
                         {playingId === ep.id && (
-                          <div className="mt-3"><div className="w-full h-1.5 bg-border rounded-full overflow-hidden"><motion.div className="h-full bg-gradient-to-r from-gold to-amber-400 rounded-full" initial={{ width: "0%" }} animate={{ width: "42%" }} transition={{ duration: 3 }} /></div></div>
+                          <div className="mt-3"><div className="h-1.5 w-full overflow-hidden rounded-md bg-border"><motion.div className="h-full rounded-md bg-gradient-to-r from-gold to-amber-400" initial={{ width: "0%" }} animate={{ width: "42%" }} transition={{ duration: 3 }} /></div></div>
                         )}
                       </div>
                     </div>
@@ -166,20 +166,20 @@ export default function RadioPage() {
                 ))}
               </div>
               {filtered.length === 0 && (
-                <div className="text-center py-16 text-muted-foreground"><MicIcon className="w-10 h-10 mx-auto mb-3 opacity-30" /><p>Không tìm thấy bài giảng phù hợp.</p></div>
+                <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted-foreground"><MicIcon className="mx-auto mb-3 h-10 w-10 opacity-30" /><p>Không tìm thấy bài giảng phù hợp.</p></div>
               )}
             </div>
 
             <div className="lg:w-80 shrink-0 space-y-6">
-              <div className="p-5 rounded-xl bg-card border border-border">
+              <div className="rounded-xl border border-border bg-card p-5 shadow-ant">
                 <h3 className="text-sm font-medium text-foreground mb-4">Thống Kê</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {[{ label: "Bài Giảng", value: "3,200+" }, { label: "Giờ Phát Sóng", value: "3,000+" }, { label: "Người Nghe", value: "10M+" }, { label: "Quốc Gia", value: "50+" }].map((s) => (
-                    <div key={s.label} className="text-center p-3 rounded-lg bg-secondary"><p className="text-lg font-display text-gold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+                    <div key={s.label} className="rounded-md border border-border bg-secondary/50 p-3 text-center"><p className="ant-number text-lg text-gold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
                   ))}
                 </div>
               </div>
-              <div className="p-5 rounded-xl bg-card border border-border">
+              <div className="rounded-xl border border-border bg-card p-5 shadow-ant">
                 <h3 className="text-sm font-medium text-foreground mb-3">Chủ Đề Hot Tuần Này</h3>
                 <div className="space-y-2">
                   {[{ topic: "Niệm Kinh Trị Bệnh", count: "12.5K" }, { topic: "Oán Kết Vợ Chồng", count: "9.8K" }, { topic: "Ngôi Nhà Nhỏ", count: "8.2K" }, { topic: "Phóng Sinh Giải Hạn", count: "7.1K" }, { topic: "Cầu Sự Nghiệp", count: "5.4K" }].map((t, i) => (
@@ -187,7 +187,7 @@ export default function RadioPage() {
                   ))}
                 </div>
               </div>
-              <div className="p-5 rounded-xl bg-card border border-border">
+              <div className="rounded-xl border border-border bg-card p-5 shadow-ant">
                 <h3 className="text-sm font-medium text-foreground mb-3">Liên Kết Nhanh</h3>
                 <div className="space-y-2">
                   {[{ label: "Nghe Radio Trực Tiếp", href: "https://xinlingfamen.info/radio" }, { label: "Kênh YouTube Pháp Môn", href: "https://www.youtube.com/channel/UCuupstmJXSQBhUYr64R8BYQ" }, { label: "Apple Podcasts", href: "https://podcasts.apple.com/podcast/id1250342346" }, { label: "SoundCloud", href: "https://soundcloud.com/guanyincittadharma" }].map((l) => (

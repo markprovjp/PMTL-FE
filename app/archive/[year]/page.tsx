@@ -58,7 +58,7 @@ export default async function ArchiveYearPage({ params }: { params: Promise<Para
 
           <div className="mb-14">
             <p className="text-gold text-xs font-medium tracking-widest uppercase mb-3">Kho Lưu Trữ</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground">Năm {year}</h1>
+            <h1 className="ant-title text-4xl text-foreground md:text-5xl">Năm {year}</h1>
           </div>
 
           {yearData.length > 0 && (

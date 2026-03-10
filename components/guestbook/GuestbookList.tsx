@@ -41,14 +41,14 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.3 }}
-      className="relative rounded-xl border border-border/40 border-l-2 border-l-gold bg-linear-to-b from-gold/[0.01] to-background p-6 md:p-8 hover:border-gold/30 transition-all duration-300 before:absolute before:top-0 before:left-0 before:w-8 before:h-8 before:text-gold/30 before:text-3xl before:leading-none before:font-display before:content-['✦']"
+      className="relative rounded-lg border border-border border-l-2 border-l-gold bg-card p-6 transition-all duration-300 before:absolute before:left-0 before:top-0 before:h-8 before:w-8 before:font-serif before:text-3xl before:leading-none before:text-gold/20 before:content-['✦'] hover:border-gold/30 md:p-8"
     >
       {/* Author row */}
       <div className="flex items-start gap-4 mb-5">
         <motion.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="shrink-0 w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center text-gold text-[10px] font-bold select-none border border-gold/40"
+          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gold/40 bg-gradient-to-br from-gold/20 to-gold/5 text-[10px] font-bold text-gold select-none"
         >
           {avatarUrl ? (
             <Image
@@ -64,15 +64,15 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
           )}
         </motion.div>
         <div className="flex-1 min-w-0">
-          <p className="font-display text-lg text-foreground leading-tight mb-2">{entry.authorName}</p>
+          <p className="ant-title mb-2 text-lg leading-tight text-foreground">{entry.authorName}</p>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             {entry.entryType === 'question' && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold uppercase tracking-tight border border-amber-500/20">
+              <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight text-amber-600">
                 Câu Hỏi
               </span>
             )}
             {entry.questionCategory && (
-              <span className="px-2 py-0.5 rounded-full bg-gold/10 text-gold text-[10px] font-medium border border-gold/20">
+              <span className="rounded-md border border-gold/20 bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold">
                 {entry.questionCategory}
               </span>
             )}
@@ -96,9 +96,9 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`rounded-xl transition-all duration-300 ${entry.isOfficialReply
-            ? 'bg-gradient-to-r from-gold/10 to-yellow-500/5 border border-gold/30 p-4 pl-4'
-            : 'bg-secondary/30 border border-border p-4 pl-4'
+          className={`rounded-lg transition-all duration-300 ${entry.isOfficialReply
+            ? 'border border-gold/30 bg-gold/5 p-4 pl-4'
+            : 'border border-border bg-secondary/30 p-4 pl-4'
             }`}
         >
           <div className="flex items-center gap-2 mb-2">
@@ -183,10 +183,10 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
                 <motion.div
                   initial={{ y: -10 }}
                   animate={{ y: 0 }}
-                  className="p-6 rounded-2xl bg-gradient-to-br from-gold/5 to-yellow-500/5 border border-gold/20"
+                className="rounded-lg border border-gold/20 bg-gold/5 p-6"
                 >
                   <div className="flex items-center justify-between mb-5">
-                    <h3 className="font-display text-lg text-foreground">Ghi lưu bút của bạn</h3>
+                    <h3 className="ant-title text-lg text-foreground">Ghi lưu bút của bạn</h3>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
@@ -207,7 +207,7 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
                 whileHover={{ scale: 1.02, boxShadow: '0 8px 24px rgba(212, 175, 55, 0.15)' }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setShowForm(true)}
-                className="px-6 py-3 rounded-xl border border-gold/60 bg-gradient-to-r from-gold/15 to-yellow-500/10 text-gold text-sm font-semibold hover:border-gold/80 transition-all duration-200 shadow-sm"
+                className="rounded-md border border-gold/50 bg-gold/10 px-6 py-3 text-sm font-semibold text-gold transition-all duration-200 shadow-ant hover:border-gold/80"
               >
                 Ghi lưu bút
               </motion.button>
@@ -244,7 +244,7 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20 rounded-2xl bg-secondary/20 border border-border/50"
+          className="rounded-lg border border-border/50 bg-secondary/20 py-20 text-center"
         >
           <p className="text-muted-foreground text-sm">
             Chưa có lưu bút nào{year ? ` trong tháng ${month}/${year}` : ''}. Hãy là người đầu tiên ghi lại hành trình của bạn.

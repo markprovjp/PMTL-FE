@@ -255,6 +255,8 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
   const [isListening, setIsListening] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
+  const speechRetryRef = useRef(0)
+  const speechRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const debouncedQuery = useDebounce(query, 400)
 
@@ -342,46 +344,84 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
       toast.error('Trình duyệt của bạn không hỗ trợ tìm kiếm bằng giọng nói.')
       return
     }
+    if (!navigator.onLine) {
+      toast.error('Không có kết nối mạng. Vui lòng thử lại khi có Internet.')
+      return
+    }
+    if (!window.isSecureContext && window.location.hostname !== 'localhost') {
+      toast.error('Tính năng này cần HTTPS để hoạt động ổn định.')
+      return
+    }
     if (isListening) {
       recognitionRef.current?.stop()
       setIsListening(false)
       return
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recognition = new SpeechRecognitionAPI() as any
-    recognitionRef.current = recognition
-    recognition.lang = 'vi-VN'
-    recognition.interimResults = true
-    recognition.continuous = false
-    recognition.maxAlternatives = 1
-
-    recognition.onstart = () => {
-      setIsListening(true)
+    if (speechRetryTimerRef.current) {
+      clearTimeout(speechRetryTimerRef.current)
+      speechRetryTimerRef.current = null
     }
+    speechRetryRef.current = 0
 
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((result: any) => result[0])
-        .map(result => result.transcript)
-        .join('')
+    const beginRecognition = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const recognition = new SpeechRecognitionAPI() as any
+      recognitionRef.current = recognition
+      recognition.lang = 'vi-VN'
+      recognition.interimResults = true
+      recognition.continuous = false
+      recognition.maxAlternatives = 1
 
-      setQuery(transcript)
-    }
-
-    recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error)
-      setIsListening(false)
-      if (event.error === 'not-allowed') {
-        toast.error('Vui lòng cho phép quyền truy cập micro để sử dụng tính năng này.')
+      recognition.onstart = () => {
+        setIsListening(true)
       }
+
+      recognition.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .map((result: any) => result[0])
+          .map(result => result.transcript)
+          .join('')
+
+        setQuery(transcript)
+      }
+
+      recognition.onerror = (event: any) => {
+        if (event.error === 'network') {
+          console.warn('Speech recognition network error:', event.error)
+          setIsListening(false)
+          if (speechRetryRef.current < 2) {
+            speechRetryRef.current += 1
+            speechRetryTimerRef.current = setTimeout(() => {
+              if (navigator.onLine) {
+                beginRecognition()
+              } else {
+                toast.error('Không có kết nối mạng. Vui lòng thử lại khi có Internet.')
+              }
+            }, 800)
+            return
+          }
+          toast.error('Lỗi kết nối khi nhận giọng nói. Vui lòng kiểm tra mạng và thử lại.')
+          return
+        }
+
+        console.error('Speech recognition error:', event.error)
+        setIsListening(false)
+        if (event.error === 'not-allowed') {
+          toast.error('Vui lòng cho phép quyền truy cập micro để sử dụng tính năng này.')
+          return
+        }
+        toast.error('Không thể nhận giọng nói. Vui lòng thử lại.')
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+      }
+
+      recognition.start()
     }
 
-    recognition.onend = () => {
-      setIsListening(false)
-    }
-
-    recognition.start()
+    beginRecognition()
   }
 
   // ── Reset all filters ───────────────────────────────────────

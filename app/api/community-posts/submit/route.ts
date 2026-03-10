@@ -12,6 +12,16 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json()
+    const actorUserId = typeof body?.actorUserId === 'number' ? body.actorUserId : null
+    const actorEndpoint = typeof body?.actorEndpoint === 'string' ? body.actorEndpoint : null
+    const strapiBody =
+      typeof body === 'object' && body !== null
+        ? Object.fromEntries(
+            Object.entries(body as Record<string, unknown>).filter(
+              ([key]) => key !== 'actorUserId' && key !== 'actorEndpoint'
+            )
+          )
+        : body
 
     const res = await fetch(`${STRAPI_URL}/api/community-posts/submit`, {
       method: 'POST',
@@ -19,7 +29,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
         ...((token || fallbackToken) ? { Authorization: `Bearer ${token || fallbackToken}` } : {}),
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(strapiBody),
     })
 
     const data = await parseResponseBody(res)
@@ -47,6 +57,8 @@ export async function POST(req: NextRequest) {
       payload: {
         entity: 'community-post',
         slug,
+        ...(actorUserId ? { excludeUserIds: [actorUserId] } : {}),
+        ...(actorEndpoint ? { excludeEndpoints: [actorEndpoint] } : {}),
       },
     })
 

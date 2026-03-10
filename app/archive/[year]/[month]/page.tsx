@@ -71,7 +71,7 @@ export default async function ArchiveMonthPage({ params }: { params: Promise<Par
 
           <div className="mb-10">
             <p className="text-gold text-xs font-medium tracking-widest uppercase mb-3">Kho Lưu Trữ</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground">{monthLabel}</h1>
+            <h1 className="ant-title text-4xl text-foreground md:text-5xl">{monthLabel}</h1>
           </div>
 
           <ArchivePostList data={posts} year={year} month={month} />

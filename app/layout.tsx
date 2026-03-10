@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
-import { Playfair_Display, Be_Vietnam_Pro } from 'next/font/google'
+import { Merriweather, Be_Vietnam_Pro } from 'next/font/google'
 import Providers from './providers'
 import { Toaster } from "@/components/ui/sonner"
 import './globals.css'
 import { SmoothScroll } from '@/components/SmoothScroll'
 
-const fontDisplay = Playfair_Display({
+const fontDisplay = Merriweather({
   subsets: ['vietnamese'],
+  weight: ['300', '400', '700', '900'],
   variable: '--font-display',
   display: 'swap',
 })

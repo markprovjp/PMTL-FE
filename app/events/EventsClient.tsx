@@ -42,8 +42,8 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
         <div className="absolute top-0 w-px h-24 bg-gradient-to-b from-transparent to-gold/40" />
 
         <p className="text-gold text-xs font-semibold tracking-[0.4em] uppercase mb-6">Thư Mời & Nơi Hội Tụ</p>
-        <h1 className="font-display text-5xl md:text-7xl text-foreground mb-6">Pháp Hội & Sự Kiện</h1>
-        <p className="font-display text-xl md:text-2xl text-muted-foreground italic max-w-2xl mx-auto">
+        <h1 className="ant-title mb-6 text-5xl text-foreground md:text-7xl">Pháp Hội & Sự Kiện</h1>
+        <p className="max-w-2xl mx-auto text-xl text-muted-foreground italic md:text-2xl">
           "Cùng nhau tu học, cùng nhau tinh tấn trên con đường giác ngộ."
         </p>
 
@@ -52,13 +52,13 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
 
       {/* Filter minimal */}
       <div className="flex justify-center mb-16 relative z-10">
-        <div className="inline-flex bg-card/50 backdrop-blur-md border border-border p-1.5 rounded-full overflow-hidden shadow-sm">
+        <div className="inline-flex overflow-hidden rounded-md border border-border bg-card/50 p-1.5 shadow-ant backdrop-blur-md">
           {(["all", "upcoming", "past"] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
               className={cn(
-                "px-6 py-2 rounded-full text-xs font-medium transition-all uppercase tracking-widest",
+                "rounded-md px-6 py-2 text-xs font-medium uppercase tracking-widest transition-all",
                 filter === f
                   ? "bg-gold text-black shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-gold/5"
@@ -89,7 +89,7 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
 
               <Link
                 href={`/events/${featuredEvent.slug}`}
-                className="group block relative rounded-[2rem] border border-gold/20 bg-card overflow-hidden hover:shadow-2xl hover:shadow-gold/10 transition-all duration-700"
+                className="group relative block overflow-hidden rounded-xl border border-border bg-card transition-all duration-700 hover:border-gold/25 hover:shadow-ant"
               >
                 <div className="flex flex-col lg:flex-row min-h-[400px] lg:h-[480px]">
                   {/* Info Panel */}
@@ -98,23 +98,23 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
                     {featuredEvent.date && (
                       <div className="absolute top-0 right-10 w-16 h-20 bg-gold/10 border-b border-x border-gold/20 flex flex-col items-center justify-center rounded-b-xl backdrop-blur-md border-t-0 shadow-sm">
                         <span className="text-[10px] font-bold text-gold uppercase tracking-widest">TH.{new Date(featuredEvent.date).getMonth() + 1}</span>
-                        <span className="text-2xl font-display text-foreground leading-none mt-1">{new Date(featuredEvent.date).getDate()}</span>
+                        <span className="ant-number mt-1 text-2xl leading-none text-foreground">{new Date(featuredEvent.date).getDate()}</span>
                       </div>
                     )}
 
                     <div className="mb-auto">
                       <div className="flex items-center gap-3 mb-6">
                         {featuredEvent.eventStatus === 'live' && (
-                          <span className="px-3 py-1 bg-red-500/10 text-red-500 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1.5 border border-red-500/20">
-                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Đang phát
+                          <span className="flex items-center gap-1.5 rounded-md border border-red-500/20 bg-red-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-red-500">
+                            <span className="h-1.5 w-1.5 rounded-sm bg-red-500 animate-pulse" /> Đang phát
                           </span>
                         )}
-                        <span className="px-3 py-1 bg-gold/10 text-gold text-[10px] font-bold uppercase tracking-widest rounded-full border border-gold/20">
+                        <span className="rounded-md border border-gold/20 bg-gold/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-gold">
                           {typeLabels[featuredEvent.type]?.label || "Sự Kiện"}
                         </span>
                       </div>
 
-                      <h2 className="font-display text-3xl md:text-5xl text-foreground group-hover:text-gold transition-colors duration-500 leading-tight mb-4">
+                      <h2 className="ant-title mb-4 text-3xl leading-tight text-foreground transition-colors duration-500 group-hover:text-gold md:text-5xl">
                         {featuredEvent.title}
                       </h2>
                       <p className="text-muted-foreground/80 leading-relaxed max-w-md italic border-l-2 border-gold/20 pl-4 text-base">
@@ -146,7 +146,7 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center bg-zen-surface">
-                        <span className="text-gold/20 font-display text-4xl">PMTL</span>
+                        <span className="ant-title text-4xl text-gold/20">PMTL</span>
                       </div>
                     )}
                     {/* Gradient Overlay for seamless blend on mobile */}
@@ -171,15 +171,15 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
                 >
                   <Link
                     href={`/events/${event.slug}`}
-                    className="group flex flex-col h-full rounded-2xl border border-gold/10 bg-card hover:border-gold/30 hover:shadow-xl hover:shadow-gold/5 transition-all duration-500 overflow-hidden relative"
+                    className="group relative flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 hover:border-gold/30 hover:shadow-ant"
                   >
                     {/* Corner Accent */}
-                    <div className="absolute top-0 right-0 w-16 h-16 bg-gold/5 rounded-bl-[2rem] border-b border-l border-gold/10 transition-all group-hover:bg-gold/10" />
+                    <div className="absolute top-0 right-0 h-16 w-16 rounded-bl-xl border-b border-l border-gold/10 bg-gold/5 transition-all group-hover:bg-gold/10" />
 
                     <div className="p-8 flex flex-col flex-1">
                       <div className="flex items-baseline gap-4 mb-6">
                         <div className="text-center">
-                          <span className="block text-3xl font-display text-gold group-hover:scale-105 transition-transform">
+                          <span className="ant-number block text-3xl text-gold transition-transform group-hover:scale-105">
                             {event.date ? new Date(event.date).getDate() : '--'}
                           </span>
                           <span className="block text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -196,7 +196,7 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
                         </div>
                       </div>
 
-                      <h3 className="font-display text-xl md:text-2xl text-foreground group-hover:text-gold transition-colors leading-snug mb-4">
+                      <h3 className="ant-title mb-4 text-xl leading-snug text-foreground transition-colors group-hover:text-gold md:text-2xl">
                         {event.title}
                       </h3>
 
@@ -218,8 +218,8 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
         {pastEvents.length > 0 && (
           <section className="pt-12 border-t border-border">
             <div className="flex items-center gap-3 mb-8">
-              <span className="w-2 h-2 rounded-full bg-border" />
-              <h2 className="font-display text-2xl text-muted-foreground">Lưu Trữ Sự Kiện</h2>
+              <span className="size-2 rounded-sm bg-border" />
+              <h2 className="ant-title text-2xl text-muted-foreground">Lưu Trữ Sự Kiện</h2>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -258,8 +258,8 @@ export default function EventsClient({ initialEvents }: { initialEvents: StrapiE
 
         {/* Empty State */}
         {filtered.length === 0 && (
-          <div className="text-center py-24 px-6 rounded-3xl border border-dashed border-border bg-secondary/20">
-            <div className="w-16 h-16 rounded-full bg-background border border-border flex items-center justify-center mx-auto mb-6 shadow-sm">
+          <div className="rounded-xl border border-dashed border-border bg-secondary/20 px-6 py-24 text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-md border border-border bg-background shadow-sm">
               <Calendar className="w-6 h-6 text-muted-foreground/50" />
             </div>
             <p className="text-muted-foreground text-base max-w-sm mx-auto italic">

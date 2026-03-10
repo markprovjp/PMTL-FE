@@ -133,7 +133,7 @@ export default function BottomSheetPlayer({
       {/* Sheet */}
       <div
         ref={sheetRef}
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl bg-card border-t border-border shadow-2xl transition-transform"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 rounded-t-xl border-t border-border bg-card shadow-2xl transition-transform"
         style={{
           transform: isOpen ? `translateY(${translateY}px)` : 'translateY(100%)',
           transition: isDragging.current ? 'none' : 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
@@ -148,7 +148,7 @@ export default function BottomSheetPlayer({
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          <div className="h-1 w-10 rounded-sm bg-muted-foreground/30" />
         </div>
 
         {/* Header */}
@@ -166,16 +166,16 @@ export default function BottomSheetPlayer({
           </div>
           <button
             onClick={onClose}
-            className="ml-2 p-1.5 rounded-full hover:bg-muted text-muted-foreground"
+            className="ml-2 rounded-md p-1.5 text-muted-foreground hover:bg-muted"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="mx-5 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className="mx-5 h-1.5 overflow-hidden rounded-md bg-muted">
           <div
-            className={`h-full rounded-full transition-all duration-300 ${done ? 'bg-green-500' : 'bg-amber-400'}`}
+            className={`h-full rounded-md transition-all duration-300 ${done ? 'bg-green-500' : 'bg-amber-400'}`}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -190,7 +190,7 @@ export default function BottomSheetPlayer({
 
         {/* Lời cầu nguyện mở đầu */}
         {item.openingPrayer && (
-          <div className="mx-5 mt-3 text-xs text-amber-700/80 dark:text-amber-300/80 bg-amber-50 dark:bg-amber-500/10 border border-amber-200/50 dark:border-amber-500/20 rounded-xl px-3 py-2.5 leading-relaxed italic flex gap-2">
+          <div className="mx-5 mt-3 flex gap-2 rounded-lg border border-amber-200/50 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-700/80 italic dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300/80">
             <BookOpen className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
             <span>{item.openingPrayer}</span>
           </div>
@@ -201,7 +201,7 @@ export default function BottomSheetPlayer({
           {item.kind === 'step' ? (
             <button
               onClick={onToggleStep}
-              className={`w-full py-6 rounded-2xl text-xl font-semibold transition-all active:scale-95 ${done
+              className={`w-full rounded-xl py-6 text-xl font-semibold transition-all active:scale-95 ${done
                 ? 'bg-green-500/20 text-green-500 border-2 border-green-500/30'
                 : 'bg-muted hover:bg-accent text-foreground border-2 border-border'
                 }`}
@@ -224,7 +224,7 @@ export default function BottomSheetPlayer({
               <button
                 onClick={handleTapIncrement}
                 disabled={atCap}
-                className={`w-full rounded-2xl flex items-center justify-center select-none transition-all active:scale-[0.97]
+                className={`flex w-full select-none items-center justify-center rounded-xl transition-all active:scale-[0.97]
                   ${done
                     ? 'bg-green-500/10 border-2 border-green-500/30 cursor-not-allowed'
                     : atCap
@@ -257,20 +257,20 @@ export default function BottomSheetPlayer({
               <div className="flex gap-2">
                 <button
                   onClick={onDecrement}
-                  className="h-14 w-14 rounded-2xl border bg-muted hover:bg-accent text-2xl font-bold transition-colors flex-shrink-0 active:scale-95"
+                  className="h-14 w-14 rounded-md border bg-muted text-2xl font-bold transition-colors hover:bg-accent flex-shrink-0 active:scale-95"
                 >
                   −
                 </button>
                 <button
                   onClick={onReset}
-                  className="flex-1 h-14 rounded-2xl border bg-muted hover:bg-destructive/10 text-sm text-muted-foreground transition-colors active:scale-95"
+                  className="h-14 flex-1 rounded-md border bg-muted text-sm text-muted-foreground transition-colors hover:bg-destructive/10 active:scale-95"
                 >
                   Reset
                 </button>
                 <button
                   onClick={() => onIncrement(1)}
                   disabled={atCap}
-                  className="h-14 w-14 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-40 text-white text-2xl font-bold transition-colors flex-shrink-0 active:scale-95"
+                  className="h-14 w-14 rounded-md bg-amber-500 text-2xl font-bold text-white transition-colors hover:bg-amber-400 disabled:opacity-40 flex-shrink-0 active:scale-95"
                 >
                   +
                 </button>
@@ -283,7 +283,7 @@ export default function BottomSheetPlayer({
                     key={p}
                     onClick={() => onIncrement(p)}
                     disabled={atCap}
-                    className="px-4 py-2 rounded-full border text-sm font-medium hover:bg-amber-400/10 hover:border-amber-400/40 disabled:opacity-40 transition-colors active:scale-95"
+                    className="rounded-md border px-4 py-2 text-sm font-medium transition-colors hover:border-amber-400/40 hover:bg-amber-400/10 disabled:opacity-40 active:scale-95"
                   >
                     +{p}
                   </button>

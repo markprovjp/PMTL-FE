@@ -95,8 +95,23 @@ export async function processNextPushJob(): Promise<PushProcessResult | null> {
       tag: job.tag || job.kind,
       ...(job.payload || {}),
     })
+    const excludeUserIds = Array.isArray(job.payload?.excludeUserIds)
+      ? job.payload.excludeUserIds.filter((value): value is number => typeof value === 'number')
+      : []
+    const excludeEndpoints = Array.isArray(job.payload?.excludeEndpoints)
+      ? job.payload.excludeEndpoints.filter((value): value is string => typeof value === 'string' && value.length > 0)
+      : []
 
-    const eligible = rows.filter((subscription) => isNotificationTypeEnabled(subscription, job.kind))
+    const eligible = rows.filter((subscription) => {
+      if (excludeEndpoints.includes(subscription.endpoint)) {
+        return false
+      }
+      const subscriptionUserId = subscription.user?.id
+      if (typeof subscriptionUserId === 'number' && excludeUserIds.includes(subscriptionUserId)) {
+        return false
+      }
+      return isNotificationTypeEnabled(subscription, job.kind)
+    })
 
     let success = 0
     let failed = 0

@@ -1,7 +1,8 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
-import { Bell, BellOff, Loader2, ShieldAlert, Sparkles } from 'lucide-react'
+import { ArrowUpRight, Bell, BellOff, Loader2, ShieldAlert, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '@/contexts/AuthContext'
 import { createHttpError, getErrorMessage } from '@/lib/http-error'
@@ -323,30 +324,32 @@ export default function PushNotificationButton({
   return (
     <Card
       className={cn(
-        'overflow-hidden border-border/80 bg-card/90 shadow-elevated',
-        compact ? 'rounded-2xl' : 'rounded-3xl',
+        'overflow-hidden border-border bg-background text-foreground shadow-ant',
+        compact ? 'rounded-lg' : 'rounded-xl',
         className
       )}
     >
-      <CardHeader className={cn(compact ? 'p-5' : 'p-6 md:p-7')}>
+      <CardHeader className={cn(compact ? 'p-5' : 'p-6 md:p-8')}>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-background text-foreground">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-foreground">
               {status === 'subscribed' ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
             </div>
             <div className="min-w-0 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/80">Push Web</p>
+                <p className="text-[11px] uppercase tracking-[0.32em] text-gold/90">Thông báo đa kênh</p>
                 <Badge variant={badge.variant}>{badge.label}</Badge>
               </div>
-              <CardTitle className="max-w-2xl font-display text-2xl leading-tight md:text-3xl">{title}</CardTitle>
-              <CardDescription className="max-w-2xl text-sm leading-relaxed md:text-base">{description}</CardDescription>
+              <CardTitle className="max-w-2xl text-2xl leading-tight md:text-[2.2rem]">{title}</CardTitle>
+              <CardDescription className="max-w-2xl pt-1 text-sm leading-7 text-muted-foreground md:text-base">
+                {description}
+              </CardDescription>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-[1.5rem] border border-border/70 bg-background/75 px-4 py-3">
+          <div className="surface-panel-muted flex items-center gap-3 px-4 py-3">
             <div className="space-y-1">
-              <p className="text-sm font-medium">Bật trên thiết bị này</p>
+              <p className="text-sm font-semibold text-foreground">Bật trên thiết bị này</p>
               <p className="text-xs text-muted-foreground">
                 {isSubscribed ? 'Thiết bị đang nhận thông báo đã chọn.' : 'Thiết bị chưa nhận thông báo.'}
               </p>
@@ -362,27 +365,43 @@ export default function PushNotificationButton({
       </CardHeader>
 
       <CardContent className={cn('space-y-5', compact ? 'px-5 pb-5' : 'px-6 pb-6 md:px-7 md:pb-7')}>
-        <Alert variant={alertVariant(status)} className="rounded-[1.5rem] border-border/70 bg-background/60">
-          {status === 'saving' ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : status === 'error' || status === 'unsupported' ? (
-            <ShieldAlert className="h-4 w-4" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          <AlertTitle>{statusText.title}</AlertTitle>
-          <AlertDescription>{statusText.description}</AlertDescription>
-        </Alert>
+        <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <Alert variant={alertVariant(status)} className="rounded-lg border-border bg-background">
+            {status === 'saving' ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : status === 'error' || status === 'unsupported' ? (
+              <ShieldAlert className="h-4 w-4" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            <AlertTitle>{statusText.title}</AlertTitle>
+            <AlertDescription>{statusText.description}</AlertDescription>
+          </Alert>
+
+          <div className="rounded-lg border border-border bg-muted/30 px-5 py-4 text-foreground">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/80">Nhận ở đâu</p>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Máy không hiện banner vẫn không mất tin. Tất cả đợt gửi thành công sẽ hiện lại ở mục trung tâm thông báo trên web.
+            </p>
+            <Link
+              href="/thong-bao"
+              className="mt-4 inline-flex items-center gap-2 rounded-md border border-gold/20 bg-gold/10 px-3 py-2 text-sm font-medium text-gold transition hover:bg-gold/15"
+            >
+              Mở trung tâm thông báo
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
 
         {status !== 'unsupported' && (
           <>
             <div className="space-y-3">
               <div className="space-y-1">
-                <Label className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <Label className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-stone-600">
                   <ShieldAlert className="h-3.5 w-3.5" />
                   Loại thông báo
                 </Label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm leading-7 text-muted-foreground">
                   Chỉ nhóm nào được tick mới nhận push. Khi bài viết, thảo luận hoặc sự kiện được phát hành, hệ thống sẽ gửi ngay.
                 </p>
               </div>
@@ -394,10 +413,10 @@ export default function PushNotificationButton({
                     <label
                       key={item.value}
                       className={cn(
-                        'flex cursor-pointer items-start gap-3 rounded-[1.5rem] border p-4 transition-colors',
+                        'flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-all',
                         checked
-                          ? 'border-gold/30 bg-gold/5'
-                          : 'border-border/70 bg-background/70 hover:bg-muted/20'
+                          ? 'border-gold/40 bg-gold/5 shadow-ant'
+                          : 'border-border bg-background hover:border-gold/30 hover:bg-muted/30'
                       )}
                     >
                       <Checkbox
@@ -412,8 +431,8 @@ export default function PushNotificationButton({
                         }}
                       />
                       <div className="space-y-1">
-                        <p className="text-sm font-medium leading-none">{item.label}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm font-semibold leading-none text-foreground">{item.label}</p>
+                        <p className="text-xs leading-6 text-muted-foreground">
                           {item.value === 'daily_chant' && 'Dùng cho các đợt phát thông báo tu học chung hoặc lời nhắc do hệ thống tạo.'}
                           {item.value === 'content_update' && 'Khi có bài viết hoặc nội dung mới được phát hành, thiết bị này sẽ nhận ngay.'}
                           {item.value === 'event_reminder' && 'Khi có sự kiện quan trọng được publish hoặc gửi thủ công, thiết bị này sẽ nhận ngay.'}
@@ -432,11 +451,11 @@ export default function PushNotificationButton({
       {status !== 'unsupported' && (
         <CardFooter
           className={cn(
-            'flex flex-wrap items-center justify-between gap-3 border-t border-border/70',
+            'flex flex-wrap items-center justify-between gap-3 border-t border-border bg-muted/20',
             compact ? 'px-5 py-4' : 'px-6 py-5 md:px-7'
           )}
         >
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm leading-7 text-muted-foreground">
             {isSubscribed
               ? 'Sau khi đổi nhóm thông báo, anh lưu lại là hệ thống dùng cấu hình mới ngay.'
               : 'Bật thông báo để lưu subscription và bắt đầu nhận các nhóm nội dung đã chọn trên thiết bị này.'}

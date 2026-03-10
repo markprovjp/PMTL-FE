@@ -29,16 +29,16 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
   // Card personality theo theme
   const getThemeClass = () => {
     switch (theme) {
-      case 'story': return 'rounded-[2rem] border-gold/10 hover:shadow-2xl hover:shadow-gold/10'
+      case 'story': return 'rounded-xl border-border hover:border-gold/25 hover:shadow-ant'
       case 'teaching': return 'rounded-sm border-gold/20 hover:border-gold/60'
-      case 'practice': return 'rounded-2xl border-gold/15 bg-stone-50/50 dark:bg-stone-900/20'
+      case 'practice': return 'rounded-xl border-border bg-stone-50/50 dark:bg-stone-900/20'
       case 'reference': return 'rounded-lg border-border hover:bg-secondary/50'
-      default: return 'rounded-2xl border-border'
+      default: return 'rounded-xl border-border'
     }
   }
 
   const wrapperClass = cn(
-    'group flex flex-col bg-card hover:shadow-lg transition-all duration-300 overflow-hidden border',
+    'group flex flex-col overflow-hidden border bg-card transition-all duration-300 hover:shadow-ant',
     getThemeClass()
   )
 
@@ -71,7 +71,7 @@ export default function HubLinkCard({ link, theme }: HubLinkCardProps) {
         )}
 
         {/* title — phân cấp rõ */}
-        <h3 className="font-display text-sm md:text-base text-foreground group-hover:text-gold transition-colors leading-snug mb-1.5 line-clamp-2">
+        <h3 className="ant-title mb-1.5 text-sm leading-snug text-foreground transition-colors group-hover:text-gold line-clamp-2 md:text-base">
           {link.title}
         </h3>
 

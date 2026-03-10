@@ -27,14 +27,14 @@ function PostCard({ post }: { post: BlogPost }) {
     : ''
 
   return (
-    <article className="group flex gap-5 rounded-[1.5rem] border border-gold/10 bg-card/95 px-5 py-5 transition-colors hover:border-gold/25 hover:bg-gold/[0.03]">
+    <article className="group flex gap-5 rounded-xl border border-border bg-card px-5 py-5 transition-colors hover:border-gold/25 hover:bg-gold/[0.03] hover:shadow-ant">
       <div className="w-12 shrink-0 pt-1 text-center">
-        <span className="block text-2xl font-display text-foreground">{day}</span>
+        <span className="ant-number block text-2xl text-foreground">{day}</span>
         <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-gold/65">{month}</span>
       </div>
 
       <div className="min-w-0 flex-1">
-        <Link href={`/blog/${post.slug}`} className="mb-2 block font-display text-xl leading-tight text-foreground transition-colors group-hover:text-gold">
+        <Link href={`/blog/${post.slug}`} className="ant-title mb-2 block text-xl leading-tight text-foreground transition-colors group-hover:text-gold">
           {post.title}
         </Link>
         {post.excerpt && (
@@ -46,7 +46,7 @@ function PostCard({ post }: { post: BlogPost }) {
       </div>
 
       {cover && (
-        <div className="hidden h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-gold/10 bg-muted sm:block">
+        <div className="hidden h-24 w-24 shrink-0 overflow-hidden rounded-lg border border-border bg-muted sm:block">
           <Image
             src={cover}
             alt={post.title}
@@ -69,7 +69,7 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
   return (
     <Link
       href={`/blog/${post.slug}`}
-      className="group relative block overflow-hidden rounded-[1.75rem] border border-gold/15 bg-card transition-all hover:border-gold/35"
+      className="group relative block overflow-hidden rounded-xl border border-border bg-card transition-all hover:border-gold/35 hover:shadow-ant"
     >
       <div className="flex flex-col gap-0 lg:flex-row">
         {cover && (
@@ -83,7 +83,7 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-black/25 lg:to-background/30" />
-            <div className="absolute left-6 top-6 rounded-full border border-white/15 bg-black/35 px-4 py-1.5">
+            <div className="absolute left-6 top-6 rounded-md border border-white/15 bg-black/35 px-4 py-1.5">
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white">Bài tiêu biểu</span>
             </div>
           </div>
@@ -91,11 +91,11 @@ function FeaturedPostCard({ post }: { post: BlogPost }) {
         <div className={`${cover ? 'lg:w-1/2' : 'w-full'} flex flex-col justify-center p-8 md:p-12`}>
           <div className="space-y-5">
             <div className="flex items-center gap-3">
-              <div className="h-1.5 w-1.5 rounded-full bg-gold" />
+              <div className="h-1.5 w-1.5 rounded-sm bg-gold" />
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-gold/70">Điểm tin lưu trữ</p>
             </div>
 
-            <h2 className="font-display text-3xl leading-[1.15] text-foreground transition-colors group-hover:text-gold md:text-4xl">
+            <h2 className="ant-title text-3xl leading-[1.15] text-foreground transition-colors group-hover:text-gold md:text-4xl">
               {post.title}
             </h2>
 
@@ -122,7 +122,7 @@ export default function ArchivePostList({ data, year, month }: ArchivePostListPr
 
   if (posts.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-gold/20 py-20 text-center">
+      <div className="rounded-xl border border-dashed border-gold/20 py-20 text-center">
         <p className="italic text-muted-foreground">Không tìm thấy bản ghi nào trong {periodLabel}.</p>
       </div>
     )

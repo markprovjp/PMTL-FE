@@ -46,7 +46,7 @@ export default function HubBlockRenderer({ blocks, theme }: HubBlockRendererProp
               divider = (
                 <div className="flex items-center justify-center mb-10">
                   <div className="w-24 h-px bg-gold/10" />
-                  <div className="w-2 h-2 rounded-full border border-gold/30 mx-3" />
+                  <div className="mx-3 h-2 w-2 rounded-md border border-gold/30" />
                   <div className="w-24 h-px bg-gold/10" />
                 </div>
               )

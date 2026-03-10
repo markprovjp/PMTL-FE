@@ -4,6 +4,9 @@
 // ─────────────────────────────────────────────────────────────
 import { strapiFetch } from '@/lib/strapi'
 import type { StrapiList, HubPage } from '@/types/strapi'
+import { getPosts } from '@/lib/api/blog'
+import { fetchDownloads } from '@/lib/api/downloads'
+import type { DownloadItem } from '@/types/strapi'
 
 const POPULATE_HUB = {
   // Section links + thumbnail
@@ -62,6 +65,140 @@ const POPULATE_HUB = {
 
 }
 
+function hasRenderableHubContent(hub: HubPage): boolean {
+  return Boolean(
+    hub.sections?.length ||
+    hub.blocks?.length ||
+    hub.curated_posts?.length ||
+    hub.downloads?.length
+  )
+}
+
+function buildFallbackSections(hub: HubPage): HubPage['sections'] {
+  const baseId = hub.id * 1000
+
+  if (hub.slug === 'thu-vien-khai-thi') {
+    return [
+      {
+        id: baseId + 1,
+        heading: 'Lối vào nhanh',
+        description: 'Mở nhanh các khu nội dung đang có dữ liệu thật trong hệ thống.',
+        links: [
+          { id: baseId + 11, title: 'Khai Thị Mới Nhất', url: '/blog', description: 'Đọc các bài giảng và ghi chép mới cập nhật.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 12, title: 'Nghe Khai Thị Audio', url: '/radio', description: 'Mở kho pháp âm và bài giảng âm thanh.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 13, title: 'Xem Video Khai Thị', url: '/videos', description: 'Mở thư viện video khai thị và pháp hội.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 14, title: 'Kho Tài Liệu Tải Về', url: '/library', description: 'Xem toàn bộ PDF, audio, video và sách.', thumbnail: null, kind: 'internal' },
+        ],
+      },
+    ]
+  }
+
+  if (hub.slug === 'trung-tam-tu-hoc') {
+    return [
+      {
+        id: baseId + 2,
+        heading: 'Bắt đầu tu học',
+        description: 'Các lối vào cốt lõi dành cho người mới và người đang thực hành mỗi ngày.',
+        links: [
+          { id: baseId + 21, title: 'Niệm Kinh Hàng Ngày', url: '/niem-kinh', description: 'Theo dõi tiến độ niệm và bài thực hành trong ngày.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 22, title: 'Lịch Tu Hôm Nay', url: '/lunar-calendar', description: 'Tra cứu lịch tu, ngày âm và sự kiện cần lưu ý.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 23, title: 'Thư Viện Tu Học', url: '/library', description: 'Mở toàn bộ tài liệu, biểu mẫu và bài giảng.', thumbnail: null, kind: 'internal' },
+          { id: baseId + 24, title: 'Khai Thị Cốt Lõi', url: '/blog', description: 'Đọc những bài khai thị nền tảng và trọng yếu.', thumbnail: null, kind: 'internal' },
+        ],
+      },
+    ]
+  }
+
+  return [
+    {
+      id: baseId + 3,
+      heading: 'Khám phá thêm',
+      description: 'Trang này đang tự hiển thị nội dung mới nhất từ hệ thống.',
+      links: [
+        { id: baseId + 31, title: 'Bài viết mới', url: '/blog', description: 'Đọc các nội dung vừa được cập nhật.', thumbnail: null, kind: 'internal' },
+        { id: baseId + 32, title: 'Kho tài liệu', url: '/library', description: 'Mở thư viện tải về và tài liệu học pháp.', thumbnail: null, kind: 'internal' },
+      ],
+    },
+  ]
+}
+
+function selectFallbackDownloads(hub: HubPage, items: DownloadItem[]): DownloadItem[] {
+  if (hub.slug === 'thu-vien-khai-thi') {
+    return items
+      .filter((item) => ['Khai Thị Audio', 'Khai Thị Video', 'Sách', 'Kinh Điển'].includes(item.category))
+      .slice(0, 12)
+  }
+
+  if (hub.slug === 'trung-tam-tu-hoc') {
+    return items
+      .filter((item) => ['Hướng Dẫn', 'Kinh Điển', 'Sách', 'Khai Thị Audio'].includes(item.category))
+      .slice(0, 10)
+  }
+
+  return items.slice(0, 8)
+}
+
+async function hydrateHubFallback(hub: HubPage): Promise<HubPage> {
+  if (hasRenderableHubContent(hub)) return hub
+
+  const emptyPosts: StrapiList<import('@/types/strapi').BlogPost> = {
+    data: [],
+    meta: {
+      pagination: { page: 1, pageSize: 0, pageCount: 0, total: 0 },
+    },
+  }
+
+  const [featuredPostsRes, downloadsRes] = await Promise.all([
+    getPosts({ pageSize: hub.slug === 'thu-vien-khai-thi' ? 6 : 4, featured: true, revalidate: 3600 }).catch(() => emptyPosts),
+    fetchDownloads({ pageSize: 24 }).catch(() => ({ items: [], total: 0 })),
+  ])
+
+  const featuredPosts = featuredPostsRes.data?.length
+    ? featuredPostsRes.data
+    : (await getPosts({ pageSize: hub.slug === 'thu-vien-khai-thi' ? 6 : 4, revalidate: 3600 }).catch(() => emptyPosts)).data
+
+  const normalizedDownloads = (downloadsRes.items ?? []) as unknown as DownloadItem[]
+  const fallbackDownloads = selectFallbackDownloads(hub, normalizedDownloads)
+  const fallbackSections = buildFallbackSections(hub)
+  const fallbackBlocks: HubPage['blocks'] = []
+
+  if (hub.description) {
+    fallbackBlocks.push({
+      __component: 'blocks.rich-text',
+      id: hub.id * 100 + 1,
+      content: `<p>${hub.description}</p><p>Nội dung dưới đây đang được tự động lấy từ bài viết và thư viện tài liệu đã phát hành, giúp trang không bị trống khi admin chưa cấu hình block chi tiết.</p>`,
+    })
+  }
+
+  if (featuredPosts.length > 0) {
+    fallbackBlocks.push({
+      __component: 'blocks.post-list-manual',
+      id: hub.id * 100 + 2,
+      heading: hub.slug === 'thu-vien-khai-thi' ? 'Bài Khai Thị Nên Đọc' : 'Bài Cốt Lõi Nên Xem',
+      description: 'Tự lấy từ các bài đã xuất bản gần đây trong hệ thống.',
+      posts: featuredPosts,
+    })
+  }
+
+  if (fallbackDownloads.length > 0) {
+    fallbackBlocks.push({
+      __component: 'blocks.download-grid',
+      id: hub.id * 100 + 3,
+      heading: hub.slug === 'thu-vien-khai-thi' ? 'Tài Liệu Và Pháp Âm' : 'Tài Liệu Tu Học',
+      description: 'Tự lấy từ kho download hiện có, ưu tiên tài liệu phù hợp với hub này.',
+      downloads: fallbackDownloads,
+    })
+  }
+
+  return {
+    ...hub,
+    sections: hub.sections?.length ? hub.sections : fallbackSections,
+    curated_posts: hub.curated_posts?.length ? hub.curated_posts : featuredPosts,
+    downloads: hub.downloads?.length ? hub.downloads : fallbackDownloads,
+    blocks: hub.blocks?.length ? hub.blocks : fallbackBlocks,
+  }
+}
+
 /** Lấy một hub-page theo slug. Populate đầy đủ: sections, curated_posts, downloads */
 export async function getHubBySlug(slug: string): Promise<HubPage | null> {
   const res = await strapiFetch<StrapiList<HubPage>>('/hub-pages', {
@@ -70,7 +207,9 @@ export async function getHubBySlug(slug: string): Promise<HubPage | null> {
     pagination: { page: 1, pageSize: 1 },
     next: { revalidate: 3600, tags: ['hub-pages'] },
   })
-  return res.data[0] ?? null
+  const hub = res.data[0] ?? null
+  if (!hub) return null
+  return hydrateHubFallback(hub)
 }
 
 /** Lấy toàn bộ hub-pages (dùng cho menu/sitemap). Không populate nặng. */

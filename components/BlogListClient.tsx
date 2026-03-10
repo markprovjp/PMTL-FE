@@ -116,7 +116,7 @@ export default function BlogListClient({
         {currentSearch && (
           <button
             onClick={() => updateParam('q', null)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground text-xs transition-colors"
+            className="absolute right-3 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-md bg-secondary text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             ×
           </button>
@@ -168,7 +168,7 @@ export default function BlogListClient({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => { updateParam('category', null); onClose?.() }}
-            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${currentCategory === ''
+            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-all ${currentCategory === ''
               ? 'bg-primary/15 text-gold border-gold/30'
               : 'bg-secondary text-muted-foreground border-border hover:border-gold/30 hover:text-foreground'
               }`}
@@ -179,7 +179,7 @@ export default function BlogListClient({
             <button
               key={cat.id}
               onClick={() => handleCategoryClick(cat.slug)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${currentCategory === cat.slug
+              className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-all ${currentCategory === cat.slug
                 ? 'bg-primary/15 text-gold border-gold/30'
                 : 'bg-secondary text-muted-foreground border-border hover:border-gold/30 hover:text-foreground'
                 }`}
@@ -202,14 +202,14 @@ export default function BlogListClient({
                 <ScrollArea className="h-[250px] pr-4 -mr-4">
                   <div className="flex flex-col gap-3 pl-1">
                     {archives.map((arch) => (
-                      <div key={arch.year} className="rounded-2xl border border-gold/10 bg-gold/[0.03] px-3 py-3">
+                      <div key={arch.year} className="rounded-lg border border-border bg-secondary/30 px-3 py-3 shadow-ant">
                         <p className="mb-2 text-sm font-semibold text-foreground/85">{arch.year}</p>
                         <div className="grid grid-cols-2 gap-2 pl-2 border-l border-gold/20">
                           {arch.months.map((m) => (
                             <Link
                               key={`${arch.year}-${m.month}`}
                               href={`/blog/archive/${arch.year}/${m.month}`}
-                              className="flex justify-between rounded-full border border-gold/10 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-gold/30 hover:bg-gold/5 hover:text-foreground"
+                              className="flex justify-between rounded-md border border-border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-gold/30 hover:bg-gold/5 hover:text-foreground"
                             >
                               <span>Th.{m.month}</span>
                               <span className="opacity-60">{m.count}</span>
@@ -283,7 +283,7 @@ export default function BlogListClient({
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
           {hasFilter ? `${activeCategory?.name ?? 'Lọc'}` : 'Bộ lọc'}
-          {hasFilter && <span className="w-1.5 h-1.5 rounded-full bg-gold" />}
+          {hasFilter && <span className="h-1.5 w-1.5 rounded-sm bg-gold" />}
         </button>
       </div>
 
@@ -306,21 +306,21 @@ export default function BlogListClient({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl max-h-[80vh] overflow-y-auto"
+              className="lg:hidden fixed bottom-0 left-0 right-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-xl border-t border-border bg-card"
             >
               {/* Handle bar */}
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 rounded-full bg-border" />
+                <div className="h-1 w-10 rounded-sm bg-border" />
               </div>
               {/* Header */}
               <div className="flex items-center justify-between px-5 py-3 border-b border-border">
                 <div>
-                  <h3 className="font-display text-base text-foreground">Bộ Lọc & Tìm Kiếm</h3>
+                  <h3 className="ant-title text-base text-foreground">Bộ Lọc & Tìm Kiếm</h3>
                   <p className="text-[11px] text-muted-foreground">{totalPosts.toLocaleString('vi-VN')} bài viết</p>
                 </div>
                 <button
                   onClick={() => setFilterOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex size-8 items-center justify-center rounded-md bg-secondary text-muted-foreground transition-colors hover:text-foreground"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -337,8 +337,8 @@ export default function BlogListClient({
       {/* ── DESKTOP: Sidebar ── */}
       <aside className="hidden lg:block lg:w-72 shrink-0">
         <div className="sticky top-24">
-          <div className="rounded-[1.75rem] border border-gold/12 bg-card/95 p-5 shadow-[0_12px_30px_-24px_rgba(212,175,55,0.35)]">
-            <h3 className="font-display text-base text-foreground mb-4">Bộ Lọc & Tìm Kiếm</h3>
+          <div className="surface-panel rounded-xl p-5">
+            <h3 className="ant-title mb-4 text-base text-foreground">Bộ Lọc & Tìm Kiếm</h3>
             <FilterPanel />
           </div>
         </div>
@@ -370,7 +370,7 @@ export default function BlogListClient({
         {hasFilter && (
           <div className="lg:hidden flex flex-wrap gap-2 mb-4">
             {activeCategory && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 text-gold border border-gold/20 text-xs">
+              <span className="flex items-center gap-1 rounded-md border border-gold/20 bg-primary/10 px-2.5 py-1 text-xs text-gold">
                 {activeCategory.name}
                 <button onClick={() => updateParam('category', null)} className="hover:text-foreground transition-colors">
                   <X className="w-3 h-3" />
@@ -378,7 +378,7 @@ export default function BlogListClient({
               </span>
             )}
             {currentSearch && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary text-foreground border border-border text-xs">
+              <span className="flex items-center gap-1 rounded-md border border-border bg-secondary px-2.5 py-1 text-xs text-foreground">
                 &ldquo;{currentSearch.substring(0, 20)}&rdquo;
                 <button onClick={() => updateParam('q', null)} className="hover:text-primary transition-colors">
                   <X className="w-3 h-3" />
@@ -419,9 +419,9 @@ export default function BlogListClient({
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: Math.min(i * 0.04, 0.3) }}
-                  className={`rounded-2xl bg-card border transition-all group overflow-hidden ${post.featured
-                    ? 'border-gold/40 shadow-sm shadow-gold/5'
-                    : 'border-border hover:border-gold/30'
+                  className={`group overflow-hidden rounded-xl border bg-card transition-all ${post.featured
+                    ? 'border-gold/40 shadow-ant'
+                    : 'border-border hover:border-gold/30 hover:shadow-ant'
                     }`}
                 >
                   <Link href={`/blog/${post.slug}`} className="block">
@@ -445,20 +445,20 @@ export default function BlogListClient({
                       {/* Meta badges */}
                       <div className="flex items-center gap-1.5 flex-wrap">
                         {post.featured && (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-medium border border-amber-500/20">
+                          <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
                             Nổi bật
                           </span>
                         )}
-                        <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] text-secondary-foreground">
+                        <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] text-secondary-foreground">
                           {new Date(post.publishedAt ?? post.createdAt).toLocaleDateString('vi-VN')}
                         </span>
                         {(post as any).sourceName && (
-                          <span className="px-2 py-0.5 rounded-full bg-primary/10 text-gold text-[10px] font-medium font-mono lowercase border border-gold/10">
+                          <span className="rounded-md border border-gold/10 bg-primary/10 px-2 py-0.5 font-mono text-[10px] font-medium lowercase text-gold">
                             {(post as any).sourceName}
                           </span>
                         )}
                         {post.categories?.[0] && (
-                          <span className="px-2 py-0.5 rounded-full bg-secondary text-[10px] text-muted-foreground capitalize">
+                          <span className="rounded-md bg-secondary px-2 py-0.5 text-[10px] capitalize text-muted-foreground">
                             {post.categories[0].name}
                           </span>
                         )}
@@ -468,7 +468,7 @@ export default function BlogListClient({
                       </div>
 
                       {/* Title */}
-                      <h2 className="font-display text-base sm:text-lg text-foreground group-hover:text-gold transition-colors leading-snug">
+                      <h2 className="ant-title text-base leading-snug text-foreground transition-colors group-hover:text-gold sm:text-lg">
                         {post.title}
                       </h2>
 

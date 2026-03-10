@@ -166,6 +166,17 @@ export async function uploadFile(file: File): Promise<string | undefined> {
   return json[0]?.documentId || json[0]?.id
 }
 
+export async function getCurrentPushEndpoint(): Promise<string | undefined> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return undefined
+  try {
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+    return subscription?.endpoint
+  } catch {
+    return undefined
+  }
+}
+
 export async function submitPost(data: {
   title: string
   content: string
@@ -176,6 +187,8 @@ export async function submitPost(data: {
   video_url?: string
   tags?: string | string[]
   cover_image?: number | string
+  actorUserId?: number
+  actorEndpoint?: string
 }): Promise<void> {
   const res = await fetch(`/api/community-posts/submit`, {
     method: 'POST',
@@ -211,6 +224,8 @@ export async function submitComment(data: {
   author_name: string
   author_avatar?: string
   parentDocumentId?: string
+  actorUserId?: number
+  actorEndpoint?: string
 }): Promise<void> {
   const res = await fetch(`/api/community-comments/submit`, {
     method: 'POST',

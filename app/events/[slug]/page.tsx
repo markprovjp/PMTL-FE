@@ -98,22 +98,22 @@ export default async function EventDetailPage({ params }: Props) {
             </Link>
 
             <div className="flex flex-wrap items-center gap-3 mb-6">
-              <span className="px-4 py-1.5 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-bold uppercase tracking-widest backdrop-blur-md">
+              <span className="rounded-md border border-gold/20 bg-gold/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-gold backdrop-blur-md">
                 {typeLabel}
               </span>
               {event.eventStatus === 'live' && (
-                <span className="px-4 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold uppercase tracking-widest backdrop-blur-md flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" /> Trực Tiếp
+                <span className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-red-500 backdrop-blur-md">
+                  <span className="h-1.5 w-1.5 rounded-sm bg-red-500 animate-pulse" /> Trực Tiếp
                 </span>
               )}
             </div>
 
-            <h1 className="font-display text-4xl md:text-5xl lg:text-7xl text-foreground leading-[1.1] mb-6 drop-shadow-sm">
+            <h1 className="ant-title mb-6 text-4xl leading-[1.1] text-foreground drop-shadow-sm md:text-5xl lg:text-7xl">
               {event.title}
             </h1>
 
             {event.description && (
-              <p className="text-lg md:text-2xl text-muted-foreground/90 font-display italic max-w-3xl leading-relaxed">
+              <p className="max-w-3xl text-lg leading-relaxed text-muted-foreground/90 italic md:text-2xl">
                 {event.description}
               </p>
             )}
@@ -122,7 +122,7 @@ export default async function EventDetailPage({ params }: Props) {
 
         {/* Program / Invitation Panel */}
         <div className="container mx-auto px-6 max-w-5xl relative z-20 -mt-8 md:-mt-12 mb-16">
-          <div className="bg-card rounded-2xl border border-gold/20 shadow-xl shadow-black/5 flex flex-col md:flex-row overflow-hidden backdrop-blur-xl">
+          <div className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-ant backdrop-blur-xl md:flex-row">
             {/* Meta Grid */}
             <div className="flex-1 p-8 md:p-12 grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
               {event.date && (
@@ -172,7 +172,7 @@ export default async function EventDetailPage({ params }: Props) {
                       href={event.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl bg-gold text-black font-bold text-sm hover:bg-gold/90 transition-all shadow-lg hover:shadow-gold/20 hover:scale-105"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gold px-6 py-4 text-sm font-bold text-black transition-all hover:scale-105 hover:bg-gold/90 hover:shadow-gold/20"
                     >
                       <ExternalLink className="w-4 h-4" /> Tham Gia Ngay
                     </a>
@@ -184,7 +184,7 @@ export default async function EventDetailPage({ params }: Props) {
                       href={event.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full inline-flex justify-center items-center gap-2 px-6 py-4 rounded-xl bg-card border border-gold/40 text-gold font-bold text-sm hover:bg-gold/10 transition-all"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gold/40 bg-card px-6 py-4 text-sm font-bold text-gold transition-all hover:bg-gold/10"
                     >
                       <Video className="w-4 h-4" /> Xem Tư Liệu
                     </a>
@@ -203,12 +203,12 @@ export default async function EventDetailPage({ params }: Props) {
             <div className="min-w-0">
               <div className="flex items-center gap-4 mb-8">
                 <span className="h-px bg-gold/30 w-12" />
-                <h2 className="font-display text-2xl text-foreground">Nội Dung Chương Trình</h2>
+                <h2 className="ant-title text-2xl text-foreground">Nội Dung Chương Trình</h2>
               </div>
 
               {event.content ? (
                 <div
-                  className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-display prose-headings:text-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-a:text-gold hover:prose-a:text-gold/80 prose-strong:text-foreground"
+                  className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-serif prose-headings:text-foreground prose-p:text-muted-foreground prose-p:leading-relaxed prose-a:text-gold hover:prose-a:text-gold/80 prose-strong:text-foreground"
                   dangerouslySetInnerHTML={{ __html: event.content }}
                 />
               ) : (
@@ -220,9 +220,9 @@ export default async function EventDetailPage({ params }: Props) {
                 <div className="mt-16">
                   <div className="flex items-center gap-4 mb-8">
                     <span className="h-px bg-gold/30 w-12" />
-                    <h2 className="font-display text-2xl text-foreground">Pháp Âm / Hình Ảnh</h2>
+                    <h2 className="ant-title text-2xl text-foreground">Pháp Âm / Hình Ảnh</h2>
                   </div>
-                  <div className="relative w-full aspect-video rounded-2xl overflow-hidden border border-border shadow-md">
+                  <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border shadow-ant">
                     <iframe
                       src={`https://www.youtube.com/embed/${event.youtubeId}`}
                       title="Video sự kiện"
@@ -239,7 +239,7 @@ export default async function EventDetailPage({ params }: Props) {
                 <div className="mt-16">
                   <div className="flex items-center gap-4 mb-8">
                     <span className="h-px bg-gold/30 w-12" />
-                    <h2 className="font-display text-2xl text-foreground">Khoảnh Khắc Pháp Hội</h2>
+                    <h2 className="ant-title text-2xl text-foreground">Khoảnh Khắc Pháp Hội</h2>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {event.gallery.map((img) => {
@@ -266,7 +266,7 @@ export default async function EventDetailPage({ params }: Props) {
             <div className="md:sticky md:top-24 space-y-12">
               {event.files && event.files.length > 0 && (
                 <div>
-                  <h3 className="font-display text-xl text-foreground mb-4 flex items-center gap-2">
+                  <h3 className="ant-title mb-4 flex items-center gap-2 text-xl text-foreground">
                     Kệ Tài Liệu
                   </h3>
                   <div className="space-y-3">
@@ -302,7 +302,7 @@ export default async function EventDetailPage({ params }: Props) {
               )}
 
               {/* Share/Action */}
-              <div className="p-6 rounded-2xl bg-secondary/50 border border-border text-center">
+              <div className="rounded-xl border border-border bg-secondary/50 p-6 text-center">
                 <p className="text-sm text-foreground font-medium mb-2">Chuyển tiếp thư mời</p>
                 <p className="text-xs text-muted-foreground mb-4">Chia sẻ cơ hội tu học đến những người hữu duyên.</p>
                 {/* 

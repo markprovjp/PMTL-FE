@@ -29,7 +29,7 @@ export default async function ArchivePage() {
         <div className="container max-w-4xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-gold text-xs font-medium tracking-widest uppercase mb-4">Kho Lưu Trữ</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-5">Lưu Trữ Bài Viết</h1>
+            <h1 className="ant-title mb-5 text-4xl text-foreground md:text-5xl">Lưu Trữ Bài Viết</h1>
             <p className="text-muted-foreground text-base leading-relaxed max-w-2xl mx-auto">
               Toàn bộ bài viết phân loại theo năm và tháng. Chọn tháng để xem danh sách bài.
             </p>

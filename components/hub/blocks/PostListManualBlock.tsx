@@ -20,18 +20,18 @@ export default function PostListManualBlock({ heading, description, posts }: Pos
       {/* ── Section Header — không gian chủ đề, có dẫn nhập ── */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-3">
-          <span className="inline-block w-1 h-5 rounded-full bg-gold/60 shrink-0" />
+          <span className="inline-block h-5 w-1 rounded-sm bg-gold/60 shrink-0" />
           <p className="text-[10px] uppercase tracking-[0.3em] text-gold/60 font-semibold">
             Tuyển Đọc
           </p>
         </div>
 
         <div className="flex items-start gap-3 pl-4">
-          <div className="w-8 h-8 rounded-xl bg-gold/10 flex items-center justify-center shrink-0 mt-0.5">
+          <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gold/10">
             <BookMarked className="w-4 h-4 text-gold" />
           </div>
           <div className="flex-1">
-            <h2 className="font-display text-xl md:text-2xl text-foreground leading-snug">{heading}</h2>
+            <h2 className="ant-title text-xl leading-snug text-foreground md:text-2xl">{heading}</h2>
             {description && (
               <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed italic">
                 {description}
@@ -53,7 +53,7 @@ export default function PostListManualBlock({ heading, description, posts }: Pos
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}
-              className="group flex gap-3 p-4 rounded-2xl bg-card border border-border hover:border-gold/30 hover:shadow-md hover:shadow-gold/5 transition-all h-full"
+              className="group flex h-full gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-gold/30 hover:shadow-ant"
             >
               {thumbUrl && (
                 <div className="shrink-0 w-20 h-20 rounded-xl overflow-hidden bg-secondary border border-border/50">

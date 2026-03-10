@@ -54,30 +54,30 @@ export default function DirectoryPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-10">
             <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">Toàn Cầu</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Quán Âm Đường Toàn Cầu</h1>
+            <h1 className="ant-title mb-4 text-4xl text-foreground md:text-5xl">Quán Âm Đường Toàn Cầu</h1>
             <p className="text-muted-foreground text-lg max-w-xl mx-auto">Tìm Quán Âm Đường gần bạn nhất — 30+ quốc gia trên toàn thế giới.</p>
           </motion.div>
 
           <div className="flex gap-2 flex-wrap justify-center mb-6">
-            <button onClick={() => setActiveRegion(null)} className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${!activeRegion ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>Tất cả</button>
+            <button onClick={() => setActiveRegion(null)} className={`rounded-md px-4 py-2 text-xs font-medium transition-colors ${!activeRegion ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>Tất cả</button>
             {regions.map((r) => (
-              <button key={r.id} onClick={() => setActiveRegion(activeRegion === r.id ? null : r.id)} className={`px-4 py-2 rounded-full text-xs font-medium transition-colors ${activeRegion === r.id ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{r.name}</button>
+              <button key={r.id} onClick={() => setActiveRegion(activeRegion === r.id ? null : r.id)} className={`rounded-md px-4 py-2 text-xs font-medium transition-colors ${activeRegion === r.id ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{r.name}</button>
             ))}
           </div>
 
           <div className="max-w-lg mx-auto mb-10 relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên hoặc địa chỉ..." className="w-full pl-10 pr-4 py-3 rounded-xl bg-card border border-border text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-gold/30" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên hoặc địa chỉ..." className="w-full rounded-md border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-gold/30" />
           </div>
 
           <div className="space-y-10">
             {filteredRegions.map((region) => (
               <div key={region.id}>
-                <h2 className="font-display text-2xl text-foreground mb-4">{region.name}</h2>
+                <h2 className="ant-title mb-4 text-2xl text-foreground">{region.name}</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {region.centers.map((center) => (
-                    <div key={center.name} className="p-5 rounded-xl bg-card border border-border hover:border-gold/20 transition-all">
-                      <h3 className="text-sm font-medium text-foreground mb-2">{center.name}</h3>
+                    <div key={center.name} className="rounded-lg border border-border bg-card p-5 transition-all hover:border-gold/20 hover:shadow-ant">
+                      <h3 className="mb-2 text-base font-semibold text-foreground">{center.name}</h3>
                       <a href={`https://maps.google.com/?q=${encodeURIComponent(center.address)}`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-gold transition-colors block mb-1">{center.address}</a>
                       <a href={`tel:${center.phone}`} className="text-xs text-gold">{center.phone}</a>
                       <p className="text-xs text-muted-foreground mt-1">{center.hours}</p>

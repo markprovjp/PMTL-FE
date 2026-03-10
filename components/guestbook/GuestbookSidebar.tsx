@@ -27,13 +27,13 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="rounded-[1.75rem] border border-gold/12 bg-card/95 p-6 shadow-[0_12px_30px_-24px_rgba(212,175,55,0.35)] transition-colors duration-300 hover:border-gold/20"
+        className="surface-panel p-6 transition-colors duration-300 hover:border-gold/20"
       >
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
           <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
             <CalendarDaysIcon className="w-5 h-5 text-gold" />
           </div>
-          <h3 className="font-display text-lg text-foreground">Lưu trữ theo tháng</h3>
+          <h3 className="ant-title text-lg text-foreground">Lưu trữ theo tháng</h3>
         </div>
 
         <div className="space-y-5">
@@ -54,7 +54,7 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.35 }}
-            className="rounded-2xl border border-gold/18 bg-gold/[0.04] p-4"
+            className="rounded-lg border border-gold/18 bg-gold/[0.04] p-4"
           >
             <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold">Đặt câu hỏi</h4>
             <p className="text-xs leading-relaxed text-muted-foreground/90">
@@ -84,7 +84,7 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
                     whileHover={{ x: 2 }}
                     className="text-sm font-bold text-foreground/90 flex items-center gap-2"
                   >
-                    <span className="w-2 h-2 rounded-full bg-gold"></span>
+                    <span className="h-2 w-2 rounded-sm bg-gold"></span>
                     {y}
                   </motion.p>
                   <div className="grid grid-cols-2 gap-2 pl-4 border-l-2 border-gold/20">
@@ -101,7 +101,7 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
                           >
                             <Link
                               href={`/guestbook/archive/${y}/${m.month}`}
-                              className={`text-xs py-2 px-3 rounded-lg flex items-center justify-between transition-all duration-200 font-medium ${isActive
+                              className={`flex items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-all duration-200 ${isActive
                                 ? 'bg-gold/15 text-gold border border-gold/40 shadow-sm'
                                 : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground border border-transparent hover:border-border'
                                 }`}

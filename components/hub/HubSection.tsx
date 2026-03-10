@@ -27,9 +27,9 @@ export default function HubSection({ section, theme }: HubSectionProps) {
         headingClass: ''
       }
       case 'practice': return {
-        badgePrefix: <div className="w-2 h-2 rounded-full border border-gold/60" />,
+        badgePrefix: <div className="h-2 w-2 rounded-sm border border-gold/60" />,
         badgeText: 'Tu Tập',
-        divider: 'h-1 w-12 bg-gold/30 rounded-full',
+        divider: 'h-1 w-12 rounded-md bg-gold/30',
         headingClass: 'tracking-tight'
       }
       case 'reference': return {
@@ -62,7 +62,7 @@ export default function HubSection({ section, theme }: HubSectionProps) {
         </div>
 
         {/* heading chính */}
-        <h2 className={`font-display text-xl md:text-2xl text-foreground leading-snug mb-2 pl-4 ${style.headingClass}`}>
+        <h2 className={`ant-title mb-2 pl-4 text-xl leading-snug text-foreground md:text-2xl ${style.headingClass}`}>
           {section.heading}
         </h2>
 
@@ -86,9 +86,9 @@ export default function HubSection({ section, theme }: HubSectionProps) {
                 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6' // Default / teaching
         }>
           {section.links.map((link, index) => (
-            <div key={link.id} className={theme === 'practice' ? 'flex gap-4 items-center bg-card p-4 rounded-xl border border-gold/10' : ''}>
+            <div key={link.id} className={theme === 'practice' ? 'flex items-center gap-4 rounded-lg border border-border bg-card p-4' : ''}>
               {theme === 'practice' && (
-                <div className="w-8 h-8 rounded-full bg-gold/5 flex items-center justify-center font-display text-gold/60 shrink-0">
+                <div className="ant-number flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-gold/5 text-gold/60">
                   {index + 1}
                 </div>
               )}

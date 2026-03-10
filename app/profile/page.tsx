@@ -4,6 +4,7 @@
 //  Hiển thị thông tin Google profile + cho phép chỉnh sửa
 // ─────────────────────────────────────────────────────────────
 import { useEffect, useState, useRef } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -13,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { getErrorMessage, updateMe, uploadAvatarFile } from '@/lib/api/user'
 import PushNotificationButton from '@/components/PushNotificationButton'
+import { Button } from '@/components/ui/button'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -39,14 +41,14 @@ const Field = ({
         value={value}
         onChange={onChange}
         rows={3}
-        className="rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold resize-none"
+        className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground transition-all focus:border-gold/45 focus:outline-none focus:ring-2 focus:ring-gold/20 resize-none"
       />
     ) : (
       <input
         name={name}
         value={value}
         onChange={onChange}
-        className="rounded-lg bg-secondary border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-gold"
+        className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground transition-all focus:border-gold/45 focus:outline-none focus:ring-2 focus:ring-gold/20"
       />
     )}
   </div>
@@ -179,7 +181,7 @@ export default function ProfilePage() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-border rounded-2xl overflow-hidden mb-6"
+            className="surface-panel overflow-hidden mb-6"
           >
             {/* Banner */}
             <div className="h-32 bg-gradient-to-r from-gold/20 via-amber-500/10 to-transparent" />
@@ -200,7 +202,7 @@ export default function ProfilePage() {
                     />
                   ) : (
                     <div className="w-20 h-20 rounded-full border-4 border-card bg-gold/20 flex items-center justify-center">
-                      <span className="font-display text-2xl text-gold">{initials}</span>
+                      <span className="font-body text-2xl font-semibold text-gold">{initials}</span>
                     </div>
                   )}
 
@@ -238,17 +240,19 @@ export default function ProfilePage() {
 
                 {/* Nút đăng xuất */}
                 <div className="flex items-center gap-2">
-                  <button
+                  <Button
                     onClick={logout}
-                    className="px-4 py-2 text-xs border border-border text-muted-foreground hover:border-red-500/50 hover:text-red-400 rounded-lg transition-all"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs text-muted-foreground hover:border-red-500/50 hover:text-red-400"
                   >
                     Đăng xuất
-                  </button>
+                  </Button>
                 </div>
               </div>
 
               {/* Tên + username */}
-              <h1 className="font-display text-2xl text-foreground">
+              <h1 className="ant-title text-2xl text-foreground">
                 {user.fullName || user.username}
               </h1>
               {user.dharmaName && (
@@ -292,13 +296,13 @@ export default function ProfilePage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-card border border-border rounded-2xl p-6"
+            className="surface-panel p-6"
           >
-            <h2 className="font-display text-lg text-foreground mb-4">Thông tin tài khoản</h2>
+            <h2 className="ant-title mb-4 text-xl text-foreground">Thông tin tài khoản</h2>
 
             <div className="mb-4">
               <label className="text-xs text-muted-foreground block mb-1">Email (Đăng nhập)</label>
-              <input value={user.email} disabled className="w-full rounded-lg bg-background border border-border px-3 py-2 text-sm text-muted-foreground opacity-70" />
+              <input value={user.email} disabled className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground opacity-70" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Họ và tên" name="fullName" value={form.fullName} onChange={handleChange} />
@@ -311,26 +315,24 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex items-center gap-4 mt-6">
-              <button
+              <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-2 bg-gold text-black text-sm font-medium rounded-lg hover:bg-gold/80 disabled:opacity-50 transition-all"
+                variant="sacred"
+                size="lg"
               >
                 {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </button>
+              </Button>
             </div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.22 }}
             className="mt-6"
           >
-            <PushNotificationButton
-              title="Thông báo tu học trên thiết bị này"
-              description="Bật nhắc niệm kinh, nhận bài mới hoặc sự kiện quan trọng theo múi giờ và khung giờ yên tĩnh của anh."
-            />
+            <PushNotificationButton />
           </motion.div>
         </div>
       </main>

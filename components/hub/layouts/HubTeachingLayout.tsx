@@ -42,7 +42,7 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
         })()}
 
         <div className="container max-w-4xl mx-auto px-6 text-center relative z-10 flex flex-col items-center">
-          <div className="w-12 h-12 rounded-full border border-gold/20 flex items-center justify-center bg-background/50 backdrop-blur-sm mb-6 shadow-sm">
+          <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-md border border-gold/20 bg-background/50 backdrop-blur-sm shadow-sm">
             <BookMarked className="w-5 h-5 text-gold/70" />
           </div>
 
@@ -50,7 +50,7 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
             Tài Liệu Học Pháp
           </p>
 
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] mb-8 break-words max-w-3xl drop-shadow-sm">
+          <h1 className="ant-title mb-8 max-w-3xl break-words text-4xl leading-[1.1] text-foreground drop-shadow-sm md:text-5xl lg:text-6xl">
             {hubPage.title || '[Không có tiêu đề]'}
           </h1>
 
@@ -66,7 +66,7 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
           <section>
             <div className="flex items-center justify-center gap-4 mb-12">
               <span className="h-px bg-gold/20 flex-1 max-w-[100px]" />
-              <h2 className="font-display text-2xl md:text-3xl text-foreground tracking-tight">Bài Đọc Nổi Bật</h2>
+              <h2 className="ant-title text-2xl tracking-tight text-foreground md:text-3xl">Bài Đọc Nổi Bật</h2>
               <span className="h-px bg-gold/20 flex-1 max-w-[100px]" />
             </div>
 
@@ -79,7 +79,7 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
                   <Link
                     key={post.id}
                     href={`/blog/${post.slug}`}
-                    className="group flex flex-col sm:flex-row gap-6 p-6 md:p-8 rounded-sm bg-card/50 border border-gold/10 hover:border-gold/30 hover:bg-gold/5 transition-all duration-500 items-start md:items-center shadow-sm"
+                    className="group flex flex-col items-start gap-6 rounded-lg border border-border bg-card/70 p-6 transition-all duration-500 hover:border-gold/30 hover:bg-gold/5 hover:shadow-ant md:items-center md:p-8 sm:flex-row"
                   >
                     {thumbUrl && (
                       <div className="shrink-0 w-full sm:w-48 aspect-video sm:aspect-square relative overflow-hidden bg-muted rounded border border-border">
@@ -93,10 +93,10 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
                     )}
                     <div className="flex-1 flex flex-col justify-center min-w-0">
                       <p className="text-[10px] font-bold tracking-widest text-gold/50 uppercase mb-3 flex items-center gap-2">
-                        <span className="w-1 h-1 rounded-full bg-gold/30" />
+                        <span className="h-1 w-1 rounded-sm bg-gold/30" />
                         {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : 'Bài viết mới'}
                       </p>
-                      <h3 className="font-display text-xl md:text-2xl text-foreground group-hover:text-gold transition-colors mb-4 line-clamp-2 leading-snug">
+                      <h3 className="ant-title mb-4 line-clamp-2 text-xl leading-snug text-foreground transition-colors group-hover:text-gold md:text-2xl">
                         {post.title}
                       </h3>
                       {post.excerpt && (
@@ -133,11 +133,11 @@ export default function HubTeachingLayout({ hubPage }: HubTeachingLayoutProps) {
           <section className="pt-24 border-t border-gold/10">
             <div className="flex flex-col items-center text-center mb-12">
               <Download className="w-6 h-6 text-gold mb-4 opacity-50" />
-              <h2 className="font-display text-2xl md:text-3xl text-foreground">Tài Liệu Tải Xuống</h2>
+              <h2 className="ant-title text-2xl text-foreground md:text-3xl">Tài Liệu Tải Xuống</h2>
               <p className="text-sm text-muted-foreground mt-3">Miễn phí và dành cho tất cả mọi người.</p>
             </div>
 
-            <div className="rounded-lg border border-gold/20 bg-card overflow-hidden shadow-lg shadow-black/5">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-ant">
               {hubPage.downloads!.map((item) => (
                 <DownloadRow key={item.id} item={item} />
               ))}

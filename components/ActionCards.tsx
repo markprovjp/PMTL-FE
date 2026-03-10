@@ -46,24 +46,24 @@ export default function ActionCards({ cards }: ActionCardsProps) {
                 <Link
                   href={card.link}
                   className={[
-                    "group block h-full overflow-hidden rounded-[2rem] border border-border/80 bg-card/75 p-7 shadow-elevated transition-all duration-300",
-                    "hover:-translate-y-1 hover:border-gold/30 hover:shadow-gold",
+                    "group block h-full overflow-hidden rounded-xl border border-border bg-card p-7 shadow-ant transition-all duration-200",
+                    "hover:border-gold/30 hover:shadow-elevated",
                     isPrimary ? "lg:min-h-[23rem]" : "lg:min-h-[18rem]",
                   ].join(" ")}
                 >
                   <div className="flex h-full flex-col justify-between gap-8">
                     <div className="space-y-6">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
+                        <div className="flex size-12 items-center justify-center rounded-md border border-border bg-muted text-gold">
                           <Icon className="h-7 w-7" />
                         </div>
-                        <span className="text-[11px] uppercase tracking-[0.28em] text-gold/70">
+                        <span className="ant-label text-gold/70">
                           Lối vào 0{index + 1}
                         </span>
                       </div>
 
                       <div className="space-y-3">
-                        <h3 className={isPrimary ? "font-display text-4xl leading-tight text-foreground" : "font-display text-3xl leading-tight text-foreground"}>
+                        <h3 className={isPrimary ? "ant-title text-4xl leading-tight text-foreground" : "ant-title text-3xl leading-tight text-foreground"}>
                           {card.title}
                         </h3>
                         <p className="max-w-xl font-body text-base leading-relaxed text-muted-foreground">

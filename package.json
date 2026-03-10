@@ -6,10 +6,7 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "push:enqueue:daily": "node scripts/push-enqueue-daily.mjs",
-    "push:worker": "node scripts/push-worker.mjs",
-    "push:test:direct": "node scripts/push-test-direct.mjs"
+    "lint": "next lint"
   },
   "dependencies": {
     "@forvn/vn-lunar-calendar": "^0.0.2",

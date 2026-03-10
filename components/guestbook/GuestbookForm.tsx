@@ -85,9 +85,9 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-2xl bg-gold/10 border border-gold/30 px-6 py-5 text-center"
+        className="rounded-lg border border-gold/30 bg-gold/10 px-6 py-5 text-center"
       >
-        <p className="font-display text-lg text-gold mb-1">Cảm ơn bạn!</p>
+        <p className="ant-title mb-1 text-lg text-gold">Cảm ơn bạn!</p>
         <p className="text-sm text-muted-foreground">
           Lưu bút của bạn đã được ghi lại và hiển thị ngay trên trang.
         </p>
@@ -102,25 +102,25 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       onSubmit={handleSubmit}
       className="space-y-4"
     >
-      <div className="flex gap-2 mb-6 p-1 rounded-xl bg-secondary/50 border border-border/50 w-fit">
+      <div className="mb-6 flex w-fit gap-2 rounded-lg border border-border/50 bg-secondary/50 p-1">
         <button
           type="button"
           onClick={() => setEntryType('message')}
-          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${entryType === 'message' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-all ${entryType === 'message' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
         >
           Lưu Bút
         </button>
         <button
           type="button"
           onClick={() => setEntryType('question')}
-          className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${entryType === 'question' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          className={`rounded-md px-4 py-1.5 text-xs font-semibold transition-all ${entryType === 'question' ? 'bg-card text-gold shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
         >
           Đặt Câu Hỏi
         </button>
       </div>
 
       {user ? (
-        <div className="rounded-2xl border border-gold/20 bg-gold/5 px-4 py-3">
+        <div className="rounded-lg border border-gold/20 bg-gold/5 px-4 py-3">
           <p className="mb-1 text-[11px] uppercase tracking-[0.2em] text-gold/70">Tài khoản gửi lưu bút</p>
           <p className="text-sm font-medium text-foreground">
             {user.dharmaName || user.fullName || user.username || user.email}
@@ -138,7 +138,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
             value={authorName}
             onChange={(e) => setAuthorName(e.target.value)}
             maxLength={100}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-md border border-border bg-background px-4 py-2.5 text-sm transition-colors focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30"
             disabled={isPending}
           />
         </div>
@@ -153,7 +153,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
             id="gb-cat"
             value={questionCategory}
             onChange={(e) => setQuestionCategory(e.target.value)}
-            className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/50 focus:outline-none transition-colors"
+            className="w-full rounded-md border border-border bg-background px-4 py-2.5 text-sm transition-colors focus:border-gold/50 focus:outline-none"
           >
             <option value="">-- Chọn chủ đề --</option>
             <option value="Tu học">Tu học</option>
@@ -177,7 +177,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
           onChange={(e) => setMessage(e.target.value)}
           maxLength={2000}
           rows={4}
-          className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors resize-none"
+          className="w-full resize-none rounded-md border border-border bg-background px-4 py-2.5 text-sm transition-colors focus:border-gold/50 focus:outline-none focus:ring-1 focus:ring-gold/30"
           disabled={isPending}
         />
         <p className="text-xs text-muted-foreground/60 mt-1 text-right">{message.length}/2000</p>
@@ -200,7 +200,7 @@ export default function GuestbookForm({ onSuccess }: GuestbookFormProps) {
       <button
         type="submit"
         disabled={isPending}
-        className="px-6 py-2.5 rounded-xl bg-gold text-black text-sm font-semibold hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto"
+        className="w-full rounded-md bg-gold px-6 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-gold/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
       >
         {isPending ? 'Đang gửi...' : entryType === 'question' ? 'Gửi câu hỏi' : 'Gửi lưu bút'}
       </button>

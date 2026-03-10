@@ -45,7 +45,7 @@ export default function HubPracticeLayout({ hubPage }: HubPracticeLayoutProps) {
             Hướng Dẫn Thực Hành
           </p>
 
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] mb-6 max-w-2xl break-words tracking-tight">
+          <h1 className="ant-title mb-6 max-w-2xl break-words text-4xl leading-[1.1] text-foreground tracking-tight md:text-5xl lg:text-6xl">
             {hubPage.title || '[Chưa Cập Nhật Tên]'}
           </h1>
 
@@ -76,11 +76,11 @@ export default function HubPracticeLayout({ hubPage }: HubPracticeLayoutProps) {
         {hasDownloads && (
           <section className="pt-20 border-t border-border/50">
             <div className="flex items-center gap-3 mb-10">
-              <span className="w-1.5 h-6 bg-gold rounded-full" />
-              <h2 className="font-display text-2xl md:text-3xl text-foreground">Mẫu Biểu Thiết Yếu</h2>
+              <span className="h-6 w-1.5 rounded-sm bg-gold" />
+              <h2 className="ant-title text-2xl text-foreground md:text-3xl">Mẫu Biểu Thiết Yếu</h2>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-ant">
               {hubPage.downloads!.map((item) => (
                 <DownloadRow key={item.id} item={item} />
               ))}

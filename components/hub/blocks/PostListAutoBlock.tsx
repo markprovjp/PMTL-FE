@@ -28,7 +28,7 @@ export default async function PostListAutoBlock({ heading, description, category
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-gold" />
-            <h2 className="font-display text-2xl text-foreground">{heading}</h2>
+            <h2 className="ant-title text-2xl text-foreground">{heading}</h2>
           </div>
           {category && (
             <Link
@@ -51,7 +51,7 @@ export default async function PostListAutoBlock({ heading, description, category
             <Link
               key={post.id}
               href={`/blog/${post.slug}`}
-              className="group flex gap-4 p-4 rounded-2xl bg-card border border-border hover:border-gold/30 hover:shadow-md transition-all items-center"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-gold/30 hover:shadow-ant"
             >
               {thumbUrl && (
                 <div className="shrink-0 w-24 h-24 rounded-xl overflow-hidden bg-secondary border border-border/50">

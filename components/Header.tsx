@@ -8,7 +8,9 @@ import { SearchIcon, MenuIcon, CloseIcon } from "@/components/icons/ZenIcons";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useAuth } from "@/contexts/AuthContext";
 import CategoryNav, { CategoryNavMobile } from "@/components/CategoryNav";
+import NotificationMenu from "@/components/notifications/NotificationMenu";
 import type { NavItem } from "@/lib/api/navigation";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 
 const UserIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -169,6 +171,7 @@ const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; 
         <Link href="/shares" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Diễn Đàn
         </Link>
+        <NotificationMenu mobile />
 
         {sections.map((s) => (
           <div key={s.id} className="border-b border-border/50">
@@ -235,6 +238,8 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout, loading } = useAuth();
+
+  useBodyScrollLock(mobileOpen || categoryOpen || userMenuOpen);
 
   // Default nav items nếu không truyền props
   const defaultTuHoc: NavItem[] = [
@@ -331,15 +336,16 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
 
           <div className="flex items-center gap-1">
             <ThemeToggle />
-            <Link href="/search" className="p-1.5 text-muted-foreground hover:text-gold transition-colors flex-shrink-0">
+            <Link href="/search" className="rounded-md border border-transparent p-1.5 text-muted-foreground transition-colors hover:border-gold/25 hover:text-gold flex-shrink-0">
               <SearchIcon />
             </Link>
+            <NotificationMenu />
 
             {!loading && (
               user ? (
                 <div className="relative hidden md:block flex-shrink-0">
-                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-gold/30 hover:border-gold/60 transition-all">
-                    <div className="w-4 h-4 rounded-full bg-gold/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 transition-all hover:border-gold/40">
+                    <div className="flex size-4 items-center justify-center overflow-hidden rounded-full bg-gold/20 flex-shrink-0">
                       {user.avatar_url ? (
                         <Image src={user.avatar_url} alt="Avatar" width={16} height={16} className="w-full h-full object-cover" />
                       ) : (
@@ -351,18 +357,18 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
                   </button>
                   <AnimatePresence>
                     {userMenuOpen && (
-                      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} className="absolute right-0 top-full mt-2 w-48 bg-card border border-border rounded-xl shadow-xl overflow-hidden z-[100]">
+                      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} className="absolute right-0 top-full z-[100] mt-2 w-52 overflow-hidden rounded-md border border-border bg-card shadow-ant">
                         <div className="p-2 border-b border-border"><p className="text-xs text-foreground px-2 py-1 truncate">{user.email}</p></div>
                         <div className="p-1">
-                          <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="block px-3 py-2 text-sm text-foreground hover:bg-secondary rounded-lg transition-colors">Hồ sơ của tôi</Link>
-                          <button onClick={() => { logout(); setUserMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">Đăng xuất</button>
+                          <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="block rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary">Hồ sơ của tôi</Link>
+                          <button onClick={() => { logout(); setUserMenuOpen(false); }} className="w-full rounded-md px-3 py-2 text-left text-sm text-red-400 transition-colors hover:bg-red-500/10">Đăng xuất</button>
                         </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
               ) : (
-                <Link href="/auth" className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-gold/50 text-gold hover:bg-gold/10 rounded-full transition-all">
+                <Link href="/auth" className="hidden md:flex items-center gap-1.5 rounded-md border border-gold/40 px-3 py-1.5 text-xs font-medium text-gold transition-all hover:bg-gold/10">
                   <UserIcon /> Đăng nhập
                 </Link>
               )

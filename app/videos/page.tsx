@@ -39,29 +39,29 @@ export default function VideosPage() {
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center text-center mb-10">
             <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">因果现前 — Nhân Quả Hiện Tiền</p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Video Khai Thị & Đồ Đằng</h1>
+            <h1 className="ant-title mb-4 text-4xl text-foreground md:text-5xl">Video Khai Thị & Đồ Đằng</h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">Xem nghiệp lực hiện tiền trước mắt. Những video chấn động tâm linh từ Sư Phụ Lư Quân Hoành.</p>
           </motion.div>
 
           <div className="flex gap-2 flex-wrap justify-center mb-8">
             {categories.map((cat) => (
-              <button key={cat} onClick={() => setActiveCat(cat)} className={`px-4 py-2 rounded-full text-xs font-medium transition-all ${activeCat === cat ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{cat}</button>
+              <button key={cat} onClick={() => setActiveCat(cat)} className={`rounded-md px-4 py-2 text-xs font-medium transition-all ${activeCat === cat ? "bg-gold text-black" : "bg-secondary text-muted-foreground hover:text-foreground"}`}>{cat}</button>
             ))}
           </div>
 
           {selectedVideo && (
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10 rounded-xl overflow-hidden border border-border bg-card">
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-10 overflow-hidden rounded-xl border border-border bg-card shadow-ant">
               <div className="aspect-video bg-black">
                 <iframe src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?autoplay=1&rel=0`} title={selectedVideo.title} className="w-full h-full" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
               </div>
               <div className="p-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-gold">{selectedVideo.category}</span>
+                  <span className="rounded-md bg-primary/10 px-2 py-0.5 text-xs text-gold">{selectedVideo.category}</span>
                   <span className="text-xs text-muted-foreground">{selectedVideo.views} lượt xem</span>
                   <span className="text-xs text-muted-foreground">•</span>
                   <span className="text-xs text-muted-foreground">{selectedVideo.date}</span>
                 </div>
-                <h2 className="font-display text-xl text-foreground mb-1">{selectedVideo.title}</h2>
+                <h2 className="ant-title mb-1 text-xl text-foreground">{selectedVideo.title}</h2>
                 <p className="text-xs text-muted-foreground mb-2">{selectedVideo.titleCn}</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">{selectedVideo.description}</p>
               </div>
@@ -70,19 +70,19 @@ export default function VideosPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             {filtered.map((v, i) => (
-              <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} onClick={() => setSelectedVideo(v)} className={`rounded-xl border overflow-hidden cursor-pointer group transition-all ${selectedVideo?.id === v.id ? "border-gold shadow-gold/10 shadow-lg" : "border-border hover:border-gold/30"}`}>
+              <motion.div key={v.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }} onClick={() => setSelectedVideo(v)} className={`group cursor-pointer overflow-hidden rounded-xl border transition-all ${selectedVideo?.id === v.id ? "border-gold shadow-ant" : "border-border hover:border-gold/30 hover:shadow-ant"}`}>
                 <div className="relative aspect-video bg-secondary overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`https://i.ytimg.com/vi/${v.youtubeId}/mqdefault.jpg`} alt={v.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                    <div className="flex size-12 items-center justify-center rounded-md bg-black/60 opacity-80 transition-all group-hover:scale-110 group-hover:opacity-100">
                       <PlayCircleIcon className="w-6 h-6 text-white" />
                     </div>
                   </div>
                   <span className="absolute bottom-2 right-2 px-1.5 py-0.5 text-xs bg-black/70 text-white rounded">{v.duration}</span>
                 </div>
                 <div className="p-3">
-                  <h3 className="text-sm font-medium text-foreground leading-snug line-clamp-2 mb-1">{v.title}</h3>
+                  <h3 className="mb-1 text-base font-semibold leading-snug text-foreground line-clamp-2">{v.title}</h3>
                   <p className="text-xs text-muted-foreground/60">{v.titleCn}</p>
                   <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><span>{v.views} lượt xem</span><span>•</span><span>{v.category}</span></div>
                 </div>
@@ -91,7 +91,7 @@ export default function VideosPage() {
           </div>
 
           <div className="mt-12 text-center">
-            <a href="https://www.youtube.com/channel/UCuupstmJXSQBhUYr64R8BYQ?sub_confirmation=1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium transition-colors">
+            <a href="https://www.youtube.com/channel/UCuupstmJXSQBhUYr64R8BYQ?sub_confirmation=1" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-md bg-red-600 px-6 py-3 font-medium text-white transition-colors hover:bg-red-700">
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.96-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" /><polygon points="9.75 15.02 15.5 12 9.75 8.98" fill="white" /></svg>
               Xem Thêm Trên YouTube
             </a>

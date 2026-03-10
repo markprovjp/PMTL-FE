@@ -49,13 +49,13 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
         <div className="container max-w-4xl mx-auto px-6 pb-16 md:pb-20 relative z-10 w-full animate-fade-in-up">
           {/* Eyebrow báo hiệu rõ loại page ngay cả khi title xấu */}
           <div className="mb-4 inline-flex items-center gap-2">
-            <span className="w-1 h-3.5 bg-gold/70 rounded-full" />
+            <span className="h-3.5 w-1 rounded-sm bg-gold/70" />
             <p className="text-gold text-xs font-bold tracking-[0.2em] uppercase">
               Chuyện Cộng Đồng
             </p>
           </div>
 
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-[1.1] mb-5 drop-shadow-md break-words">
+          <h1 className="ant-title mb-5 break-words text-4xl leading-[1.1] text-foreground drop-shadow-md md:text-5xl lg:text-6xl">
             {hubPage.title || 'Chưa Đặt Tiêu Đề'}
           </h1>
 
@@ -71,7 +71,7 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
           <section>
             <div className="flex items-center gap-4 mb-10">
               <span className="h-px bg-gold/30 w-12" />
-              <h2 className="font-display text-2xl md:text-3xl text-foreground tracking-tight">Từ Cộng Đồng</h2>
+              <h2 className="ant-title text-2xl tracking-tight text-foreground md:text-3xl">Từ Cộng Đồng</h2>
             </div>
 
             {/* Featured (first post) */}
@@ -83,7 +83,7 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
               return (
                 <Link
                   href={`/blog/${featured.slug}`}
-                  className="group block mb-8 rounded-[2rem] overflow-hidden bg-card border border-gold/10 hover:border-gold/30 hover:shadow-2xl hover:shadow-gold/10 transition-all duration-500"
+                  className="group mb-8 block overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 hover:border-gold/30 hover:shadow-ant"
                 >
                   <div className="flex flex-col md:flex-row min-h-[300px]">
                     {thumbUrl ? (
@@ -106,7 +106,7 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
                       <p className="text-xs font-bold tracking-widest text-gold uppercase mb-3 drop-shadow-sm">
                         {featured.publishedAt ? new Date(featured.publishedAt).toLocaleDateString('vi-VN') : 'Mới nhất'}
                       </p>
-                      <h3 className="font-display text-2xl md:text-3xl text-foreground group-hover:text-gold transition-colors mb-4 leading-snug break-words">
+                      <h3 className="ant-title mb-4 break-words text-2xl leading-snug text-foreground transition-colors group-hover:text-gold md:text-3xl">
                         {featured.title}
                       </h3>
                       {featured.excerpt && (
@@ -135,7 +135,7 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
                     <Link
                       key={post.id}
                       href={`/blog/${post.slug}`}
-                      className="group flex flex-col rounded-2xl overflow-hidden bg-card hover:bg-gold/5 border border-border hover:border-gold/30 hover:shadow-xl hover:shadow-gold/5 transition-all duration-500"
+                      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all duration-500 hover:border-gold/30 hover:bg-gold/5 hover:shadow-ant"
                     >
                       {thumbUrl && (
                         <div className="shrink-0 w-full h-48 relative overflow-hidden bg-muted">
@@ -151,7 +151,7 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
                         <p className="text-[10px] font-bold tracking-widest text-gold/50 uppercase mb-3">
                           {post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('vi-VN') : ''}
                         </p>
-                        <h3 className="font-display text-lg md:text-xl text-foreground group-hover:text-gold transition-colors line-clamp-3 leading-snug mb-4">
+                        <h3 className="ant-title mb-4 line-clamp-3 text-lg leading-snug text-foreground transition-colors group-hover:text-gold md:text-xl">
                           {post.title}
                         </h3>
                         <p className="text-xs font-semibold text-muted-foreground mt-auto flex justify-end">
@@ -187,9 +187,9 @@ export default function HubStoryLayout({ hubPage }: HubStoryLayoutProps) {
           <section className="pt-20 border-t border-gold/10">
             <div className="flex items-center gap-4 mb-10">
               <span className="h-px bg-gold/30 w-12" />
-              <h2 className="font-display text-2xl md:text-3xl text-foreground">Học Tập Thêm</h2>
+              <h2 className="ant-title text-2xl text-foreground md:text-3xl">Học Tập Thêm</h2>
             </div>
-            <div className="rounded-2xl border border-gold/10 bg-card overflow-hidden shadow-sm">
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow-ant">
               {hubPage.downloads!.map((item) => (
                 <DownloadRow key={item.id} item={item} />
               ))}

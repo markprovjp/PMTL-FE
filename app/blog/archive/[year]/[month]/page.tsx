@@ -48,7 +48,7 @@ export default async function BlogArchivePage({ params, searchParams }: PageProp
             <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3">
               Lưu Trữ Khai Thị
             </p>
-            <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">
+            <h1 className="ant-title mb-4 text-4xl text-foreground md:text-5xl">
               Tháng {m} năm {y}
             </h1>
             <p className="text-muted-foreground text-lg">

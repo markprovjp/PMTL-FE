@@ -15,6 +15,7 @@ import { getErrorMessage } from '@/lib/http-error';
 import {
   fetchPosts,
   fetchPostById,
+  getCurrentPushEndpoint,
   likePost,
   submitPost,
   submitComment,
@@ -403,12 +404,15 @@ const CommentItem = ({ comment, postId, allComments, depth = 0, onRefresh }: Com
     }
     setSending(true);
     try {
+      const actorEndpoint = await getCurrentPushEndpoint();
       await submitComment({
         postDocumentId: String(postId),
         content: reply,
         author_name: finalName,
         parentDocumentId: comment.documentId,
-        author_avatar: user?.avatar_url || undefined
+        author_avatar: user?.avatar_url || undefined,
+        actorUserId: user?.id,
+        actorEndpoint,
       });
       toast.success('Trả lời đã được đăng');
       setReply('');
@@ -559,11 +563,14 @@ const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModa
     if (!commentText.trim() || !finalName.trim()) return;
     setSending(true);
     try {
+      const actorEndpoint = await getCurrentPushEndpoint();
       await submitComment({
         postDocumentId: post!.documentId,
         content: commentText,
         author_name: finalName,
-        author_avatar: user?.avatar_url || undefined
+        author_avatar: user?.avatar_url || undefined,
+        actorUserId: user?.id,
+        actorEndpoint,
       });
       toast.success('Bình luận đã được đăng');
       setCommentText('');
@@ -579,21 +586,21 @@ const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModa
   return (
     <Dialog open={!!post} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col w-[calc(100vw-1rem)] p-0 border-0 bg-transparent shadow-none gap-0 outline-none [&>button:last-child]:hidden sm:rounded-2xl"
+        className="max-h-[90vh] max-w-2xl overflow-hidden flex w-[calc(100vw-1rem)] flex-col gap-0 border-0 bg-transparent p-0 shadow-none outline-none [&>button:last-child]:hidden sm:rounded-xl"
         aria-describedby={undefined}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>{post?.title || 'Chi tiết bài viết'}</DialogTitle>
         </DialogHeader>
         {post && (
-          <div className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full h-full shadow-2xl relative outline-none flex flex-col overflow-hidden">
+          <div className="relative flex h-full w-full flex-col overflow-hidden rounded-t-xl border border-border bg-card shadow-2xl outline-none sm:rounded-xl">
             {/* Header: Sticky and non-shrinking */}
             <div className="shrink-0 z-10 bg-card/95 backdrop-blur-sm px-6 pt-4 pb-3 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <TypeBadge type={post.type} />
                 <span className="text-xs text-muted-foreground">{post.category}</span>
               </div>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-secondary hover:bg-border flex items-center justify-center transition-colors">
+              <button onClick={onClose} className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary transition-colors hover:bg-border">
                 <XIcon className="w-4 h-4" />
               </button>
             </div>
@@ -633,7 +640,7 @@ const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModa
 
                 {/* Title & Content */}
                 <div className="space-y-2.5 pt-1">
-                  <h2 className="font-display text-lg sm:text-xl text-foreground font-semibold leading-snug">{post.title}</h2>
+                  <h2 className="ant-title text-lg font-semibold leading-snug text-foreground sm:text-xl">{post.title}</h2>
                   <div className={`text-[15px] text-foreground/90 leading-relaxed whitespace-pre-wrap ${post.type === 'feedback' ? 'border-l-4 border-gold/30 pl-4 bg-gold/5 p-3 rounded-r-xl' : ''}`}>
                     {post.content}
                   </div>
@@ -668,7 +675,7 @@ const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModa
 
                 {/* Stats */}
                 <div className="flex items-center justify-between py-3 border-y border-border text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1.5 bg-rose-500/10 text-rose-500 px-2.5 py-1 rounded-full text-xs font-medium">
+                  <div className="flex items-center gap-1.5 rounded-md bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-500">
                     <HeartIcon filled className="w-3.5 h-3.5" />
                     {fmt(post.likes + (liked ? 1 : 0))}
                   </div>
@@ -822,6 +829,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
       if (coverFile) {
         cover_image = await uploadFile(coverFile);
       }
+      const actorEndpoint = await getCurrentPushEndpoint();
       await submitPost({
         ...form,
         author_name: finalAuthorName,
@@ -829,6 +837,8 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
         tags: form.tags || undefined,
         cover_image: cover_image || undefined,
         author_avatar: user?.avatar_url || undefined,
+        actorUserId: user?.id,
+        actorEndpoint,
       });
       toast.success('Bài viết đã được đăng');
       setSent(true);
@@ -842,16 +852,16 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col w-[calc(100vw-1rem)] p-0 border-0 bg-transparent shadow-none gap-0 outline-none [&>button:last-child]:hidden sm:rounded-2xl"
+        className="max-h-[90vh] max-w-2xl overflow-hidden flex w-[calc(100vw-1rem)] flex-col gap-0 border-0 bg-transparent p-0 shadow-none outline-none [&>button:last-child]:hidden sm:rounded-xl"
         aria-describedby={undefined}
       >
         <DialogHeader className="sr-only">
           <DialogTitle>Đăng Bài Chia Sẻ</DialogTitle>
         </DialogHeader>
-        <div className="bg-card border border-border rounded-t-3xl sm:rounded-2xl w-full h-full shadow-2xl relative outline-none flex flex-col overflow-hidden">
+        <div className="relative flex h-full w-full flex-col overflow-hidden rounded-t-xl border border-border bg-card shadow-2xl outline-none sm:rounded-xl">
           <div className="shrink-0 z-10 bg-card/95 backdrop-blur-sm px-6 pt-4 pb-3 border-b border-border flex items-center justify-between">
-            <h2 className="font-display text-lg text-foreground">Đăng Bài Chia Sẻ</h2>
-            <button onClick={() => handleOpenChange(false)} className="w-8 h-8 rounded-full bg-secondary hover:bg-border flex items-center justify-center transition-colors"><XIcon className="w-4 h-4" /></button>
+            <h2 className="ant-title text-lg text-foreground">Đăng Bài Chia Sẻ</h2>
+            <button onClick={() => handleOpenChange(false)} className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary transition-colors hover:bg-border"><XIcon className="w-4 h-4" /></button>
           </div>
 
           <div
@@ -863,7 +873,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
               <div className="px-6 py-12 text-center space-y-6">
                 <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 py-8">
                   <CheckCircle2 className="w-8 h-8 mx-auto mb-4" />
-                  <AlertTitle className="text-xl font-display mb-2">Cảm ơn bạn đã chia sẻ!</AlertTitle>
+                  <AlertTitle className="ant-title mb-2 text-xl">Cảm ơn bạn đã chia sẻ!</AlertTitle>
                   <AlertDescription className="text-sm">
                     Bài viết của bạn đã được đăng thành công.
                     Mọi chia sẻ của bạn đều là hạt mầm thiện lành truyền cảm hứng tới cộng đồng.
@@ -975,7 +985,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
                                   handleSelectChange('tags', currentTags.filter(t => t !== tag).join(', '));
                                 }
                               }}
-                              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors border ${form.tags.split(',').map(t => t.trim()).includes(tag) ? 'bg-gold text-black border-gold' : 'bg-transparent text-muted-foreground border-border hover:border-gold/40'}`}
+                              className={`rounded-md border px-3 py-1 text-xs font-semibold transition-colors ${form.tags.split(',').map(t => t.trim()).includes(tag) ? 'bg-gold text-black border-gold' : 'bg-transparent text-muted-foreground border-border hover:border-gold/40'}`}
                             >
                               {tag}
                             </button>
@@ -1017,13 +1027,13 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
 
 /* ══════════════════════ SKELETON ════════════════════════════════ */
 const SkeletonCard = () => (
-  <div className="rounded-2xl bg-card border border-border overflow-hidden animate-pulse">
+  <div className="overflow-hidden rounded-xl border border-border bg-card animate-pulse">
     <div className="aspect-video bg-secondary/50" />
     <div className="p-4 space-y-3">
       <div className="h-4 bg-secondary/50 rounded w-3/4" />
       <div className="h-3 bg-secondary/50 rounded w-full" />
       <div className="h-3 bg-secondary/50 rounded w-2/3" />
-      <div className="h-8 bg-secondary/50 rounded-full w-24 mt-2" />
+      <div className="mt-2 h-8 w-24 rounded-md bg-secondary/50" />
     </div>
   </div>
 );
@@ -1208,11 +1218,11 @@ export default function SharesClient({
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl mx-auto text-center mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-medium tracking-widest uppercase mb-5">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-gold/20 bg-gold/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-gold">
               Diễn Đàn Đồng Tu
             </div>
 
-            <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground mb-5 leading-tight">
+            <h1 className="ant-title mb-5 text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
               Người Thật&nbsp;<span className="text-gold">Việc Thật</span>
             </h1>
 
@@ -1223,14 +1233,14 @@ export default function SharesClient({
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
               <button
                 onClick={() => setShowSubmit(true)}
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-full bg-gold text-black font-semibold hover:shadow-lg hover:shadow-gold/20 active:scale-95 transition-all text-sm"
+                className="inline-flex items-center gap-2 rounded-md bg-gold px-7 py-3 text-sm font-semibold text-black transition-all hover:shadow-lg hover:shadow-gold/20 active:scale-95"
               >
                 <PlusIcon className="w-4 h-4" />
                 Gửi Câu Chuyện
               </button>
               <a
                 href="#danh-sach"
-                className="inline-flex items-center gap-2 px-7 py-3 rounded-full border border-border hover:border-gold/40 hover:text-gold text-foreground font-medium transition-all text-sm"
+                className="inline-flex items-center gap-2 rounded-md border border-border px-7 py-3 text-sm font-medium text-foreground transition-all hover:border-gold/40 hover:text-gold"
               >
                 Khám Phá Cộng Đồng
               </a>
@@ -1244,8 +1254,8 @@ export default function SharesClient({
                 { value: '4.9★', label: 'Đánh Giá' },
               ].map((s) => (
                 <div key={s.label} className="text-center">
-                  <p className="font-display text-2xl md:text-3xl text-gold leading-none mb-1">{s.value}</p>
-                  <p className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">{s.label}</p>
+                  <p className="font-body text-2xl font-semibold tabular-nums text-gold md:text-3xl leading-none mb-1">{s.value}</p>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">{s.label}</p>
                 </div>
               ))}
             </div>
@@ -1287,7 +1297,7 @@ export default function SharesClient({
                     key={cat}
                     type="button"
                     onClick={() => handleCategory(cat)}
-                    className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${currentCategory === cat
+                    className={`whitespace-nowrap rounded-md px-3.5 py-1.5 text-xs font-medium transition-all ${currentCategory === cat
                       ? 'bg-gold text-black shadow-sm'
                       : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:border-gold/30'
                       }`}
@@ -1324,14 +1334,14 @@ export default function SharesClient({
               </div>
               <button
                 onClick={() => setFilterOpen(true)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-all shrink-0 ${hasFilter
+                  className={`flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-all ${hasFilter
                   ? 'bg-primary/10 text-gold border-gold/30'
                   : 'bg-card text-muted-foreground border-border hover:text-foreground'
                   }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Bộ lọc</span>
-                {hasFilter && <span className="w-1.5 h-1.5 rounded-full bg-gold" />}
+                {hasFilter && <span className="h-1.5 w-1.5 rounded-sm bg-gold" />}
               </button>
             </div>
           </motion.div>
@@ -1354,21 +1364,21 @@ export default function SharesClient({
                   animate={{ y: 0 }}
                   exit={{ y: '100%' }}
                   transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-                  className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl max-h-[80vh] overflow-y-auto"
+                  className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-xl border-t border-border bg-card"
                 >
                   {/* Handle bar */}
                   <div className="flex justify-center pt-3 pb-1">
-                    <div className="w-10 h-1 rounded-full bg-border" />
+                    <div className="h-1 w-10 rounded-sm bg-border" />
                   </div>
                   {/* Header */}
                   <div className="flex items-center justify-between px-5 py-3 border-b border-border">
                     <div>
-                      <h3 className="font-display text-base text-foreground">Bộ Lọc & Sắp Xếp</h3>
+                      <h3 className="ant-title text-base text-foreground">Bộ Lọc & Sắp Xếp</h3>
                       <p className="text-[11px] text-muted-foreground">{total.toLocaleString('vi-VN')} bài viết</p>
                     </div>
                     <button
                       onClick={() => setFilterOpen(false)}
-                      className="w-8 h-8 flex items-center justify-center rounded-full bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex size-8 items-center justify-center rounded-md bg-secondary text-muted-foreground transition-colors hover:text-foreground"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -1383,7 +1393,7 @@ export default function SharesClient({
                           <button
                             key={cat}
                             onClick={() => handleCategory(cat)}
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${currentCategory === cat
+                            className={`rounded-md border px-3 py-1.5 text-xs font-medium transition-all ${currentCategory === cat
                               ? 'bg-primary/15 text-gold border-gold/30'
                               : 'bg-secondary text-muted-foreground border-border hover:border-gold/30 hover:text-foreground'
                               }`}
@@ -1493,7 +1503,7 @@ export default function SharesClient({
               ) : (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
                   <QuoteIcon className="w-12 h-12 mx-auto mb-4 text-muted-foreground/20" />
-                  <h3 className="font-display text-xl text-foreground mb-2">
+                  <h3 className="ant-title mb-2 text-xl text-foreground">
                     {posts.length === 0 && !currentSearch && currentCategory === 'Tất cả' ? 'Chưa có bài chia sẻ nào' : 'Không tìm thấy kết quả'}
                   </h3>
                   <p className="text-muted-foreground text-sm mb-6">
@@ -1533,8 +1543,8 @@ export default function SharesClient({
                     { value: '4.9★', label: 'Đánh Giá' },
                   ].map((s) => (
                     <div key={s.label} className="text-center py-2">
-                      <p className="font-display text-xl text-gold leading-none mb-0.5">{s.value}</p>
-                      <p className="text-[10px] text-muted-foreground/70 uppercase tracking-wide">{s.label}</p>
+                      <p className="font-body text-xl font-semibold tabular-nums text-gold leading-none mb-0.5">{s.value}</p>
+                      <p className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">{s.label}</p>
                     </div>
                   ))}
                 </div>
@@ -1546,7 +1556,7 @@ export default function SharesClient({
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => handleCategory('Tất cả')}
-                    className={`px-3 py-1 rounded-full text-xs transition-all ${currentCategory === 'Tất cả'
+                    className={`rounded-md px-3 py-1 text-xs transition-all ${currentCategory === 'Tất cả'
                       ? 'bg-gold text-black font-medium'
                       : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-border/60'
                       }`}
@@ -1557,7 +1567,7 @@ export default function SharesClient({
                     <button
                       key={cat}
                       onClick={() => handleCategory(cat)}
-                      className={`px-3 py-1 rounded-full text-xs transition-all ${currentCategory === cat
+                      className={`rounded-md px-3 py-1 text-xs transition-all ${currentCategory === cat
                         ? 'bg-gold text-black font-medium'
                         : 'bg-secondary text-muted-foreground hover:text-foreground hover:bg-border/60'
                         }`}
@@ -1572,7 +1582,7 @@ export default function SharesClient({
               <div className="p-6 rounded-xl bg-card border border-border relative overflow-hidden">
                 <QuoteIcon className="absolute top-3 right-3 w-14 h-14 text-gold/[0.06]" />
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gold mb-3">Câu Chuyện Của Bạn</p>
-                <h3 className="font-display text-lg text-foreground mb-2 leading-tight">
+                <h3 className="ant-title mb-2 text-lg leading-tight text-foreground">
                   Chia sẻ chứng<br />nghiệm tu học
                 </h3>
                 <p className="text-xs text-muted-foreground leading-relaxed mb-5">

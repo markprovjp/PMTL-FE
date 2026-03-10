@@ -56,7 +56,7 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-md"
+            className="inline-flex items-center gap-3 rounded-md border border-white/15 bg-white/5 px-4 py-2 backdrop-blur-md"
           >
             <span className="h-2 w-2 rounded-full bg-gold" />
             <span className="text-[11px] uppercase tracking-[0.3em] text-white/88">
@@ -87,19 +87,19 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
           <div className="mt-8 flex flex-col gap-4 md:mt-10 md:flex-row md:items-center">
             <Link
               href="/search"
-              className="group flex w-full max-w-xl items-center gap-3 rounded-full border border-white/12 bg-black/30 px-4 py-3 backdrop-blur-md transition-colors hover:border-gold/35 hover:bg-black/36"
+            className="group flex w-full max-w-xl items-center gap-3 rounded-md border border-white/12 bg-black/30 px-4 py-3 backdrop-blur-md transition-colors hover:border-gold/35 hover:bg-black/36"
             >
               <SearchIcon className="h-5 w-5 text-gold" />
               <span className="flex-1 text-left text-sm text-white/68 md:text-base">
                 Tìm kinh văn, khai thị, pháp bảo hoặc chủ đề tu học
               </span>
-              <span className="rounded-full bg-gold px-5 py-2 text-sm font-medium text-black transition-transform group-hover:scale-[1.02]">
+              <span className="rounded-md bg-gold px-5 py-2 text-sm font-medium text-black transition-transform group-hover:scale-[1.02]">
                 Tra cứu
               </span>
             </Link>
 
             <div className="flex flex-wrap gap-3 text-sm">
-              <Link href="/beginner-guide" className="rounded-full border border-white/15 px-5 py-3 text-white/90 transition-colors hover:border-gold/35 hover:text-gold">
+              <Link href="/beginner-guide" className="rounded-md border border-white/15 px-5 py-3 text-white/90 transition-colors hover:border-gold/35 hover:text-gold">
                 Hướng dẫn sơ học
               </Link>
               <Link href="/library" className="rounded-full border border-transparent px-1 py-3 text-white/68 transition-colors hover:text-white">
@@ -116,11 +116,13 @@ export default function HeroSection({ slides, stats }: HeroSectionProps) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.16 + index * 0.08 }}
-              className="rounded-[1.75rem] border border-white/10 bg-black/38 p-5 backdrop-blur-md"
+              className="rounded-lg border border-white/10 bg-black/38 p-5 backdrop-blur-md"
             >
-              <p className="text-[10px] uppercase tracking-[0.24em] text-gold/78">{stat.label}</p>
-              <p className="mt-3 font-display text-4xl leading-none text-white md:text-5xl">{stat.value}</p>
-              <p className="mt-4 text-sm leading-relaxed text-white/52">{stat.detail}</p>
+              <p className="ant-label text-gold/78">{stat.label}</p>
+              <p className="ant-number mt-3 text-3xl leading-none text-white md:text-4xl">
+                {stat.value}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-white/60">{stat.detail}</p>
             </motion.div>
           ))}
         </div>

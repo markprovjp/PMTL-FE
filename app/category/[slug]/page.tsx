@@ -116,7 +116,7 @@ export default async function CategoryPage({ params }: Props) {
                   <Link
                     key={sub.id}
                     href={`/category/${sub.slug}`}
-                    className="px-3.5 py-1.5 rounded-full bg-card border border-border hover:border-gold/40 hover:text-gold text-sm text-foreground transition-all"
+                    className="rounded-md border border-border bg-card px-3.5 py-1.5 text-sm text-foreground transition-all hover:border-gold/40 hover:text-gold"
                   >
                     {sub.name}
                   </Link>
@@ -138,7 +138,7 @@ export default async function CategoryPage({ params }: Props) {
                 return (
                   <Link
                     href={`/blog/${post.slug}`}
-                    className="group flex flex-col md:flex-row bg-card border border-border rounded-xl overflow-hidden hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300"
+                    className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-ant"
                   >
                     <div className="relative aspect-video md:w-2/5 md:aspect-auto overflow-hidden bg-secondary/20 shrink-0">
                       {thumbUrl ? (
@@ -154,7 +154,7 @@ export default async function CategoryPage({ params }: Props) {
                       )}
                       {post.featured && (
                         <div className="absolute top-3 left-3">
-                          <span className="px-2 py-1 rounded-md text-[10px] bg-gold text-black font-semibold tracking-wider uppercase">Nổi bật</span>
+                          <span className="rounded-md bg-gold px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-black">Nổi bật</span>
                         </div>
                       )}
                     </div>
@@ -186,7 +186,7 @@ export default async function CategoryPage({ params }: Props) {
                       <Link
                         key={post.id}
                         href={`/blog/${post.slug}`}
-                        className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:border-gold/30 hover:shadow-lg hover:shadow-gold/5 transition-all duration-300"
+                        className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-300 hover:border-gold/30 hover:shadow-ant"
                       >
                         <div className="relative aspect-video overflow-hidden bg-secondary/20">
                           {thumbUrl ? (
