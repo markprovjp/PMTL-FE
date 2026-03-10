@@ -20,6 +20,8 @@ const fontBody = Be_Vietnam_Pro({
   display: 'swap',
 })
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   metadataBase: new URL('https://phapmontamlinh.vn'),
   title: {
