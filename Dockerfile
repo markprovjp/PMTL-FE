@@ -6,6 +6,10 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# ARG để nhận API URL lúc build
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Install dependencies
 RUN npm ci --legacy-peer-deps
 
