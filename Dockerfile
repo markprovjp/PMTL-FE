@@ -53,8 +53,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_OPTIONS="--max-old-space-size=768 --max-semi-space-size=64"
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=5 \
-    CMD curl -f http://localhost:3000 || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=5 \
+    CMD curl -f http://127.0.0.1:3000/ || exit 1
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
