@@ -544,3 +544,103 @@ export interface GalleryItem {
   createdAt: string
   updatedAt: string
 }
+
+// ─── Sutra Reader ────────────────────────────────────────────
+
+export interface Sutra {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  description: string | null
+  shortExcerpt: string | null
+  coverImage: StrapiMedia | null
+  translatorHan: string | null
+  translatorViet: string | null
+  reviewer: string | null
+  tags: BlogTag[] | null
+  volumes: SutraVolume[] | null
+  glossaries: SutraGlossary[] | null
+  isFeatured: boolean
+  sortOrder: number
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SutraVolume {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  volumeNumber: number
+  bookStart: number | null
+  bookEnd: number | null
+  description: string | null
+  sutra: Sutra | null
+  chapters: SutraChapter[] | null
+  sortOrder: number
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SutraChapter {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  chapterNumber: number
+  openingText: string | null
+  content: string
+  endingText: string | null
+  estimatedReadMinutes: number
+  sortOrder: number
+  sutra: Sutra | null
+  volume: SutraVolume | null
+  glossaries: SutraGlossary[] | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SutraGlossary {
+  id: number
+  documentId: string
+  markerKey: string
+  term: string
+  meaning: string
+  sortOrder: number
+  sutra: Sutra | null
+  volume: SutraVolume | null
+  chapter: SutraChapter | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface SutraReadingProgress {
+  id: number
+  documentId: string
+  anchorKey: string | null
+  charOffset: number
+  scrollPercent: number
+  lastReadAt: string | null
+  updatedAt: string
+  sutra: Pick<Sutra, 'documentId' | 'title' | 'slug'> | null
+  volume: Pick<SutraVolume, 'documentId' | 'title' | 'slug' | 'volumeNumber'> | null
+  chapter: Pick<SutraChapter, 'documentId' | 'title' | 'slug' | 'chapterNumber'> | null
+}
+
+export interface SutraBookmark {
+  id: number
+  documentId: string
+  anchorKey: string | null
+  charOffset: number
+  excerpt: string | null
+  note: string | null
+  createdAt: string
+  sutra: Pick<Sutra, 'documentId' | 'title' | 'slug'> | null
+  volume: Pick<SutraVolume, 'documentId' | 'title' | 'slug' | 'volumeNumber'> | null
+  chapter: Pick<SutraChapter, 'documentId' | 'title' | 'slug' | 'chapterNumber'> | null
+}

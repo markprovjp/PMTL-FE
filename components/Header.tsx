@@ -171,6 +171,9 @@ const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; 
         <Link href="/shares" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Diễn Đàn
         </Link>
+        <Link href="/kinh-dien" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
+          Kinh Điển
+        </Link>
         <NotificationMenu mobile />
 
         {sections.map((s) => (
@@ -301,6 +304,10 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
 
               <Link href="/shares" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
                 Diễn Đàn
+              </Link>
+
+              <Link href="/kinh-dien" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+                Kinh Điển
               </Link>
 
               <NavDropdown
