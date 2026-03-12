@@ -2,23 +2,33 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { AnimatePresence, motion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
   CalendarDays,
   Camera,
-  ChevronLeft,
-  ChevronRight,
-  Download,
   Grid2X2,
   LayoutGrid,
   MapPin,
   Search,
-  Share2,
   Sparkles,
-  X,
 } from 'lucide-react'
 
 import type { GalleryCardItem } from '@/lib/api/gallery'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import ImageLightbox from '@/components/media/ImageLightbox'
 import { cn } from '@/lib/utils'
 
 type SortMode = 'newest' | 'oldest' | 'featured' | 'az'
@@ -40,13 +50,6 @@ function getYear(date: string | null) {
   return String(new Date(date).getFullYear())
 }
 
-function buildShareUrl(item: GalleryCardItem) {
-  if (typeof window === 'undefined') return ''
-  const url = new URL('/gallery', window.location.origin)
-  url.hash = item.slug || item.documentId
-  return url.toString()
-}
-
 function StatCard({
   label,
   value,
@@ -57,11 +60,13 @@ function StatCard({
   note: string
 }) {
   return (
-    <div className="surface-panel-muted p-4">
-      <p className="ant-label text-gold/80">{label}</p>
-      <p className="ant-title mt-3 text-2xl text-foreground md:text-3xl">{value}</p>
-      <p className="mt-2 text-sm text-muted-foreground">{note}</p>
-    </div>
+    <Card className="surface-panel-muted rounded-xl">
+      <CardContent className="p-4">
+        <p className="ant-label text-gold/80">{label}</p>
+        <p className="ant-title mt-3 text-2xl text-foreground md:text-3xl">{value}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{note}</p>
+      </CardContent>
+    </Card>
   )
 }
 
@@ -85,7 +90,7 @@ function GalleryCard({
       whileHover={{ y: -3 }}
       onClick={() => onOpen(item)}
       className={cn(
-        'group relative block w-full overflow-hidden rounded-2xl border border-border/70 bg-card text-left shadow-ant transition-all hover:border-gold/30 hover:shadow-gold',
+        'group relative block w-full overflow-hidden rounded-xl border border-border/70 bg-card text-left shadow-ant transition-all hover:border-gold/30 hover:shadow-gold',
         editorial ? 'sm:col-span-2 xl:col-span-2' : ''
       )}
     >
@@ -99,14 +104,14 @@ function GalleryCard({
           className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
-        <div className="absolute left-4 top-4 inline-flex items-center rounded-full border border-gold/25 bg-black/25 px-3 py-1 text-[11px] font-medium text-gold backdrop-blur-md">
+        <Badge variant="whisper" className="absolute left-4 top-4 border-gold/25 bg-black/25 text-gold">
           {item.category}
-        </div>
+        </Badge>
         {item.featured ? (
-          <div className="absolute right-4 top-4 inline-flex items-center gap-1 rounded-full border border-gold/20 bg-gold/15 px-3 py-1 text-[11px] font-semibold text-gold backdrop-blur-md">
+          <Badge variant="sacred" className="absolute right-4 top-4 gap-1 border-gold/20 bg-gold/15 text-gold">
             <Sparkles className="size-3.5" />
             Nổi bật
-          </div>
+          </Badge>
         ) : null}
         <div className="absolute inset-x-0 bottom-0 p-4 md:p-5">
           <div className="flex items-center gap-2 text-[11px] text-white/70">
@@ -135,7 +140,6 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
   const [sortMode, setSortMode] = useState<SortMode>('newest')
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [copiedId, setCopiedId] = useState<string | null>(null)
 
   const categories = useMemo(() => {
     return [ALL_OPTION, ...Array.from(new Set(initialItems.map((item) => item.category))).sort()]
@@ -188,16 +192,7 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
   const heroItem = filteredItems.find((item) => item.featured) || filteredItems[0] || null
   const spotlightItems = filteredItems.filter((item) => item.documentId !== heroItem?.documentId).slice(0, 3)
   const selectedIndex = selectedId ? filteredItems.findIndex((item) => item.documentId === selectedId) : -1
-  const selectedItem = selectedIndex >= 0 ? filteredItems[selectedIndex] : null
-
-  useEffect(() => {
-    if (!selectedItem) return
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = previousOverflow
-    }
-  }, [selectedItem])
+  const lightboxOpen = selectedIndex >= 0
 
   useEffect(() => {
     if (typeof window === 'undefined' || !initialItems.length) return
@@ -212,70 +207,68 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
   }, [initialItems])
 
   useEffect(() => {
-    if (!selectedItem) return
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelectedId(null)
-      if (event.key === 'ArrowRight' && selectedIndex < filteredItems.length - 1) {
-        setSelectedId(filteredItems[selectedIndex + 1].documentId)
-      }
-      if (event.key === 'ArrowLeft' && selectedIndex > 0) {
-        setSelectedId(filteredItems[selectedIndex - 1].documentId)
-      }
+    if (selectedId && selectedIndex === -1) {
+      setSelectedId(null)
     }
-
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [filteredItems, selectedIndex, selectedItem])
+  }, [selectedId, selectedIndex])
 
   const featuredCount = initialItems.filter((item) => item.featured).length
   const locationCount = new Set(initialItems.map((item) => item.location).filter(Boolean)).size
   const latestYear = years.find((item) => item !== ALL_OPTION) || '2024'
+  const lightboxItems = useMemo(
+    () =>
+      filteredItems.map((item) => ({
+        id: item.documentId,
+        src: item.imageUrl,
+        alt: item.imageAlt,
+        title: item.title,
+        description: item.quote || item.description,
+        category: item.category,
+        shotDate: item.shotDate,
+        location: item.location,
+        device: item.device,
+        photographer: item.photographer,
+        tags: item.tags,
+        downloadUrl: item.imageUrl,
+      })),
+    [filteredItems],
+  )
 
-  async function handleShare(item: GalleryCardItem) {
-    const shareUrl = buildShareUrl(item)
-    if (!shareUrl) return
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (!lightboxOpen) return
+    const active = filteredItems[selectedIndex]
+    if (!active) return
+    window.history.replaceState(null, '', `/gallery#${active.slug || active.documentId}`)
+  }, [filteredItems, selectedIndex, lightboxOpen])
 
-    try {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopiedId(item.documentId)
-      window.history.replaceState(null, '', `/gallery#${item.slug || item.documentId}`)
-      window.setTimeout(() => setCopiedId((current) => (current === item.documentId ? null : current)), 1600)
-    } catch {
-      setCopiedId(null)
+  const closeLightbox = () => {
+    setSelectedId(null)
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', '/gallery')
     }
   }
 
   return (
-    <>
-      <section className="relative overflow-hidden rounded-[2rem] border border-gold/10 bg-card/70 px-6 py-12 shadow-elevated md:px-10 md:py-16">
-        <div className="mesh-glow pointer-events-none absolute inset-0 opacity-70" />
-        <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)] lg:items-end">
-          <div>
-            <p className="ant-label text-gold">Tư liệu hình ảnh</p>
-            <h1 className="ant-title mt-5 max-w-4xl text-4xl text-foreground md:text-6xl">
-              Gallery Pháp Môn Tâm Linh
-            </h1>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground md:text-lg">
-              Kho lưu trữ hình ảnh về pháp hội, nghi lễ, kiến trúc cổ tự, hoa sen và những khoảnh khắc tu học tĩnh lặng.
-              Giao diện này lấy tinh thần từ mẫu Stitch, nhưng đã chuyển sang hệ dữ liệu động để admin có thể quản lý trực tiếp trong Strapi.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-            <StatCard label="Tổng ảnh" value={String(initialItems.length)} note="Đồng bộ trực tiếp từ CMS." />
-            <StatCard label="Chủ đề" value={String(categories.length - 1)} note="Tự sinh từ trường category." />
-            <StatCard label="Lưu trữ" value={latestYear} note={`${locationCount} địa điểm đã ghi nhận.`} />
-          </div>
-        </div>
-      </section>
+    <div className="space-y-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col items-center text-center"
+      >
+        <p className="text-gold text-sm font-medium tracking-widest uppercase mb-3 px-4 py-1 rounded-full bg-gold/5 border border-gold/10">Kho Lưu Trữ Hình Ảnh</p>
+        <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">Thư Viện Ảnh</h1>
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+          Lưu giữ những khoảnh khắc trang nghiêm của các buổi pháp hội, những đóa sen thuần khiết và vẻ đẹp kiến trúc tại các đạo tràng Pháp Môn Tâm Linh.
+        </p>
+      </motion.div>
 
       {heroItem ? (
-        <section className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.85fr)]">
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.85fr)]">
           <button
             type="button"
             onClick={() => setSelectedId(heroItem.documentId)}
-            className="group relative overflow-hidden rounded-[2rem] border border-gold/15 bg-black text-left shadow-elevated"
+            className="group relative overflow-hidden rounded-xl border border-gold/15 bg-black text-left shadow-elevated"
           >
             <div className="relative aspect-[16/10]">
               <Image
@@ -319,7 +312,7 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
                 key={item.documentId}
                 type="button"
                 onClick={() => setSelectedId(item.documentId)}
-                className="surface-panel interactive-border group flex items-center gap-4 p-4 text-left"
+                className="surface-panel interactive-border rounded-xl group flex items-center gap-4 p-4 text-left"
               >
                 <div className="relative aspect-square w-24 shrink-0 overflow-hidden rounded-xl">
                   <Image
@@ -340,96 +333,108 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
               </button>
             ))}
 
-            <div className="surface-panel-muted p-5">
-              <p className="ant-label text-gold/80">Điểm nhấn</p>
-              <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-xl border border-border/60 bg-background/50 p-3">
-                  <p className="text-muted-foreground">Ảnh nổi bật</p>
-                  <p className="ant-title mt-1 text-2xl text-foreground">{featuredCount}</p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/50 p-3">
-                  <p className="text-muted-foreground">Bộ sưu tập</p>
-                  <p className="ant-title mt-1 text-2xl text-foreground">{collections.length}</p>
-                </div>
-              </div>
-            </div>
+            <Card className="surface-panel-muted rounded-xl">
+              <CardHeader className="p-5 pb-2">
+                <CardTitle className="ant-label text-xs uppercase tracking-[0.22em] text-gold/80">Điểm nhấn</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-3 p-5 pt-2 text-sm">
+                <Card className="rounded-lg border-border/60 bg-background/50 shadow-none">
+                  <CardContent className="p-3">
+                    <p className="text-muted-foreground">Ảnh nổi bật</p>
+                    <p className="ant-title mt-1 text-2xl text-foreground">{featuredCount}</p>
+                  </CardContent>
+                </Card>
+                <Card className="rounded-lg border-border/60 bg-background/50 shadow-none">
+                  <CardContent className="p-3">
+                    <p className="text-muted-foreground">Bộ sưu tập</p>
+                    <p className="ant-title mt-1 text-2xl text-foreground">{collections.length}</p>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
           </div>
         </section>
       ) : null}
 
       <section className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_290px]">
         <div>
-          <div className="surface-panel sticky top-20 z-20 flex flex-col gap-4 p-4 backdrop-blur md:flex-row md:items-center md:justify-between">
-            <div className="relative w-full md:max-w-sm">
-              <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Tìm theo tiêu đề, album, địa điểm..."
-                className="h-11 w-full rounded-full border border-border bg-background/80 pl-11 pr-4 text-sm text-foreground outline-none transition focus:border-gold/40"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={category}
-                onChange={(event) => setCategory(event.target.value)}
-                className="h-11 rounded-full border border-border bg-background px-4 text-sm text-foreground outline-none"
-              >
-                {categories.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={year}
-                onChange={(event) => setYear(event.target.value)}
-                className="h-11 rounded-full border border-border bg-background px-4 text-sm text-foreground outline-none"
-              >
-                {years.map((item) => (
-                  <option key={item} value={item}>
-                    {item === ALL_OPTION ? 'Năm: Tất cả' : item}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={sortMode}
-                onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="h-11 rounded-full border border-border bg-background px-4 text-sm text-foreground outline-none"
-              >
-                <option value="newest">Mới nhất</option>
-                <option value="oldest">Cũ nhất</option>
-                <option value="featured">Ưu tiên nổi bật</option>
-                <option value="az">Tên A-Z</option>
-              </select>
-
-              <div className="inline-flex h-11 items-center rounded-full border border-border bg-background p-1">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={cn(
-                    'inline-flex size-9 items-center justify-center rounded-full transition',
-                    viewMode === 'grid' ? 'bg-gold text-black' : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <Grid2X2 className="size-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('editorial')}
-                  className={cn(
-                    'inline-flex size-9 items-center justify-center rounded-full transition',
-                    viewMode === 'editorial' ? 'bg-gold text-black' : 'text-muted-foreground hover:text-foreground'
-                  )}
-                >
-                  <LayoutGrid className="size-4" />
-                </button>
+          <Card className="surface-panel sticky top-20 z-20 rounded-xl p-4 backdrop-blur">
+            <CardContent className="grid gap-3 p-0 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+              <div className="relative w-full">
+                <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder="Tìm theo tiêu đề, album, địa điểm..."
+                  className="h-11 rounded-lg border-border bg-background/80 pl-11"
+                />
               </div>
-            </div>
-          </div>
+
+              <div className="grid grid-cols-2 gap-2 md:flex md:flex-wrap md:items-center">
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="h-11 w-full rounded-lg border-border bg-background md:w-[150px]">
+                    <SelectValue placeholder="Danh mục" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categories.map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <Select value={year} onValueChange={setYear}>
+                  <SelectTrigger className="h-11 w-full rounded-lg border-border bg-background md:w-[128px]">
+                    <SelectValue placeholder="Năm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {years.map((item) => (
+                        <SelectItem key={item} value={item}>
+                          {item === ALL_OPTION ? 'Năm: Tất cả' : item}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <Select value={sortMode} onValueChange={(value) => setSortMode(value as SortMode)}>
+                  <SelectTrigger className="h-11 w-full rounded-lg border-border bg-background md:w-[160px]">
+                    <SelectValue placeholder="Sắp xếp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="newest">Mới nhất</SelectItem>
+                      <SelectItem value="oldest">Cũ nhất</SelectItem>
+                      <SelectItem value="featured">Ưu tiên nổi bật</SelectItem>
+                      <SelectItem value="az">Tên A-Z</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+
+                <ToggleGroup
+                  type="single"
+                  value={viewMode}
+                  onValueChange={(value) => {
+                    if (value === 'grid' || value === 'editorial') setViewMode(value)
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="col-span-1 justify-start rounded-lg border border-border bg-background p-1 md:col-span-1 md:justify-center"
+                >
+                  <ToggleGroupItem value="grid" className="rounded-md">
+                    <Grid2X2 />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem value="editorial" className="rounded-md">
+                    <LayoutGrid />
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </div>
+            </CardContent>
+          </Card>
 
           {filteredItems.length ? (
             <div className={cn('mt-6 grid gap-5', viewMode === 'editorial' ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4')}>
@@ -444,229 +449,95 @@ export default function GalleryClient({ initialItems }: { initialItems: GalleryC
               ))}
             </div>
           ) : (
-            <div className="surface-panel mt-6 px-6 py-20 text-center">
-              <p className="ant-label text-gold/80">Không có dữ liệu phù hợp</p>
-              <h3 className="ant-title mt-4 text-3xl text-foreground">Thử đổi bộ lọc hoặc thêm ảnh mới trong admin</h3>
-              <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+            <Card className="surface-panel mt-6 rounded-xl">
+              <CardHeader className="text-center">
+                <CardTitle className="ant-label text-xs uppercase tracking-[0.22em] text-gold/80">Không có dữ liệu phù hợp</CardTitle>
+                <CardDescription className="ant-title mt-2 text-3xl text-foreground">
+                  Thử đổi bộ lọc hoặc thêm ảnh mới trong admin
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pb-8 text-center text-muted-foreground">
                 Route này đọc dữ liệu trực tiếp từ collection type `gallery-item`. Khi admin thêm ảnh và publish, giao diện sẽ tự cập nhật theo chu kỳ cache.
-              </p>
-            </div>
+              </CardContent>
+            </Card>
           )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-24 lg:h-fit">
-          <div className="surface-panel p-5">
-            <p className="ant-label text-gold/80">Lưu trữ nhanh</p>
-            <div className="mt-4 flex flex-wrap gap-2">
+          <Card className="surface-panel rounded-xl">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="ant-label text-xs uppercase tracking-[0.22em] text-gold/80">Lưu trữ nhanh</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-2 p-5 pt-2">
               {years.filter((item) => item !== ALL_OPTION).map((item) => (
-                <button
+                <Button
                   key={item}
                   type="button"
+                  variant={year === item ? 'sacred' : 'outline'}
+                  size="sm"
                   onClick={() => setYear(item)}
-                  className={cn(
-                    'rounded-full border px-3 py-2 text-sm transition',
-                    year === item
-                      ? 'border-gold bg-gold/10 text-gold'
-                      : 'border-border text-muted-foreground hover:border-gold/25 hover:text-foreground'
-                  )}
+                  className="rounded-md"
                 >
                   {item}
-                </button>
+                </Button>
               ))}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="surface-panel p-5">
-            <p className="ant-label text-gold/80">Bộ sưu tập nổi bật</p>
-            <div className="mt-4 space-y-3">
-              {collections.length ? (
-                collections.map(([name, total]) => (
-                  <div key={name} className="flex items-center justify-between rounded-xl border border-border/60 bg-background/40 px-4 py-3">
-                    <div>
-                      <p className="text-sm text-foreground">{name}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">Bộ ảnh được tổng hợp từ CMS</p>
+          <Card className="surface-panel rounded-xl">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="ant-label text-xs uppercase tracking-[0.22em] text-gold/80">Bộ sưu tập nổi bật</CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-2">
+              <div className="flex flex-col gap-3">
+                {collections.length ? (
+                  collections.map(([name, total]) => (
+                    <div key={name} className="flex items-center justify-between rounded-lg border border-border/60 bg-background/40 px-4 py-3">
+                      <div>
+                        <p className="text-sm text-foreground">{name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Bộ ảnh được tổng hợp từ CMS</p>
+                      </div>
+                      <Badge variant="sacred" className="rounded-md bg-gold/10 text-gold">{total} ảnh</Badge>
                     </div>
-                    <span className="rounded-full bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">{total} ảnh</span>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">Chưa có album nào được đặt tên riêng.</p>
-              )}
-            </div>
-          </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-muted-foreground">Chưa có album nào được đặt tên riêng.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="surface-panel p-5">
-            <p className="ant-label text-gold/80">Gợi ý vận hành</p>
-            <ul className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
-              <li>Đặt `featured = true` cho ảnh cần xuất hiện ở hero.</li>
-              <li>Dùng `album` để gom cụm ảnh cùng sự kiện hoặc chủ đề.</li>
-              <li>Điền `keywords` bằng chuỗi phân tách dấu phẩy để tăng chất lượng tìm kiếm.</li>
-            </ul>
-          </div>
+          <Card className="surface-panel rounded-xl">
+            <CardHeader className="p-5 pb-2">
+              <CardTitle className="ant-label text-xs uppercase tracking-[0.22em] text-gold/80">Gợi ý vận hành</CardTitle>
+            </CardHeader>
+            <CardContent className="p-5 pt-2">
+              <div className="flex flex-col gap-3 text-sm leading-7 text-muted-foreground">
+                <p>Đặt `featured = true` cho ảnh cần xuất hiện ở hero.</p>
+                <Separator className="bg-border/70" />
+                <p>Dùng `album` để gom cụm ảnh cùng sự kiện hoặc chủ đề.</p>
+                <Separator className="bg-border/70" />
+                <p>Điền `keywords` bằng chuỗi phân tách dấu phẩy để tăng chất lượng tìm kiếm.</p>
+              </div>
+            </CardContent>
+          </Card>
         </aside>
       </section>
 
-      <AnimatePresence>
-        {selectedItem ? (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[120] bg-black/85 backdrop-blur-md"
-          >
-            <div className="absolute inset-0 overflow-y-auto overscroll-contain p-4 md:p-8" data-lenis-prevent style={{ WebkitOverflowScrolling: 'touch' }}>
-              <div className="mx-auto flex min-h-full max-w-7xl items-center">
-                <div className="relative w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#17120d] shadow-elevated">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(null)}
-                    className="absolute right-4 top-4 z-20 inline-flex size-11 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 backdrop-blur transition hover:text-white"
-                  >
-                    <X className="size-5" />
-                  </button>
-
-                  {selectedIndex > 0 ? (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedId(filteredItems[selectedIndex - 1].documentId)}
-                      className="absolute left-4 top-1/2 z-20 inline-flex size-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 backdrop-blur transition hover:text-white"
-                    >
-                      <ChevronLeft className="size-5" />
-                    </button>
-                  ) : null}
-
-                  {selectedIndex < filteredItems.length - 1 ? (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedId(filteredItems[selectedIndex + 1].documentId)}
-                      className="absolute right-4 top-1/2 z-20 inline-flex size-12 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/30 text-white/80 backdrop-blur transition hover:text-white"
-                    >
-                      <ChevronRight className="size-5" />
-                    </button>
-                  ) : null}
-
-                  <div className="grid min-h-[720px] lg:grid-cols-[minmax(0,1.2fr)_360px]">
-                    <div className="relative min-h-[420px] bg-black">
-                      <div className="absolute inset-0 opacity-25">
-                        <Image src={selectedItem.imageUrl} alt="" fill sizes="100vw" className="object-cover blur-3xl scale-110" />
-                      </div>
-                      <div className="relative flex h-full items-center justify-center p-8 md:p-12">
-                        <div className="relative aspect-[4/5] w-full max-w-3xl overflow-hidden rounded-[1.5rem] border border-white/10">
-                          <Image
-                            src={selectedItem.imageUrl}
-                            alt={selectedItem.imageAlt}
-                            fill
-                            priority
-                            sizes="(max-width: 1024px) 100vw, 70vw"
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex min-h-0 flex-col border-t border-white/10 lg:border-l lg:border-t-0">
-                      <div className="flex-1 overflow-y-auto overscroll-contain p-6 md:p-8" data-lenis-prevent style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <p className="ant-label text-gold/90">Chi tiết ảnh</p>
-                        <h3 className="ant-title mt-4 text-3xl leading-tight text-white">{selectedItem.title}</h3>
-                        <p className="mt-5 text-base italic leading-8 text-white/70">
-                          {selectedItem.quote || selectedItem.description || 'Ảnh tư liệu trong thư viện Pháp Môn Tâm Linh.'}
-                        </p>
-
-                        <div className="mt-8 border-t border-white/10 pt-6 text-sm text-white/70">
-                          <div className="grid gap-4">
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-white/45">Ngày chụp</span>
-                              <span>{formatDate(selectedItem.shotDate)}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-white/45">Chủ đề</span>
-                              <span>{selectedItem.category}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-white/45">Địa điểm</span>
-                              <span>{selectedItem.location || 'Đang cập nhật'}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-white/45">Thiết bị</span>
-                              <span>{selectedItem.device || 'Đang cập nhật'}</span>
-                            </div>
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-white/45">Người ghi hình</span>
-                              <span>{selectedItem.photographer || 'Ban Truyền Thông PMTL'}</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {selectedItem.tags.length ? (
-                          <div className="mt-8">
-                            <p className="text-xs uppercase tracking-[0.24em] text-gold/80">Từ khóa</p>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {selectedItem.tags.map((tag) => (
-                                <button
-                                  key={tag}
-                                  type="button"
-                                  onClick={() => {
-                                    setQuery(tag)
-                                    setSelectedId(null)
-                                  }}
-                                  className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/75 transition hover:border-gold/30 hover:text-gold"
-                                >
-                                  #{tag}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        ) : null}
-
-                        <div className="mt-8 flex flex-wrap gap-3">
-                          <a
-                            href={selectedItem.imageUrl}
-                            download
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gold px-5 text-sm font-semibold text-black transition hover:bg-gold/90"
-                          >
-                            <Download className="size-4" />
-                            Tải ảnh
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleShare(selectedItem)}
-                            className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/15 px-5 text-sm font-semibold text-white/80 transition hover:border-gold/30 hover:text-gold"
-                          >
-                            <Share2 className="size-4" />
-                            {copiedId === selectedItem.documentId ? 'Đã sao chép' : 'Chia sẻ'}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-white/10 p-4">
-                        <div className="flex gap-3 overflow-x-auto pb-1">
-                          {filteredItems.slice(Math.max(0, selectedIndex - 4), selectedIndex + 5).map((item) => (
-                            <button
-                              key={item.documentId}
-                              type="button"
-                              onClick={() => setSelectedId(item.documentId)}
-                              className={cn(
-                                'relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border transition',
-                                item.documentId === selectedItem.documentId
-                                  ? 'border-gold'
-                                  : 'border-white/10 hover:border-gold/25'
-                              )}
-                            >
-                              <Image src={item.imageUrl} alt={item.imageAlt} fill sizes="80px" className="object-cover" />
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    </>
+      <ImageLightbox
+        items={lightboxItems}
+        open={lightboxOpen}
+        index={selectedIndex}
+        onClose={closeLightbox}
+        onIndexChange={(nextIndex) => {
+          const target = filteredItems[nextIndex]
+          if (target) setSelectedId(target.documentId)
+        }}
+        onTagClick={(tag) => {
+          setQuery(tag)
+          closeLightbox()
+        }}
+      />
+    </div>
   )
 }
