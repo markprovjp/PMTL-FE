@@ -621,11 +621,11 @@ export default function LunarCalendarPage() {
               {/* Legend */}
               <div className="mt-5 flex flex-wrap gap-3 justify-center">
                 {([
-                  ['buddha', Sparkles, 'Ngày Phật'],
-                  ['bodhisattva', Flower2, 'Ngày Bồ Tát'],
-                  ['teacher', ScrollText, 'Khai Thị'],
+                  ['buddha', Sparkles, 'Ngày vía Phật'],
+                  ['bodhisattva', Flower2, 'Ngày vía Bồ Tát'],
+                  ['teacher', ScrollText, 'Khai thị Sư Phụ'],
+                  ['holiday', PartyPopper, 'Sự kiện / Pháp hội'],
                   ['fast', Leaf, 'Ngày Trai'],
-                  ['holiday', PartyPopper, 'Ngày Lễ'],
                 ] as const).map(([type, Icon, label]) => (
                   <div key={type} className="flex items-center gap-1.5">
                     <Icon className={`w-3 h-3 ${TYPE_STYLE[type].text}`} />

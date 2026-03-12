@@ -55,12 +55,13 @@ export async function buildNavigation(): Promise<NavigationData> {
       { label: "Khai Thị", href: "/blog" },
       { label: "Lịch Tu Học", href: "/lunar-calendar" },
       { label: "Niệm Kinh", href: "/niem-kinh" },
+      { label: "Sự Kiện & Pháp Hội", href: "/events" },
       { label: "Diễn Đàn", href: "/shares" },
     ],
     tuHoc: [...hubItems, ...systemLinks],
     congDong: [
       { label: "Hỏi Đáp & Sổ Lưu Bút", href: "/guestbook" },
-      { label: "Sự Kiện & Pháp Hội", href: "/events" },
+      { label: "Danh Bạ Toàn Cầu", href: "/directory" },
     ],
     hoTri: { label: "Hộ Trì Phật Pháp", href: "/donations" },
   }

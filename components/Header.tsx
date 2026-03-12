@@ -103,7 +103,7 @@ const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; 
     },
     {
       id: 'cong-dong',
-      label: "Cộng Đồng",
+      label: "Liên Kết",
       items: congDong
     },
   ];
@@ -170,6 +170,9 @@ const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; 
         </Link>
         <Link href="/shares" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Diễn Đàn
+        </Link>
+        <Link href="/events" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
+          Sự Kiện & Pháp Hội
         </Link>
         <Link href="/kinh-dien" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Kinh Điển
@@ -257,7 +260,7 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
 
   const defaultCongDong: NavItem[] = [
     { label: "Hỏi Đáp & Sổ Lưu Bút", href: "/guestbook" },
-    { label: "Sự Kiện & Pháp Hội", href: "/events" },
+    { label: "Danh Bạ Toàn Cầu", href: "/directory" },
   ]
 
   const defaultHoTri: NavItem = { label: "Hộ Trì Phật Pháp", href: "/donations" }
@@ -302,13 +305,16 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
                 Niệm Kinh
               </Link>
 
-              <Link href="/shares" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-                Diễn Đàn
-              </Link>
+            <Link href="/shares" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+              Diễn Đàn
+            </Link>
+            <Link href="/events" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+              Sự Kiện & Pháp Hội
+            </Link>
 
-              <Link href="/kinh-dien" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-                Kinh Điển
-              </Link>
+            <Link href="/kinh-dien" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
+              Kinh Điển
+            </Link>
 
               <NavDropdown
                 label="Tu Học"
@@ -319,13 +325,13 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
                 columns={2}
               />
 
-              <NavDropdown
-                label="Cộng Đồng"
-                items={groups.congDong}
-                isOpen={activeDropdown === 'congDong'}
-                onToggle={() => setActiveDropdown(activeDropdown === 'congDong' ? null : 'congDong')}
-                onClose={() => setActiveDropdown(null)}
-              />
+            <NavDropdown
+              label="Liên Kết"
+              items={groups.congDong}
+              isOpen={activeDropdown === 'congDong'}
+              onToggle={() => setActiveDropdown(activeDropdown === 'congDong' ? null : 'congDong')}
+              onClose={() => setActiveDropdown(null)}
+            />
 
               <button
                 onClick={() => { setCategoryOpen(!categoryOpen); setActiveDropdown(null); }}
