@@ -16,7 +16,7 @@ export async function GET() {
     {
       populate: {
         downloadLinks: true,
-        socialLinks: true,
+        socialLinks: { populate: { icon: true } },
         qrImages: { fields: ['url', 'formats', 'width', 'height', 'alternativeText'] },
       },
     },

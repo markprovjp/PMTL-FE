@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRightIcon, BookIcon, CompassIcon, UsersIcon } from "@/components/icons/ZenIcons";
 import type { ActionCardItem } from "@/types/strapi";
+import { resolveIconToken } from "@/lib/ui-icons";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   book: BookIcon,
@@ -31,7 +32,8 @@ export default function ActionCards({ cards }: ActionCardsProps) {
 
         <div className="grid gap-5 lg:grid-cols-12">
           {cards.map((card, index) => {
-            const Icon = iconMap[card.iconType] ?? BookIcon;
+            const iconToken = resolveIconToken(card.icon) ?? card.iconType ?? null;
+            const Icon = iconMap[String(iconToken ?? '').toLowerCase()] ?? BookIcon;
             const isPrimary = index === 0;
 
             return (

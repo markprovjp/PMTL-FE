@@ -1,7 +1,7 @@
 // components/layout/widgets/SocialLinksWidget.tsx — Server component
 import Image from 'next/image'
 import { getStrapiMediaUrl } from '@/lib/strapi'
-import type { CmsSocialLink, StrapiMedia } from '@/types/strapi'
+import type { CmsSocialLink, StrapiMedia, UiIcon } from '@/types/strapi'
 
 interface SocialLinksWidgetProps {
   socialLinks: CmsSocialLink[]
@@ -9,9 +9,10 @@ interface SocialLinksWidgetProps {
 }
 
 // Map iconName to a simple SVG path or a recognizable character fallback
-function SocialIcon({ name }: { name: string | null }) {
-  if (!name) return null
-  const n = name.toLowerCase()
+function SocialIcon({ icon, legacyName }: { icon: UiIcon | null; legacyName?: string | null }) {
+  const token = (icon?.key ?? icon?.lucideName ?? legacyName ?? '').toLowerCase()
+  if (!token) return null
+  const n = token
   if (n.includes('facebook')) {
     return (
       <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
@@ -30,7 +31,7 @@ function SocialIcon({ name }: { name: string | null }) {
     return <span className="text-xs font-bold leading-none">ZL</span>
   }
   // Generic fallback
-  return <span className="text-xs font-medium leading-none">{name.slice(0, 2).toUpperCase()}</span>
+  return <span className="text-xs font-medium leading-none">{token.slice(0, 2).toUpperCase()}</span>
 }
 
 export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinksWidgetProps) {
@@ -74,7 +75,7 @@ export default function SocialLinksWidget({ socialLinks, qrImages }: SocialLinks
                 title={link.label}
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/70 px-3 py-1.5 text-xs text-muted-foreground transition-all hover:text-foreground"
               >
-                <SocialIcon name={link.iconName} />
+                <SocialIcon icon={link.icon} legacyName={link.iconName} />
                 <span>{link.label}</span>
               </a>
             ))}

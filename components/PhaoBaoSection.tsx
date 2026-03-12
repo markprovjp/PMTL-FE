@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { PhapBaoItem } from "@/types/strapi";
+import { resolveIconToken } from "@/lib/ui-icons";
 
 // SVG icons — consistent with project style
 const svgIcons: Record<string, React.ReactNode> = {
@@ -75,7 +76,7 @@ const PhaoBaoSection = ({ items }: PhaoBaoSectionProps) => {
                 <div className="h-full p-6 rounded-xl bg-card border border-border hover:border-gold-dim/40 transition-all duration-300 group hover:shadow-gold">
                   {/* Icon */}
                   <div className="text-gold mb-5 group-hover:scale-110 transition-transform duration-300">
-                    {svgIcons[item.iconType] ?? svgIcons.book}
+                    {svgIcons[String(resolveIconToken(item.icon) ?? item.iconType ?? '').toLowerCase()] ?? svgIcons.book}
                   </div>
 
                   {/* Title + Chinese */}

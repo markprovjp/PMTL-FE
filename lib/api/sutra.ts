@@ -99,7 +99,6 @@ export async function fetchSutraBySlug(slug: string): Promise<SutraReaderData | 
   let volumes: SutraVolume[] = []
   const volumeRes = await strapiFetch<StrapiList<SutraVolume>>('/sutra-volumes', {
     status: 'published',
-    filters: { sutra: { id: { $eq: sutra.id } } },
     fields: ['title', 'slug', 'volumeNumber', 'bookStart', 'bookEnd', 'description', 'sortOrder', 'documentId'],
     sort: ['volumeNumber:asc', 'sortOrder:asc'],
     populate: {
@@ -108,10 +107,13 @@ export async function fetchSutraBySlug(slug: string): Promise<SutraReaderData | 
     pagination: { page: 1, pageSize: 200 },
     next: { revalidate: 300, tags: [`sutra-${slug}-volumes`] },
   })
-  volumes = (volumeRes.data ?? []).slice().sort((a, b) => {
+  volumes = (volumeRes.data ?? [])
+    .filter((item) => item.sutra?.documentId === sutra.documentId)
+    .slice()
+    .sort((a, b) => {
     if (a.volumeNumber !== b.volumeNumber) return a.volumeNumber - b.volumeNumber
     return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
-  })
+    })
 
   // Step 2: Fetch Chapters independently filtering by Volume documentIds
   // This avoids deep-nested populate limits and relation filter issues in Strapi v5
@@ -145,17 +147,20 @@ export async function fetchSutraBySlug(slug: string): Promise<SutraReaderData | 
   let glossaries: SutraGlossary[] = []
   const glossaryRes = await strapiFetch<StrapiList<SutraGlossary>>('/sutra-glossaries', {
     status: 'published',
-    filters: { sutra: { id: { $eq: sutra.id } } },
     fields: ['markerKey', 'term', 'meaning', 'sortOrder', 'documentId'],
     sort: ['sortOrder:asc', 'createdAt:asc'],
     populate: {
+      sutra: { fields: ['documentId', 'slug'] },
       chapter: { fields: ['documentId', 'slug'] },
       volume: { fields: ['documentId', 'slug'] },
     },
     pagination: { page: 1, pageSize: 1000 },
     next: { revalidate: 300, tags: [`sutra-${slug}-glossaries`] },
   })
-  glossaries = (glossaryRes.data ?? []).slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+  glossaries = (glossaryRes.data ?? [])
+    .filter((item) => item.sutra?.documentId === sutra.documentId)
+    .slice()
+    .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
 
   return {
     sutra,

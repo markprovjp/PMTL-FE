@@ -70,6 +70,19 @@ export interface StrapiSEO {
   canonicalURL: string | null
 }
 
+/** Shared UI icon entity from Strapi */
+export interface UiIcon {
+  id: number
+  documentId: string
+  name: string
+  key: string
+  lucideName: string
+  category: 'general' | 'social' | 'navigation' | 'content' | 'practice'
+  notes: string | null
+  isActive: boolean
+  sortOrder: number
+}
+
 // ─── Category ─────────────────────────────────────────────────
 
 /** Category with hierarchical tree support — can have parent/children */
@@ -165,7 +178,7 @@ export interface BeginnerGuide {
   order: number
   step_number: number
   guide_type: 'so-hoc' | 'kinh-bai-tap'
-  icon: string | null // tên icon Lucide (vd: 'BookOpen')
+  icon: UiIcon | null
   pdf_url: string | null
   video_url: string | null
   images: StrapiMedia[] | null
@@ -199,14 +212,16 @@ export interface PhapBaoItem {
   borderColor: string
   description: string
   link: string
-  iconType: string // tên icon SVG key
+  icon: UiIcon | null
+  iconType?: string | null // legacy fallback
 }
 
 export interface ActionCardItem {
   title: string
   description: string
   link: string
-  iconType: string
+  icon: UiIcon | null
+  iconType?: string | null // legacy fallback
 }
 
 export interface VideoItem {
@@ -416,7 +431,7 @@ export interface HubPage {
   visualTheme?: 'teaching' | 'practice' | 'story' | 'reference' | null  // Hub personality
   sortOrder: number
   showInMenu: boolean
-  menuIcon?: string | null
+  menuIcon?: UiIcon | null
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -456,7 +471,8 @@ export interface CmsSocialLink {
   id: number
   label: string
   url: string
-  iconName: string | null
+  icon: UiIcon | null
+  iconName?: string | null // legacy fallback
 }
 
 export interface SidebarConfig {

@@ -15,7 +15,7 @@ export async function getGuides(guideType: 'so-hoc' | 'kinh-bai-tap'): Promise<B
     const res = await strapiFetch<StrapiList<BeginnerGuide>>('/beginner-guides', {
       filters: { guide_type: { $eq: guideType } },
       sort: ['step_number:asc', 'order:asc'],
-      populate: ['images', 'attached_files'],
+      populate: ['images', 'attached_files', 'icon'],
       pagination: { page: 1, pageSize: 100 },
       next: { revalidate: 300, tags: [`guides-${guideType}`] },
     })
@@ -40,7 +40,7 @@ export async function getDailyRecitationSteps(): Promise<BeginnerGuide[]> {
 export async function getGuideById(documentId: string): Promise<BeginnerGuide | null> {
   try {
     const res = await strapiFetch<{ data: BeginnerGuide }>(`/beginner-guides/${documentId}`, {
-      populate: ['images', 'attached_files'],
+      populate: ['images', 'attached_files', 'icon'],
       next: { revalidate: 300, tags: [`guide-${documentId}`] },
     })
     return res.data ?? null

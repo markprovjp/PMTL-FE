@@ -2,21 +2,15 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { MessageCircleQuestion, Sparkles, Lamp, Baby, Users, Scale, GraduationCap, Radio, Compass, BookOpen, Star, Briefcase, Leaf, HeartPulse, Flower2, Home, Waves, Moon, Bird, Flame, Gift, Search, ArrowRight } from "lucide-react";
+import { Search, ArrowRight } from "lucide-react";
 export interface SearchCategoryItem {
   id: number | string;
   title: string;
-  iconName: string;
+  icon?: { key?: string | null; lucideName?: string | null; name?: string | null } | null;
+  iconName?: string | null;
   link: string;
 }
-import type { LucideIcon } from "lucide-react";
-
-// Map iconName string → Lucide icon component
-const iconMap: Record<string, LucideIcon> = {
-  MessageCircleQuestion, Sparkles, Lamp, Baby, Users, Scale, GraduationCap,
-  Radio, Compass, BookOpen, Star, Briefcase, Leaf, HeartPulse, Flower2,
-  Home, Waves, Moon, Bird, Flame, Gift, Search,
-};
+import { resolveLucideIcon } from "@/lib/ui-icons";
 
 interface SearchDirectoryProps {
   categories: SearchCategoryItem[]
@@ -66,7 +60,7 @@ const SearchDirectory = ({ categories }: SearchDirectoryProps) => {
                 <div className="absolute inset-0 bg-gradient-to-br from-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10" />
 
                 <div className="w-12 h-12 rounded-xl bg-secondary/80 group-hover:bg-gold/10 flex items-center justify-center shrink-0 transition-colors shadow-sm border border-transparent group-hover:border-gold/20">
-                  {(() => { const Icon = iconMap[cat.iconName] ?? Search; return <Icon className="w-5 h-5 text-muted-foreground group-hover:text-gold transition-colors stroke-[1.5]" />; })()}
+                  {(() => { const Icon = resolveLucideIcon(cat.icon ?? cat.iconName, Search); return <Icon className="w-5 h-5 text-muted-foreground group-hover:text-gold transition-colors stroke-[1.5]" />; })()}
                 </div>
 
                 <div className="flex-1 min-w-0">

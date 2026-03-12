@@ -30,7 +30,9 @@ export async function getHomepageSettings(): Promise<SiteSetting | null> {
         'heroSlides.image',
         'stats',
         'phapBao',
+        'phapBao.icon',
         'actionCards',
+        'actionCards.icon',
         'featuredVideos',
         'awards',
         'gallerySlides',
@@ -117,17 +119,17 @@ export const FALLBACK_STATS: StatItem[] = [
 ]
 
 export const FALLBACK_PHAP_BAO: PhapBaoItem[] = [
-  { id: "niem-kinh", title: "Niệm Kinh", chinese: "念经", color: "from-amber-500/20 to-amber-600/10", borderColor: "hover:border-amber-500/50", description: "Ba trụ cột: Chú Đại Bi, Tâm Kinh và Lễ Phật Đại Sám Hối Văn.", link: "/library", iconType: "book" },
-  { id: "phat-nguyen", title: "Phát Nguyện", chinese: "许愿", color: "from-purple-500/20 to-purple-600/10", borderColor: "hover:border-purple-500/50", description: "Nguyện thành tâm dâng lên Bồ Tát, nhận được gia trì và bảo hộ.", link: "/hub/bach-thoai-phat-phap", iconType: "star" },
-  { id: "phong-sinh", title: "Phóng Sinh", chinese: "放生", color: "from-emerald-500/20 to-emerald-600/10", borderColor: "hover:border-emerald-500/50", description: "Giải cứu sinh linh, tích đức hồi hướng, tiêu trừ nghiệp chướng.", link: "/blog", iconType: "leaf" },
-  { id: "sam-hoi", title: "Đại Sám Hối", chinese: "忏悔", color: "from-rose-500/20 to-rose-600/10", borderColor: "hover:border-rose-500/50", description: "Thành tâm sám hối nghiệp chướng từ vô thỉ kiếp, tịnh hóa ba nghiệp.", link: "/library", iconType: "flame" },
-  { id: "ngoi-nha-nho", title: "Ngôi Nhà Nhỏ", chinese: "小房子", color: "from-sky-500/20 to-sky-600/10", borderColor: "hover:border-sky-500/50", description: "Siêu độ vong linh, hóa giải oán kết, trả nợ oan gia trái chủ.", link: "/hub/thuong-thuc-niem-phat", iconType: "house" },
+  { id: "niem-kinh", title: "Niệm Kinh", chinese: "念经", color: "from-amber-500/20 to-amber-600/10", borderColor: "hover:border-amber-500/50", description: "Ba trụ cột: Chú Đại Bi, Tâm Kinh và Lễ Phật Đại Sám Hối Văn.", link: "/library", icon: null, iconType: "book" },
+  { id: "phat-nguyen", title: "Phát Nguyện", chinese: "许愿", color: "from-purple-500/20 to-purple-600/10", borderColor: "hover:border-purple-500/50", description: "Nguyện thành tâm dâng lên Bồ Tát, nhận được gia trì và bảo hộ.", link: "/hub/bach-thoai-phat-phap", icon: null, iconType: "star" },
+  { id: "phong-sinh", title: "Phóng Sinh", chinese: "放生", color: "from-emerald-500/20 to-emerald-600/10", borderColor: "hover:border-emerald-500/50", description: "Giải cứu sinh linh, tích đức hồi hướng, tiêu trừ nghiệp chướng.", link: "/blog", icon: null, iconType: "leaf" },
+  { id: "sam-hoi", title: "Đại Sám Hối", chinese: "忏悔", color: "from-rose-500/20 to-rose-600/10", borderColor: "hover:border-rose-500/50", description: "Thành tâm sám hối nghiệp chướng từ vô thỉ kiếp, tịnh hóa ba nghiệp.", link: "/library", icon: null, iconType: "flame" },
+  { id: "ngoi-nha-nho", title: "Ngôi Nhà Nhỏ", chinese: "小房子", color: "from-sky-500/20 to-sky-600/10", borderColor: "hover:border-sky-500/50", description: "Siêu độ vong linh, hóa giải oán kết, trả nợ oan gia trái chủ.", link: "/hub/thuong-thuc-niem-phat", icon: null, iconType: "house" },
 ]
 
 export const FALLBACK_ACTION_CARDS: ActionCardItem[] = [
-  { iconType: "book", title: "Thư Viện Tài Liệu", description: "Hướng dẫn từng bước cho người mới, từ niệm Phật đến công khóa hàng ngày.", link: "/library" },
-  { iconType: "compass", title: "Tra cứu Khai thị", description: "Tìm lời khai thị phù hợp với hoàn cảnh của bạn từ kho tàng Phật pháp.", link: "/search" },
-  { iconType: "users", title: "Hỏi Đáp & Lưu Bút", description: "Giao lưu tu học, giải đáp thắc mắc và chia sẻ cảm nhận từ các thiện hữu.", link: "/guestbook" },
+  { icon: null, iconType: "book", title: "Thư Viện Tài Liệu", description: "Hướng dẫn từng bước cho người mới, từ niệm Phật đến công khóa hàng ngày.", link: "/library" },
+  { icon: null, iconType: "compass", title: "Tra cứu Khai thị", description: "Tìm lời khai thị phù hợp với hoàn cảnh của bạn từ kho tàng Phật pháp.", link: "/search" },
+  { icon: null, iconType: "users", title: "Hỏi Đáp & Lưu Bút", description: "Giao lưu tu học, giải đáp thắc mắc và chia sẻ cảm nhận từ các thiện hữu.", link: "/guestbook" },
 ]
 
 export const FALLBACK_VIDEOS: VideoItem[] = [

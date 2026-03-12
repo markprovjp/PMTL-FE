@@ -215,7 +215,12 @@ export async function getHubBySlug(slug: string): Promise<HubPage | null> {
 /** Lấy toàn bộ hub-pages (dùng cho menu/sitemap). Không populate nặng. */
 export async function getHubPages(): Promise<HubPage[]> {
   const res = await strapiFetch<StrapiList<HubPage>>('/hub-pages', {
-    fields: ['id', 'documentId', 'title', 'slug', 'sortOrder', 'showInMenu', 'menuIcon'],
+    fields: ['id', 'documentId', 'title', 'slug', 'sortOrder', 'showInMenu'],
+    populate: {
+      menuIcon: {
+        fields: ['id', 'documentId', 'name', 'key', 'lucideName'],
+      },
+    },
     filters: { showInMenu: { $eq: true } },
     sort: ['sortOrder:asc', 'title:asc'],
     pagination: { page: 1, pageSize: 50 },
