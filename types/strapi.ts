@@ -520,3 +520,27 @@ export interface StrapiEvent {
   createdAt: string
   updatedAt: string
 }
+
+// ─── Gallery ──────────────────────────────────────────────────
+
+export interface GalleryItem {
+  id: number
+  documentId: string
+  title: string
+  slug: string
+  description: string | null
+  quote: string | null
+  category: string
+  album: string | null
+  location: string | null
+  device: string | null
+  photographer: string | null
+  shotDate: string | null
+  image: StrapiMedia | null
+  featured: boolean
+  sortOrder: number
+  keywords: string | null
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
+}

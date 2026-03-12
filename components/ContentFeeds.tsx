@@ -162,7 +162,7 @@ const ContentFeeds = () => {
                     viewport={{ once: true }}
                   >
                     <Link
-                      href={`/shares/${bai.slug}`}
+                      href={`/shares?post=${encodeURIComponent(bai.slug)}`}
                       className="block p-8 rounded-xl bg-card border border-border/50 hover:border-gold/30 transition-all group/share shadow-sm hover:shadow-gold/5"
                     >
                       <div className="flex flex-col md:flex-row gap-6">

@@ -37,6 +37,7 @@ export async function buildNavigation(): Promise<NavigationData> {
   // System links (Thư Viện, Video, Radio, Danh Bạ) — luôn hiển thị
   const systemLinks: NavItem[] = [
     { label: "Thư Viện Tài Liệu", href: "/library" },
+    { label: "Thư Viện Hình Ảnh", href: "/gallery" },
     { label: "Phim Truyện & Video", href: "/videos" },
     { label: "Đài Phát Thanh", href: "/radio" },
     { label: "Danh Bạ Toàn Cầu", href: "/directory" },

@@ -3,10 +3,10 @@
 //  /shares — Diễn đàn chia sẻ cộng đồng (Fully Dynamic)
 //  Refactored: URL searchParams + useTransition (like BlogListClient)
 // ─────────────────────────────────────────────────────────────
-import { useState, useEffect, useCallback, useRef, useTransition } from 'react';
+import { useState, useEffect, useCallback, useRef, useTransition, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, MoreHorizontal, CheckCircle2, Info, Pin, ImageIcon, Globe, SlidersHorizontal, X, Loader2, Check, Flag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreHorizontal, Info, Pin, ImageIcon, Globe, SlidersHorizontal, X, Loader2, Check, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { PAGINATION, getPaginationRange } from '@/lib/config/pagination';
@@ -15,6 +15,7 @@ import { getErrorMessage } from '@/lib/http-error';
 import {
   fetchPosts,
   fetchPostById,
+  fetchPostBySlug,
   getCurrentPushEndpoint,
   likePost,
   submitPost,
@@ -32,7 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select as ShadcnSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-const CATEGORIES = ['Tất cả', 'Sức Khoẻ', 'Gia Đình', 'Sự Nghiệp', 'Hôn Nhân', 'Tâm Linh', 'Thi Cử', 'Kinh Doanh', 'Mất Ngủ', 'Mối Quan Hệ'];
+const DEFAULT_SHARE_CATEGORIES = ['Tâm Linh', 'Sức Khoẻ', 'Gia Đình', 'Sự Nghiệp', 'Hôn Nhân', 'Thi Cử', 'Kinh Doanh', 'Mất Ngủ', 'Mối Quan Hệ'];
 const REPORT_REASON_OPTIONS = ['spam', 'abuse', 'off-topic', 'unsafe'] as const;
 
 /* ── Icons ────────────────────────────────────────────────── */
@@ -758,16 +759,19 @@ const DetailModal = ({ post, onClose, onLike, liked, onRefreshPost }: DetailModa
 };
 
 /* ══════════════════════ SUBMIT POST MODAL ══════════════════════ */
-const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolean; onOpenChange: (open: boolean) => void; user: any; availableTags: string[] }) => {
+const SubmitModal = ({ open, onOpenChange, user, availableTags, categories }: { open: boolean; onOpenChange: (open: boolean) => void; user: any; availableTags: string[]; categories: string[] }) => {
+  const defaultCategory = useMemo(
+    () => categories.find((item) => item !== 'Tất cả') ?? 'Tâm Linh',
+    [categories],
+  );
   const [form, setForm] = useState({
-    title: '', content: '', type: 'story', category: 'Tâm Linh',
+    title: '', content: '', type: 'story', category: defaultCategory,
     author_name: user ? (user.fullName || user.username || user.email || '') : '',
     video_url: '', tags: '',
   });
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -777,20 +781,27 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
     }));
   }, [user, open]);
 
+  useEffect(() => {
+    setForm((prev) => {
+      if (categories.includes(prev.category)) return prev;
+      return { ...prev, category: defaultCategory };
+    });
+  }, [categories, defaultCategory]);
+
   // Cleanup state when modal closes
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       // Reset form on close
       setTimeout(() => {
         setForm({
-          title: '', content: '', type: 'story', category: 'Tâm Linh',
+          title: '', content: '', type: 'story', category: defaultCategory,
           author_name: user ? (user.fullName || user.username || user.email || '') : '',
           video_url: '', tags: '',
         });
         setCoverFile(null);
         setCoverPreview(null);
         setSending(false);
-        setSent(false);
+        // no-op: keep form state reset on close
       }, 300);
     }
     onOpenChange(newOpen);
@@ -841,7 +852,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
         actorEndpoint,
       });
       toast.success('Bài viết đã được đăng');
-      setSent(true);
+      handleOpenChange(false);
     } catch (error) {
       toast.error(getErrorMessage(error, 'Gửi bài viết thất bại'));
     } finally {
@@ -869,22 +880,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
             data-lenis-prevent
             style={{ WebkitOverflowScrolling: 'touch' }}
           >
-            {sent ? (
-              <div className="px-6 py-12 text-center space-y-6">
-                <Alert className="bg-emerald-500/5 border-emerald-500/20 text-emerald-500 py-8">
-                  <CheckCircle2 className="w-8 h-8 mx-auto mb-4" />
-                  <AlertTitle className="ant-title mb-2 text-xl">Cảm ơn bạn đã chia sẻ!</AlertTitle>
-                  <AlertDescription className="text-sm">
-                    Bài viết của bạn đã được đăng thành công.
-                    Mọi chia sẻ của bạn đều là hạt mầm thiện lành truyền cảm hứng tới cộng đồng.
-                  </AlertDescription>
-                </Alert>
-                <button onClick={() => handleOpenChange(false)} className="px-8 py-3 rounded-xl bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-all">
-                  Đóng và Tiếp tục
-                </button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
                 <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 space-y-4 custom-scrollbar touch-pan-y" data-lenis-prevent style={{ WebkitOverflowScrolling: 'touch' }}>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="flex flex-col gap-1">
@@ -907,7 +903,7 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
                           <SelectValue placeholder="Chọn danh mục" />
                         </SelectTrigger>
                         <SelectContent>
-                          {CATEGORIES.slice(1).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          {categories.slice(1).map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                         </SelectContent>
                       </ShadcnSelect>
                     </div>
@@ -1017,7 +1013,6 @@ const SubmitModal = ({ open, onOpenChange, user, availableTags }: { open: boolea
                   </button>
                 </div>
               </form>
-            )}
           </div>
         </div>
       </DialogContent>
@@ -1044,11 +1039,13 @@ export default function SharesClient({
   initialTotal = 0,
   initialPage = 1,
   availableTags = [],
+  categoryOptions = [],
 }: {
   initialPosts?: CommunityPost[],
   initialTotal?: number,
   initialPage?: number,
   availableTags?: string[],
+  categoryOptions?: string[],
 }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -1061,6 +1058,7 @@ export default function SharesClient({
   const currentSearch = searchParams.get('q') ?? '';
   const currentCategory = searchParams.get('category') ?? 'Tất cả';
   const currentSort = searchParams.get('sort') ?? 'newest';
+  const openPostParam = searchParams.get('post') ?? searchParams.get('open');
 
   // State
   const [posts, setPosts] = useState<CommunityPost[]>(initialPosts);
@@ -1071,6 +1069,12 @@ export default function SharesClient({
   const [showSubmit, setShowSubmit] = useState(false);
   const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
   const [filterOpen, setFilterOpen] = useState(false);
+  const openingParamRef = useRef<string | null>(null);
+  const categories = useMemo(() => {
+    const source = categoryOptions.length ? categoryOptions : DEFAULT_SHARE_CATEGORIES;
+    const cleaned = Array.from(new Set(source.map((item) => item.trim()).filter(Boolean))).filter((item) => item !== 'Tất cả');
+    return ['Tất cả', ...cleaned];
+  }, [categoryOptions]);
 
   useEffect(() => {
     try {
@@ -1133,6 +1137,21 @@ export default function SharesClient({
     });
   }, [pathname, searchParams, router]);
 
+  const updatePostParam = useCallback((value: string | null) => {
+    const currentValue = searchParams.get('post') ?? searchParams.get('open') ?? null;
+    if ((value ?? null) === currentValue) return;
+
+    const params = new URLSearchParams(searchParams.toString());
+    if (value && value !== '') {
+      params.set('post', value);
+    } else {
+      params.delete('post');
+      params.delete('open');
+    }
+    const query = params.toString();
+    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+  }, [pathname, searchParams, router]);
+
   const handleSearch = useCallback((val: string) => {
     updateParam('q', val);
   }, [updateParam]);
@@ -1184,8 +1203,9 @@ export default function SharesClient({
     }
   };
 
-  const handleOpenPost = async (p: CommunityPost) => {
+  const handleOpenPost = useCallback(async (p: CommunityPost) => {
     setSelectedPost(p);
+    updatePostParam(p.slug || p.documentId);
     // Tăng lượt xem
     try {
       const newViews = await viewPost(p.documentId);
@@ -1194,7 +1214,7 @@ export default function SharesClient({
         setPosts((current) => current.map((item) => item.documentId === p.documentId ? { ...item, views: newViews } : item));
       }
     } catch { }
-  };
+  }, [updatePostParam]);
 
   const refreshSelectedPost = useCallback(async (documentId: string) => {
     const refreshedPost = await fetchPostById(documentId);
@@ -1204,6 +1224,55 @@ export default function SharesClient({
     );
     return refreshedPost;
   }, []);
+
+  useEffect(() => {
+    if (!openPostParam) {
+      openingParamRef.current = null;
+      return;
+    }
+
+    if (openingParamRef.current === openPostParam) return;
+    if (selectedPost && (selectedPost.documentId === openPostParam || selectedPost.slug === openPostParam)) {
+      openingParamRef.current = openPostParam;
+      return;
+    }
+
+    openingParamRef.current = openPostParam;
+    let active = true;
+
+    const openByParam = async () => {
+      try {
+        const byId = await fetchPostById(openPostParam);
+        if (!active) return;
+        handleOpenPost(byId);
+        return;
+      } catch {
+        // continue to slug lookup
+      }
+
+      try {
+        const bySlug = await fetchPostBySlug(openPostParam);
+        if (!active) return;
+        const full = await fetchPostById(bySlug.documentId);
+        if (!active) return;
+        handleOpenPost(full);
+      } catch {
+        // ignore
+      }
+    };
+
+    openByParam();
+    return () => {
+      active = false;
+    };
+  }, [openPostParam, selectedPost, handleOpenPost]);
+
+  const handleClosePost = useCallback(() => {
+    setSelectedPost(null);
+    if (openPostParam) {
+      updatePostParam(null);
+    }
+  }, [openPostParam, updatePostParam]);
 
   const pinned = posts.filter((p) => p.pinned);
   const regular = posts.filter((p) => !p.pinned);
@@ -1292,7 +1361,7 @@ export default function SharesClient({
             {/* Desktop: Category Pills + Sort Select */}
             <div className="hidden md:flex flex-col sm:flex-row gap-3 items-start sm:items-center">
               <div className="flex gap-2 overflow-x-auto pb-1 flex-1 scrollbar-none">
-                {CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                   <button
                     key={cat}
                     type="button"
@@ -1385,11 +1454,11 @@ export default function SharesClient({
                   </div>
                   {/* Content */}
                   <div className="p-5 pb-10 space-y-5">
-                    {/* Categories */}
+                    {/* categories */}
                     <div>
                       <p className="text-xs text-muted-foreground font-medium mb-3 uppercase tracking-wider">Danh Mục</p>
                       <div className="flex flex-wrap gap-2">
-                        {CATEGORIES.map((cat) => (
+                        {categories.map((cat) => (
                           <button
                             key={cat}
                             onClick={() => handleCategory(cat)}
@@ -1563,7 +1632,7 @@ export default function SharesClient({
                   >
                     Tất cả
                   </button>
-                  {CATEGORIES.slice(1).map((cat) => (
+                  {categories.slice(1).map((cat) => (
                     <button
                       key={cat}
                       onClick={() => handleCategory(cat)}
@@ -1618,13 +1687,13 @@ export default function SharesClient({
       {/* ── Modals ──────────────────────────────────────────────── */}
       <DetailModal
         post={selectedPost}
-        onClose={() => setSelectedPost(null)}
+        onClose={handleClosePost}
         onLike={handleLike}
         liked={selectedPost ? likedIds.has(selectedPost.documentId) : false}
         onRefreshPost={refreshSelectedPost}
       />
 
-      <SubmitModal open={showSubmit} onOpenChange={setShowSubmit} user={user} availableTags={availableTags} />
+      <SubmitModal open={showSubmit} onOpenChange={setShowSubmit} user={user} availableTags={availableTags} categories={categories} />
     </>
   );
 }

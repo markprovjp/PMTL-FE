@@ -9,6 +9,9 @@ import { revalidatePath, unstable_cache } from 'next/cache'
  * Falls back to Strapi if Meilisearch unavailable
  */
 export async function searchPostsAndCategories(options: GetPostsOptions) {
+  const page = options.page ?? 1
+  const pageSize = options.pageSize ?? 10
+
   try {
     // Try Meilisearch first (fast, typo-tolerant)
     const res = await searchBlogPostsViaMeilisearch(options.search || '', {
@@ -28,10 +31,25 @@ export async function searchPostsAndCategories(options: GetPostsOptions) {
     console.warn('[Search] Meilisearch failed, falling back to Strapi:', error)
 
     // Fallback to Strapi database search if Meilisearch is down
-    const res = await getPosts({ ...options, revalidate: 0 })
-    return {
-      data: res.data ?? [],
-      meta: res.meta,
+    try {
+      const res = await getPosts({ ...options, revalidate: 0 })
+      return {
+        data: res.data ?? [],
+        meta: res.meta,
+      }
+    } catch (fallbackError) {
+      console.error('[Search] Strapi fallback failed, returning empty result:', fallbackError)
+      return {
+        data: [],
+        meta: {
+          pagination: {
+            page,
+            pageSize,
+            pageCount: 0,
+            total: 0,
+          },
+        },
+      }
     }
   }
 }

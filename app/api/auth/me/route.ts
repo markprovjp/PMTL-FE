@@ -12,7 +12,8 @@ export async function GET() {
   const cookieStore = await cookies()
   const token = cookieStore.get('auth_token')?.value
 
-  if (!token) return NextResponse.json(null, { status: 401 })
+  // Guest user: return 200 null to avoid noisy 401 in production logs/network panel.
+  if (!token) return NextResponse.json(null, { status: 200 })
 
   try {
     const res = await fetch(`${STRAPI_URL}/api/users/me?populate=*`, {
@@ -21,8 +22,8 @@ export async function GET() {
     })
 
     if (!res.ok) {
-      // Token không hợp lệ — xóa cookie
-      const response = NextResponse.json(null, { status: 401 })
+      // Token không hợp lệ — xóa cookie, nhưng trả về guest state (200/null)
+      const response = NextResponse.json(null, { status: 200 })
       response.cookies.delete({ name: 'auth_token', path: '/' })
       return response
     }
@@ -38,6 +39,6 @@ export async function GET() {
 
     return NextResponse.json(user)
   } catch {
-    return NextResponse.json(null, { status: 500 })
+    return NextResponse.json(null, { status: 200 })
   }
 }

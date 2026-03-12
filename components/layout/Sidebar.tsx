@@ -27,7 +27,7 @@ export default async function Sidebar() {
   const config = (await getSidebarConfig()) ?? DEFAULT_CONFIG
 
   const Card = ({ children }: { children: ReactNode }) => (
-    <UICard className="overflow-hidden rounded-[1.75rem] border-border/70 bg-card/75 shadow-[0_18px_35px_-30px_rgba(37,24,12,0.22)]">
+    <UICard className="overflow-hidden rounded-xl border-border/70 bg-card/75 shadow-[0_18px_35px_-30px_rgba(37,24,12,0.22)]">
       <CardContent className="p-6">{children}</CardContent>
     </UICard>
   )

@@ -344,7 +344,7 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
             {!loading && (
               user ? (
                 <div className="relative hidden md:block flex-shrink-0">
-                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1.5 transition-all hover:border-gold/40">
+                  <button onClick={() => setUserMenuOpen(!userMenuOpen)} className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-2.5 py-1.5 transition-all hover:border-gold/40">
                     <div className="flex size-4 items-center justify-center overflow-hidden rounded-full bg-gold/20 flex-shrink-0">
                       {user.avatar_url ? (
                         <Image src={user.avatar_url} alt="Avatar" width={16} height={16} className="w-full h-full object-cover" />
@@ -357,7 +357,7 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
                   </button>
                   <AnimatePresence>
                     {userMenuOpen && (
-                      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} className="absolute right-0 top-full z-[100] mt-2 w-52 overflow-hidden rounded-md border border-border bg-card shadow-ant">
+                      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} className="absolute right-0 top-full z-[100] mt-2 w-52 overflow-hidden rounded-lg border border-border bg-card shadow-ant">
                         <div className="p-2 border-b border-border"><p className="text-xs text-foreground px-2 py-1 truncate">{user.email}</p></div>
                         <div className="p-1">
                           <Link href="/profile" onClick={() => setUserMenuOpen(false)} className="block rounded-md px-3 py-2 text-sm text-foreground transition-colors hover:bg-secondary">Hồ sơ của tôi</Link>

@@ -59,6 +59,15 @@ function saveIds(ids: string[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.slice(0, 200)))
 }
 
+function normalizeNotificationUrl(url?: string | null) {
+  if (!url) return '/thong-bao'
+  if (url.startsWith('/shares/')) {
+    const slug = url.replace('/shares/', '').trim()
+    return slug ? `/shares?post=${encodeURIComponent(slug)}` : '/shares'
+  }
+  return url
+}
+
 export default function NotificationMenu({ mobile = false }: { mobile?: boolean }) {
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<NotificationItem[]>([])
@@ -105,7 +114,7 @@ export default function NotificationMenu({ mobile = false }: { mobile?: boolean 
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
               <button
-                className="relative flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-all hover:border-gold/35 hover:text-gold"
+                className="relative flex size-9 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground transition-all hover:border-gold/35 hover:text-gold"
                 aria-label="Mở thông báo"
               >
                 <Bell className="h-4 w-4" />
@@ -123,7 +132,7 @@ export default function NotificationMenu({ mobile = false }: { mobile?: boolean 
         <DropdownMenuContent
           align="end"
           sideOffset={10}
-          className="w-[calc(100vw-1rem)] max-w-[23.5rem] overflow-hidden rounded-md border border-border bg-background p-0 shadow-[0_18px_60px_rgba(28,20,12,0.16)]"
+          className="w-[calc(100vw-1rem)] max-w-[23.5rem] overflow-hidden rounded-lg border border-border bg-background p-0 shadow-[0_18px_60px_rgba(28,20,12,0.16)]"
         >
           <DropdownMenuLabel className="px-4 py-3.5">
             <div className="flex items-center justify-between gap-3">
@@ -157,11 +166,11 @@ export default function NotificationMenu({ mobile = false }: { mobile?: boolean 
                   return (
                     <Link
                       key={item.documentId}
-                      href={item.url || '/thong-bao'}
+                      href={normalizeNotificationUrl(item.url)}
                       onClick={() => markAsRead([item.documentId])}
                       className="flex gap-3 border-b border-border/60 px-3 py-3.5 transition hover:bg-muted/30 last:border-b-0"
                     >
-                      <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-muted text-gold">
+                      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted text-gold">
                         <Icon className="h-4 w-4" />
                       </div>
                       <div className="min-w-0 flex-1">
@@ -187,7 +196,7 @@ export default function NotificationMenu({ mobile = false }: { mobile?: boolean 
             <Link
               href="/thong-bao"
               onClick={() => markAsRead(items.map((item) => item.documentId))}
-              className="flex items-center justify-center rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-gold/35 hover:text-gold"
+              className="flex items-center justify-center rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-gold/35 hover:text-gold"
             >
               Xem tất cả thông báo
             </Link>

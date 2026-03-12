@@ -52,6 +52,15 @@ function saveIds(ids: string[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(ids.slice(0, 300)))
 }
 
+function normalizeNotificationUrl(url?: string | null) {
+  if (!url) return '/'
+  if (url.startsWith('/shares/')) {
+    const slug = url.replace('/shares/', '').trim()
+    return slug ? `/shares?post=${encodeURIComponent(slug)}` : '/shares'
+  }
+  return url
+}
+
 export default function NotificationsHubClient({ initialItems }: { initialItems: PushJobRecord[] }) {
   const [activeFilter, setActiveFilter] = useState('Tất cả')
   const [currentPage, setCurrentPage] = useState(1)
@@ -125,7 +134,7 @@ export default function NotificationsHubClient({ initialItems }: { initialItems:
               return (
                 <Link
                   key={item.documentId}
-                  href={item.url || '/'}
+                  href={normalizeNotificationUrl(item.url)}
                   className="flex flex-col gap-3 px-5 py-4 transition hover:bg-muted/20 md:flex-row md:items-start md:justify-between"
                 >
                   <div className="flex min-w-0 gap-4">

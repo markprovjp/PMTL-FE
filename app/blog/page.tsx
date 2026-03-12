@@ -14,7 +14,8 @@ import BlogListClient from '@/components/BlogListClient'
 import { getPosts, getCategories, getBlogArchiveIndex } from '@/lib/api/blog'
 import { PAGINATION } from '@/lib/config/pagination'
 
-export const revalidate = 3600 // 1h fallback — webhook clears cache instantly
+// Keep blog listing fresh in production even when webhook revalidation is not configured.
+export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Blog & Chia Sẻ | Khai Thị Của Sư Phụ',
@@ -43,7 +44,7 @@ export default async function BlogPage({ searchParams }: PageProps) {
       pageSize: PAGINATION.BLOG_PAGE_SIZE,
       categorySlug: currentCategory || undefined,
       search: currentSearch || undefined,
-      revalidate: currentSearch ? 0 : 3600, // search không cache, browse thì ISR
+      revalidate: currentSearch ? 0 : 60, // search không cache, browse thì ISR ngắn
     }),
     getCategories(),
     getBlogArchiveIndex(),

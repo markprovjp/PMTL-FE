@@ -8,9 +8,7 @@ export async function GET(req: NextRequest) {
     const result = await fetchRecentNotifications(limit)
     return NextResponse.json({ data: result.data })
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Không thể tải thông báo' },
-      { status: 500 }
-    )
+    console.error('[Notifications API] Falling back to empty list:', error)
+    return NextResponse.json({ data: [] })
   }
 }

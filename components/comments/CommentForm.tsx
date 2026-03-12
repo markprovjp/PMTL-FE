@@ -42,7 +42,6 @@ export default function CommentForm({
   const [authorName, setAuthorName] = useState('')
   const [content, setContent] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
@@ -80,6 +79,7 @@ export default function CommentForm({
             postSlug,
             content: content.trim(),
             authorName: finalAuthorName,
+            authorAvatar: user?.avatar_url ?? undefined,
             parentDocumentId: parentDocumentId ?? undefined,
           }),
         })
@@ -98,34 +98,18 @@ export default function CommentForm({
           return
         }
 
-        setSuccess(true)
         toast.success(parentDocumentId ? 'Trả lời đã được đăng' : 'Bình luận đã được đăng')
         if (!user) {
           localStorage.setItem('pmtl_author_name', finalAuthorName)
         }
         setContent('')
-        setTimeout(() => {
-          setSuccess(false)
-          onSuccess()
-        }, 2000)
+        onSuccess()
       } catch (error) {
         const message = getErrorMessage(error, 'Không thể kết nối máy chủ. Vui lòng thử lại.')
         setError(message)
         toast.error(message)
       }
     })
-  }
-
-  if (success) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl bg-gold/10 border border-gold/30 px-5 py-4 text-sm text-gold font-medium"
-      >
-        Cảm ơn bạn! Bình luận đã được đăng. Nếu nội dung bị nhiều người báo cáo, hệ thống sẽ tạm ẩn để kiểm tra.
-      </motion.div>
-    )
   }
 
   return (
@@ -194,11 +178,11 @@ export default function CommentForm({
         )}
       </AnimatePresence>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-end gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2 rounded-xl bg-gold text-black text-sm font-semibold hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          className="px-6 py-2.5 rounded-xl bg-gold text-black text-sm font-semibold hover:bg-gold/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isPending ? 'Đang gửi...' : parentDocumentId ? 'Gửi trả lời' : 'Gửi bình luận'}
         </button>

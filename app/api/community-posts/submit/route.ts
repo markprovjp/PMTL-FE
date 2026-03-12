@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       kind: 'community',
       title: 'Có bài chia sẻ mới',
       body: `"${title}" vừa được đăng trong cộng đồng.`,
-      url: slug ? `/shares/${slug}` : '/shares',
+      url: slug ? `/shares?post=${encodeURIComponent(slug)}` : '/shares',
       tag: 'community-post',
       payload: {
         entity: 'community-post',

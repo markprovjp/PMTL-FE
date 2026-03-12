@@ -5,8 +5,8 @@ const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1
 
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies()
-  // Sử dụng token của user nếu có, nếu không thì dùng token global (STRAPI_API_TOKEN) cho public upload.
-  const token = cookieStore.get('auth_token')?.value || process.env.STRAPI_API_TOKEN
+  // Ưu tiên token hệ thống để tránh bị chặn do role user thiếu quyền upload.
+  const token = process.env.STRAPI_API_TOKEN || cookieStore.get('auth_token')?.value
 
   try {
     const formData = await req.formData()

@@ -255,8 +255,6 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
   const [isListening, setIsListening] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
-  const speechRetryRef = useRef(0)
-  const speechRetryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const debouncedQuery = useDebounce(query, 400)
 
@@ -357,12 +355,6 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
       setIsListening(false)
       return
     }
-    if (speechRetryTimerRef.current) {
-      clearTimeout(speechRetryTimerRef.current)
-      speechRetryTimerRef.current = null
-    }
-    speechRetryRef.current = 0
-
     const beginRecognition = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const recognition = new SpeechRecognitionAPI() as any
@@ -390,18 +382,11 @@ export default function SearchClient({ initialCategories, initialTags }: SearchC
         if (event.error === 'network') {
           console.warn('Speech recognition network error:', event.error)
           setIsListening(false)
-          if (speechRetryRef.current < 2) {
-            speechRetryRef.current += 1
-            speechRetryTimerRef.current = setTimeout(() => {
-              if (navigator.onLine) {
-                beginRecognition()
-              } else {
-                toast.error('Không có kết nối mạng. Vui lòng thử lại khi có Internet.')
-              }
-            }, 800)
+          if (!navigator.onLine) {
+            toast.error('Không có kết nối mạng. Vui lòng thử lại khi có Internet.')
             return
           }
-          toast.error('Lỗi kết nối khi nhận giọng nói. Vui lòng kiểm tra mạng và thử lại.')
+          toast.error('Dịch vụ nhận giọng nói của trình duyệt đang không khả dụng. Vui lòng thử lại sau.')
           return
         }
 
