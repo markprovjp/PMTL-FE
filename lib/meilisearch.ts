@@ -67,18 +67,19 @@ export async function searchBlogPostsViaMeilisearch(
       offset: (page - 1) * pageSize,
       filter: filterString ? [filterString] : undefined,
       sort: ['publishedAt:desc'],
-      // Highlight matching keywords in title, excerpt and content
-      attributesToHighlight: ['title', 'excerpt', 'content'],
+      // Highlight matching keywords in title, excerpt, content, and source metadata
+      attributesToHighlight: ['title', 'excerpt', 'content', 'sourceName', 'sourceTitle'],
       highlightPreTag: '<mark class="bg-gold/20 text-gold rounded px-0.5">',
       highlightPostTag: '</mark>',
       // Only return the fields we need (performance)
       attributesToRetrieve: [
         'id', 'documentId', 'title', 'slug', 'excerpt', 'content',
         'thumbnail', 'categories', 'tags', 'views', 'likes',
-        'publishedAt', 'createdAt', 'featured', 'source',
+        'publishedAt', 'createdAt', 'featured',
+        'sourceName', 'sourceTitle', 'sourceUrl',
       ],
       // Return a snippet of the content around the match
-      attributesToCrop: ['content', 'excerpt'],
+      attributesToCrop: ['content', 'excerpt', 'sourceTitle'],
       cropLength: 200,
     })
 
