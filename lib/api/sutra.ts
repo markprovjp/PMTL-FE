@@ -115,35 +115,63 @@ export async function fetchSutraBySlug(slug: string): Promise<SutraReaderData | 
     return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
     })
 
-  // Step 2: Fetch Chapters independently filtering by Volume documentIds
-  // This avoids deep-nested populate limits and relation filter issues in Strapi v5
-  const volumeDocIds = volumes.map(v => v.documentId)
+  // Fallback: some API tokens may not expose relation fields in REST response.
+  if (volumes.length === 0) {
+    volumes = (volumeRes.data ?? [])
+      .filter((item) => item.slug?.startsWith(`${slug}-`))
+      .slice()
+      .sort((a, b) => {
+        if (a.volumeNumber !== b.volumeNumber) return a.volumeNumber - b.volumeNumber
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+      })
+  }
+
+  // Step 3: Fetch Chapters.
+  // Some data models attach chapters directly to sutra (no volume), others attach through volume.
+  // Fetch broadly then narrow in memory to avoid relation-filter edge cases in Strapi v5.
+  const volumeDocIds = new Set(volumes.map((v) => v.documentId))
   let chapters: SutraChapter[] = []
+  const chapterRes = await strapiFetch<StrapiList<SutraChapter>>('/sutra-chapters', {
+    status: 'published',
+    fields: ['title', 'slug', 'chapterNumber', 'openingText', 'content', 'endingText', 'estimatedReadMinutes', 'sortOrder', 'documentId'],
+    sort: ['chapterNumber:asc', 'sortOrder:asc'],
+    populate: {
+      sutra: { fields: ['documentId', 'slug', 'title'] },
+      volume: {
+        fields: ['documentId', 'title', 'slug', 'volumeNumber', 'sortOrder'],
+        populate: {
+          sutra: { fields: ['documentId', 'slug', 'title'] },
+        },
+      },
+    },
+    pagination: { page: 1, pageSize: 2000 },
+    next: { revalidate: 300, tags: [`sutra-${slug}-chapters`] },
+  })
 
-  if (volumeDocIds.length > 0) {
-    const chapterRes = await strapiFetch<StrapiList<SutraChapter>>('/sutra-chapters', {
-      status: 'published',
-      filters: {
-        volume: {
-          documentId: { $in: volumeDocIds }
-        }
-      },
-      fields: ['title', 'slug', 'chapterNumber', 'openingText', 'content', 'endingText', 'estimatedReadMinutes', 'sortOrder', 'documentId'],
-      sort: ['chapterNumber:asc', 'sortOrder:asc'],
-      populate: {
-        volume: { fields: ['documentId', 'title', 'slug', 'volumeNumber', 'sortOrder'] },
-      },
-      pagination: { page: 1, pageSize: 1000 },
-      next: { revalidate: 300, tags: [`sutra-${slug}-chapters`] },
+  chapters = (chapterRes.data ?? [])
+    .filter((item) => {
+      const bySutra = item.sutra?.documentId === sutra.documentId
+      const byVolume = item.volume?.documentId ? volumeDocIds.has(item.volume.documentId) : false
+      const byVolumeSutra = item.volume?.sutra?.documentId === sutra.documentId
+      return bySutra || byVolume || byVolumeSutra
     })
-
-    chapters = (chapterRes.data ?? []).slice().sort((a, b) => {
+    .slice()
+    .sort((a, b) => {
       if (a.chapterNumber !== b.chapterNumber) return a.chapterNumber - b.chapterNumber
       return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
     })
+
+  if (chapters.length === 0) {
+    chapters = (chapterRes.data ?? [])
+      .filter((item) => item.slug?.startsWith(`${slug}-`))
+      .slice()
+      .sort((a, b) => {
+        if (a.chapterNumber !== b.chapterNumber) return a.chapterNumber - b.chapterNumber
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+      })
   }
 
-  // Step 3: Fetch Glossaries by sutra id
+  // Step 4: Fetch Glossaries by sutra id
   let glossaries: SutraGlossary[] = []
   const glossaryRes = await strapiFetch<StrapiList<SutraGlossary>>('/sutra-glossaries', {
     status: 'published',
@@ -161,6 +189,27 @@ export async function fetchSutraBySlug(slug: string): Promise<SutraReaderData | 
     .filter((item) => item.sutra?.documentId === sutra.documentId)
     .slice()
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+
+  if (glossaries.length === 0 && chapters.length > 0) {
+    const markerKeys = new Set<string>()
+    const termKeys = new Set<string>()
+    const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, '-')
+
+    for (const chapter of chapters) {
+      const blocks = `${chapter.openingText ?? ''}\n${chapter.content ?? ''}\n${chapter.endingText ?? ''}`
+      for (const match of blocks.matchAll(/\((\d+)\s*\)/g)) {
+        if (match[1]) markerKeys.add(match[1].trim())
+      }
+      for (const match of blocks.matchAll(/\[\[([^\]]+)\]\]/g)) {
+        if (match[1]) termKeys.add(normalize(match[1]))
+      }
+    }
+
+    glossaries = (glossaryRes.data ?? [])
+      .filter((item) => markerKeys.has(item.markerKey.trim()) || termKeys.has(normalize(item.term)))
+      .slice()
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+  }
 
   return {
     sutra,

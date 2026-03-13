@@ -70,6 +70,12 @@ export interface StrapiSEO {
   canonicalURL: string | null
 }
 
+export interface StrapiOEmbedField {
+  url: string
+  thumbnail: string | null
+  oembed: Record<string, unknown> | null
+}
+
 /** Shared UI icon entity from Strapi */
 export interface UiIcon {
   id: number
@@ -136,6 +142,7 @@ export interface BlogPost {
   gallery: StrapiMedia[] | null
   video_url: string | null
   audio_url: string | null
+  oembed: StrapiOEmbedField | null
   // ── Taxonomy ────────────────────────────────────────────────────
   categories: Category[] | null
   tags: BlogTag[] | null
@@ -529,6 +536,7 @@ export interface StrapiEvent {
   language: string
   link: string | null
   youtubeId: string | null
+  oembed: StrapiOEmbedField | null
   coverImage: StrapiMedia | null
   gallery: StrapiMedia[] | null
   files: StrapiMedia[] | null

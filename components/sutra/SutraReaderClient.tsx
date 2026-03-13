@@ -18,6 +18,7 @@ import type { SutraReaderData } from '@/lib/api/sutra'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -26,6 +27,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
 
 type ReadingTheme = 'warm' | 'sepia' | 'night'
 
@@ -55,9 +57,9 @@ function GlossaryToken({
   onPin: (item: SutraGlossary) => void
 }) {
   const content = (
-    <div className="flex flex-col gap-2">
-      <p className="ant-title text-lg text-foreground">{glossary.term}</p>
-      <p className="text-sm leading-7 text-muted-foreground">{glossary.meaning}</p>
+    <div className="flex min-w-0 flex-col gap-2">
+      <div className="ant-title text-lg text-foreground">{glossary.term}</div>
+      <div className="text-sm leading-7 text-muted-foreground">{glossary.meaning}</div>
       <Button type="button" size="sm" variant="outline" className="w-fit rounded-md" onClick={() => onPin(glossary)}>
         <Pin data-icon="inline-start" />
         Ghim chú giải
@@ -113,6 +115,9 @@ export default function SutraReaderClient({
   const [bookmarks, setBookmarks] = useState<SutraBookmark[]>([])
   const [pinnedGlossaries, setPinnedGlossaries] = useState<SutraGlossary[]>([])
   const [resumeTargetChapterId, setResumeTargetChapterId] = useState<string | null>(null)
+  const [bookmarkDialogOpen, setBookmarkDialogOpen] = useState(false)
+  const [bookmarkDraftNote, setBookmarkDraftNote] = useState('')
+  const [bookmarkDraftExcerpt, setBookmarkDraftExcerpt] = useState('')
 
   const contentRef = useRef<HTMLDivElement | null>(null)
   const saveTimerRef = useRef<number | null>(null)
@@ -266,18 +271,16 @@ export default function SutraReaderClient({
     queueSaveProgress(nextPercent, `p-${paragraphIndex}`)
   }, [queueSaveProgress, selectedChapter])
 
-  const onCreateBookmark = async () => {
+  const submitBookmark = async (excerpt: string, note: string) => {
     if (!selectedChapter) return
 
-    const selectedText = window.getSelection()?.toString().trim() || extractSnippet(selectedChapter.content)
-    const note = window.prompt('Ghi chú cho bookmark (không bắt buộc):') ?? ''
     const payload = {
       sutraDocumentId: data.sutra.documentId,
       volumeDocumentId: selectedChapter.volume?.documentId ?? undefined,
       chapterDocumentId: selectedChapter.documentId,
       anchorKey: undefined,
       charOffset: 0,
-      excerpt: selectedText,
+      excerpt,
       note,
     }
 
@@ -290,7 +293,7 @@ export default function SutraReaderClient({
         documentId: `local-${Date.now()}`,
         anchorKey: null,
         charOffset: 0,
-        excerpt: selectedText,
+        excerpt,
         note,
         createdAt: new Date().toISOString(),
         sutra: { documentId: data.sutra.documentId, title: data.sutra.title, slug: data.sutra.slug },
@@ -323,6 +326,33 @@ export default function SutraReaderClient({
     }
   }
 
+  const onCreateBookmark = () => {
+    if (!selectedChapter) return
+
+    const selectedText = window.getSelection()?.toString().trim() || extractSnippet(selectedChapter.content)
+    if (!selectedText) {
+      toast.error('Không tìm thấy đoạn văn để lưu bookmark.')
+      return
+    }
+
+    setBookmarkDraftExcerpt(selectedText)
+    setBookmarkDraftNote('')
+    setBookmarkDialogOpen(true)
+  }
+
+  const onConfirmBookmark = async () => {
+    const excerpt = bookmarkDraftExcerpt.trim()
+    if (!excerpt) {
+      toast.error('Không tìm thấy đoạn văn để lưu bookmark.')
+      return
+    }
+
+    await submitBookmark(excerpt, bookmarkDraftNote.trim())
+    setBookmarkDialogOpen(false)
+    setBookmarkDraftNote('')
+    setBookmarkDraftExcerpt('')
+  }
+
   const onDeleteBookmark = async (documentId: string) => {
     if (!user && documentId.startsWith('local-')) {
       const key = `sutra-bookmarks:${data.sutra.documentId}`
@@ -348,7 +378,7 @@ export default function SutraReaderClient({
   const renderParagraph = (paragraph: string, index: number) => {
     const tokens = paragraph.split(/(\(\d+\s*\)|\[\[[^\]]+\]\])/g)
     return (
-      <p id={`p-${index + 1}`} key={`p-${index + 1}`} className="text-foreground/95">
+      <div id={`p-${index + 1}`} key={`p-${index + 1}`} className="text-foreground/95">
         {tokens.map((token, tokenIndex) => {
           const markerMatch = token.match(/^\((\d+)\s*\)$/)
           if (markerMatch) {
@@ -368,7 +398,7 @@ export default function SutraReaderClient({
 
           return <span key={`${index}-${tokenIndex}`}>{token}</span>
         })}
-      </p>
+      </div>
     )
   }
 
@@ -380,8 +410,46 @@ export default function SutraReaderClient({
         : 'bg-card text-foreground'
 
   return (
-    <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
-      <aside className="xl:sticky xl:top-24 xl:h-[calc(100vh-7rem)]">
+    <>
+      <Dialog open={bookmarkDialogOpen} onOpenChange={setBookmarkDialogOpen}>
+        <DialogContent className="rounded-md">
+          <DialogHeader>
+            <DialogTitle>Lưu bookmark</DialogTitle>
+            <DialogDescription>
+              Thêm ghi chú ngắn cho đoạn kinh đã chọn. Có thể để trống nếu chỉ muốn đánh dấu nhanh.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3">
+            <div className="rounded-md border border-border bg-muted/20 p-3">
+              <p className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Đoạn được lưu</p>
+              <p className="mt-2 break-words text-sm leading-6 text-foreground">{bookmarkDraftExcerpt}</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label htmlFor="bookmark-note" className="text-sm font-medium text-foreground">
+                Ghi chú
+              </label>
+              <Textarea
+                id="bookmark-note"
+                value={bookmarkDraftNote}
+                onChange={(event) => setBookmarkDraftNote(event.target.value)}
+                placeholder="Ví dụ: đoạn cần đọc lại vào buổi tối."
+                className="min-h-[120px] rounded-md"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setBookmarkDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button type="button" variant="sacred" onClick={() => void onConfirmBookmark()}>
+              Lưu bookmark
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_320px]">
+        <aside className="xl:sticky xl:top-24 xl:h-[calc(100vh-7rem)]">
         <Card className="surface-panel h-full rounded-xl">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-xl">
@@ -421,7 +489,7 @@ export default function SutraReaderClient({
         </Card>
       </aside>
 
-      <section className="min-w-0">
+        <section className="min-w-0">
         <Card className="surface-panel rounded-xl">
           <CardHeader className="pb-3">
             <div className="flex flex-wrap items-center gap-2">
@@ -500,11 +568,17 @@ export default function SutraReaderClient({
                 style={{ fontSize: `${fontScale}%`, lineHeight: `${lineHeightScale / 10}` }}
               >
                 <div className="prose prose-neutral max-w-none dark:prose-invert">
-                  {paragraphs.map((paragraph, index) => (
-                    <div key={`block-${index}`} className="mb-4 leading-relaxed">
-                      {renderParagraph(paragraph, index)}
+                  {paragraphs.length === 0 ? (
+                    <div className="rounded-md border border-dashed border-border bg-background/60 p-4 text-sm text-muted-foreground not-prose">
+                      Chưa có nội dung phẩm/chương được xuất bản cho kinh này.
                     </div>
-                  ))}
+                  ) : (
+                    paragraphs.map((paragraph, index) => (
+                      <div key={`block-${index}`} className="mb-4 leading-relaxed">
+                        {renderParagraph(paragraph, index)}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -529,9 +603,9 @@ export default function SutraReaderClient({
         </Card>
       </section>
 
-      <aside className="xl:sticky xl:top-24 xl:h-[calc(100vh-7rem)]">
+        <aside className="min-w-0 xl:sticky xl:top-24 xl:h-[calc(100vh-7rem)]">
         <div className="flex h-full flex-col gap-4">
-          <Card className="surface-panel rounded-xl">
+          <Card className="surface-panel min-w-0 rounded-xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Trạng thái đọc</CardTitle>
             </CardHeader>
@@ -558,19 +632,19 @@ export default function SutraReaderClient({
             </CardContent>
           </Card>
 
-          <Card className="surface-panel min-h-0 rounded-xl">
+          <Card className="surface-panel min-h-0 min-w-0 rounded-xl">
             <CardHeader className="pb-2">
               <CardTitle className="text-xl">Bookmark</CardTitle>
             </CardHeader>
             <CardContent className="min-h-0 p-0">
               <ScrollArea className="h-56 px-4 pb-4">
-                <div className="flex flex-col gap-2">
+                <div className="flex min-w-0 flex-col gap-2">
                   {bookmarks.length === 0 ? <p className="text-sm text-muted-foreground">Chưa có bookmark.</p> : null}
                   {bookmarks.map((bookmark) => (
-                    <div key={bookmark.documentId} className="rounded-lg border border-border bg-background/50 p-3">
+                    <div key={bookmark.documentId} className="min-w-0 rounded-lg border border-border bg-background/50 p-3">
                       <p className="text-xs text-muted-foreground">{bookmark.chapter?.title}</p>
-                      <p className="mt-1 text-sm text-foreground line-clamp-2">{bookmark.excerpt || 'Đoạn đã đánh dấu'}</p>
-                      {bookmark.note ? <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{bookmark.note}</p> : null}
+                      <p className="mt-1 break-words text-sm text-foreground line-clamp-2">{bookmark.excerpt || 'Đoạn đã đánh dấu'}</p>
+                      {bookmark.note ? <p className="mt-1 break-words text-xs text-muted-foreground line-clamp-2">{bookmark.note}</p> : null}
                       <div className="mt-2 flex gap-2">
                         {bookmark.chapter?.documentId ? (
                           <Button
@@ -602,7 +676,7 @@ export default function SutraReaderClient({
             </CardContent>
           </Card>
 
-          <Card className="surface-panel min-h-0 rounded-xl">
+          <Card className="surface-panel min-h-0 min-w-0 rounded-xl">
             <CardHeader className="pb-2">
               <CardTitle className="inline-flex items-center gap-2 text-xl">
                 <Highlighter className="size-4 text-gold" />
@@ -611,12 +685,12 @@ export default function SutraReaderClient({
             </CardHeader>
             <CardContent className="min-h-0 p-0">
               <ScrollArea className="h-56 px-4 pb-4">
-                <div className="flex flex-col gap-2">
+                <div className="flex min-w-0 flex-col gap-2">
                   {pinnedGlossaries.length === 0 ? <p className="text-sm text-muted-foreground">Chưa ghim chú giải nào.</p> : null}
                   {pinnedGlossaries.map((item) => (
-                    <div key={item.documentId} className="rounded-lg border border-border bg-background/50 p-3">
-                      <p className="text-sm font-medium text-foreground">{item.term}</p>
-                      <p className="mt-1 text-xs leading-6 text-muted-foreground line-clamp-4">{item.meaning}</p>
+                    <div key={item.documentId} className="min-w-0 rounded-lg border border-border bg-background/50 p-3">
+                      <p className="break-words text-sm font-medium text-foreground">{item.term}</p>
+                      <p className="mt-1 break-words text-xs leading-6 text-muted-foreground line-clamp-4">{item.meaning}</p>
                     </div>
                   ))}
                 </div>
@@ -624,7 +698,8 @@ export default function SutraReaderClient({
             </CardContent>
           </Card>
         </div>
-      </aside>
-    </div>
+        </aside>
+      </div>
+    </>
   )
 }

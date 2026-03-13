@@ -114,6 +114,10 @@ export default async function BlogPostPage({ params }: Props) {
     : null
 
   const youtubeId = post.video_url ? getYouTubeId(post.video_url) : null
+  const oembedHtml =
+    typeof post.oembed?.oembed?.html === 'string' && post.oembed.oembed.html.length > 0
+      ? post.oembed.oembed.html
+      : null
   const sourceName = post.sourceName ?? null
   const sourceUrl = post.sourceUrl ?? null
   const sourceTitle = post.sourceTitle ?? null
@@ -234,6 +238,16 @@ export default async function BlogPostPage({ params }: Props) {
                     controls
                     poster={thumbnailUrl ?? undefined}
                     className="w-full max-h-[500px]"
+                  />
+                </div>
+              )}
+
+              {/* ── Rich embed fallback ── */}
+              {oembedHtml && !post.video_url && !youtubeId && (
+                <div className="rounded-xl overflow-hidden mb-10 border border-border bg-card p-3 md:p-4">
+                  <div
+                    className="prose prose-sm max-w-none [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full [&_iframe]:rounded-lg"
+                    dangerouslySetInnerHTML={{ __html: oembedHtml }}
                   />
                 </div>
               )}

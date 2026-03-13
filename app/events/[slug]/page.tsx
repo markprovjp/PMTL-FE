@@ -65,6 +65,10 @@ export default async function EventDetailPage({ params }: Props) {
 
   const coverUrl = event.coverImage ? getStrapiMediaUrl(event.coverImage.url) : null
   const typeLabel = typeLabels[event.type] ?? event.type
+  const oembedHtml =
+    typeof event.oembed?.oembed?.html === 'string' && event.oembed.oembed.html.length > 0
+      ? event.oembed.oembed.html
+      : null
   const isUpcoming = event.eventStatus === 'upcoming' || event.eventStatus === 'live'
   const dateValue = event.date ? new Date(event.date) : null
   const eventStart = dateValue && !Number.isNaN(dateValue.getTime()) ? dateValue : null
@@ -277,6 +281,21 @@ export default async function EventDetailPage({ params }: Props) {
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       className="absolute inset-0 w-full h-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {oembedHtml && !event.youtubeId && (
+                <div className="mt-16">
+                  <div className="flex items-center gap-4 mb-8">
+                    <span className="h-px bg-gold/30 w-12" />
+                    <h2 className="ant-title text-2xl text-foreground">Pháp Âm / Hình Ảnh</h2>
+                  </div>
+                  <div className="rounded-xl border border-border bg-card p-3 shadow-ant md:p-4">
+                    <div
+                      className="prose prose-sm max-w-none [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full [&_iframe]:rounded-lg"
+                      dangerouslySetInnerHTML={{ __html: oembedHtml }}
                     />
                   </div>
                 </div>

@@ -1,5 +1,4 @@
 import { createPushJob } from '@/lib/push-server'
-import { processNextPushJob } from '@/lib/push-worker'
 
 interface EnqueuePushJobInput {
   kind: string
@@ -13,7 +12,7 @@ interface EnqueuePushJobInput {
 
 export async function enqueuePushJobSafe(input: EnqueuePushJobInput) {
   try {
-    const created = await createPushJob({
+    await createPushJob({
       kind: input.kind,
       status: 'pending',
       title: input.title,
@@ -32,35 +31,12 @@ export async function enqueuePushJobSafe(input: EnqueuePushJobInput) {
       startedAt: null,
       finishedAt: null,
     })
-
-    await dispatchQueueUntil(created.data.documentId)
   } catch (error) {
     console.error('[push enqueue]', error)
   }
 }
 
 export async function dispatchQueueUntil(targetJobDocumentId?: string) {
-  let matchedTarget = false
-
-  for (let attempt = 0; attempt < 20; attempt += 1) {
-    try {
-      const result = await processNextPushJob()
-      if (!result) break
-      if (!targetJobDocumentId) {
-        if (result.completed) return result
-        continue
-      }
-
-      if (result.jobDocumentId === targetJobDocumentId) {
-        matchedTarget = true
-        if (result.completed) return result
-      } else if (matchedTarget && result.jobDocumentId !== targetJobDocumentId) {
-        break
-      }
-    } catch (error) {
-      console.error('[push dispatch]', error)
-    }
-  }
-
+  void targetJobDocumentId
   return null
 }
