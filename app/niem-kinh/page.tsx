@@ -17,6 +17,9 @@ import { CHANTING_ADMIN_COPY } from '@/lib/config/chanting';
 import ChantingRunner from './ChantingRunner';
 import { ChantingNotesSection } from '@/components/ChantingNotesSection';
 import { Moon } from 'lucide-react';
+import { fetchEvents } from '@/lib/api/event';
+import { getPostBySlug, getPosts } from '@/lib/api/blog';
+import TodayPracticeOverview from './TodayPracticeOverview';
 
 
 export const revalidate = 3600; // Cache 1 hour, auto-revalidate
@@ -67,22 +70,44 @@ function formatLunar(lunarInfo: { month: number; day: number } | null): string {
 export default async function NiemKinhPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; item?: string }>;
 }) {
-  const { plan: planSlug } = await searchParams;
+  const { plan: planSlug, item: itemSlug } = await searchParams;
   const { isoDate, year, month, day, serverNow } = getTodayBKK();
   const lunar = await getLunarDate(year, month, day);
 
-  const data: TodayChantResponse | null = await fetchTodayChant({
-    date: isoDate,
-    lunarMonth: lunar?.month ?? null,
-    lunarDay: lunar?.day ?? null,
-    planSlug,
-  });
+  const [data, eventsResponse, featuredPostsResponse] = await Promise.all([
+    fetchTodayChant({
+      date: isoDate,
+      lunarMonth: lunar?.month ?? null,
+      lunarDay: lunar?.day ?? null,
+      planSlug,
+    }),
+    fetchEvents().catch(() => ({ data: [] })),
+    getPosts({ page: 1, pageSize: 3, featured: true, revalidate: 3600 }).catch(() => ({ data: [], meta: { pagination: { page: 1, pageSize: 3, pageCount: 0, total: 0 } } })),
+  ])
 
   // Format ngày hiển thị
   const [y, m, d2] = isoDate.split('-').map(Number);
   const solarLabel = `${d2 < 10 ? '0' + d2 : d2}/${m < 10 ? '0' + m : m}/${y}`;
+  const lunarLabel = lunar ? `${formatLunar(lunar)} · năm ${y}` : 'Chưa tính được âm lịch';
+  const relatedBlogSlugs = Array.from(
+    new Set(data?.todayEvents.flatMap((event) => event.relatedBlogs?.map((blog) => blog.slug) ?? []) ?? [])
+  )
+  const recommendedPosts = relatedBlogSlugs.length > 0
+    ? await Promise.all(relatedBlogSlugs.slice(0, 3).map((slug) => getPostBySlug(slug)))
+        .then((posts) => posts.filter((post): post is NonNullable<typeof post> => Boolean(post)))
+        .catch(() => featuredPostsResponse.data ?? [])
+    : featuredPostsResponse.data ?? []
+  const upcomingEvents = (eventsResponse.data ?? [])
+    .filter((event) => event.eventStatus !== 'past')
+    .filter((event) => !event.date || new Date(event.date).getTime() >= new Date(`${isoDate}T00:00:00`).getTime())
+    .sort((a, b) => {
+      const left = a.date ? new Date(a.date).getTime() : Number.MAX_SAFE_INTEGER
+      const right = b.date ? new Date(b.date).getTime() : Number.MAX_SAFE_INTEGER
+      return left - right
+    })
+    .slice(0, 4)
 
   return (
     <div className="min-h-screen bg-background">
@@ -131,13 +156,24 @@ export default async function NiemKinhPage({
             {!data ? (
               <EmptyState planSlug={planSlug} />
             ) : (
-              <Suspense fallback={<RunnerSkeleton />}>
-                <ChantingRunner
+              <>
+                <TodayPracticeOverview
                   todayChant={data}
                   isoDate={isoDate}
-                  serverNow={serverNow}
+                  solarLabel={solarLabel}
+                  lunarLabel={lunarLabel}
+                  recommendedPosts={recommendedPosts}
+                  upcomingEvents={upcomingEvents}
                 />
-              </Suspense>
+                <Suspense fallback={<RunnerSkeleton />}>
+                  <ChantingRunner
+                    todayChant={data}
+                    isoDate={isoDate}
+                    serverNow={serverNow}
+                    initialSelectedSlug={itemSlug ?? null}
+                  />
+                </Suspense>
+              </>
             )}
           </div>
 

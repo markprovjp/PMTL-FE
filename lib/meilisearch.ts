@@ -1,23 +1,56 @@
-// ─────────────────────────────────────────────────────────────
-// lib/meilisearch.ts — Meilisearch Client Setup
-// Server-side only — do NOT import from 'use client' files
-// ─────────────────────────────────────────────────────────────
+import 'server-only'
 
+import { cache } from 'react'
 import { MeiliSearch } from 'meilisearch'
+import { z } from 'zod'
+
+const meilisearchEnvSchema = z.object({
+  host: z.string().url(),
+  apiKey: z.string().min(1),
+  indexName: z.string().min(1).default('blog-post'),
+})
+
+const parseMeilisearchConfig = () =>
+  meilisearchEnvSchema.safeParse({
+    host: process.env.MEILISEARCH_HOST ?? process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
+    apiKey:
+      process.env.MEILISEARCH_SEARCH_KEY ??
+      process.env.MEILISEARCH_API_KEY ??
+      process.env.MEILISEARCH_MASTER_KEY ??
+      process.env.NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY ??
+      process.env.NEXT_PUBLIC_MEILISEARCH_API_KEY,
+    indexName: process.env.MEILISEARCH_BLOG_POST_INDEX ?? 'blog-post',
+  })
+
+export const isMeilisearchConfigured = cache(() => parseMeilisearchConfig().success)
+
+const getMeilisearchConfig = cache(() => {
+  const parsed = parseMeilisearchConfig()
+
+  if (!parsed.success) {
+    return null
+  }
+
+  return parsed.data
+})
 
 /**
  * Initialize Meilisearch client
  * Only available on server-side
  */
-export function getMeilisearchClient() {
-  const host = process.env.NEXT_PUBLIC_MEILISEARCH_HOST || 'http://localhost:7700'
-  const apiKey = process.env.MEILISEARCH_MASTER_KEY || 'super-secret-key-12345'
+export const getMeilisearchClient = cache(() => {
+  const config = getMeilisearchConfig()
 
+  if (!config) {
+    return null
+  }
+
+  const { host, apiKey } = config
   return new MeiliSearch({
     host,
     apiKey,
   })
-}
+})
 
 /**
  * Search blog posts via Meilisearch
@@ -28,17 +61,25 @@ export async function searchBlogPostsViaMeilisearch(
   options: {
     page?: number
     pageSize?: number
+    sort?: 'relevance' | 'newest' | 'oldest' | 'most-viewed'
     categorySlug?: string
     tagSlugs?: string[]
     dateFrom?: string
     dateTo?: string
   } = {}
 ) {
-  const { page = 1, pageSize = 10, categorySlug, tagSlugs, dateFrom, dateTo } = options
+  const { page = 1, pageSize = 10, sort = 'relevance', categorySlug, tagSlugs, dateFrom, dateTo } = options
 
   try {
+    const config = getMeilisearchConfig()
     const client = getMeilisearchClient()
-    const index = client.index('blog-post')
+
+    if (!config || !client) {
+      throw new Error('Meilisearch is not configured')
+    }
+
+    const { indexName } = config
+    const index = client.index(indexName)
 
     // Build filter array
     const filters: string[] = []
@@ -62,11 +103,22 @@ export async function searchBlogPostsViaMeilisearch(
 
     const filterString = filters.length > 0 ? filters.join(' AND ') : undefined
 
+    const sortOptions =
+      sort === 'newest'
+        ? ['publishedAt:desc']
+        : sort === 'oldest'
+          ? ['publishedAt:asc']
+          : sort === 'most-viewed'
+            ? ['views:desc', 'publishedAt:desc']
+            : query
+              ? undefined
+              : ['publishedAt:desc']
+
     const result = await index.search(query, {
       limit: pageSize,
       offset: (page - 1) * pageSize,
-      filter: filterString ? [filterString] : undefined,
-      sort: ['publishedAt:desc'],
+      filter: filterString ?? undefined,
+      sort: sortOptions,
       // Highlight matching keywords in title, excerpt, content, and source metadata
       attributesToHighlight: ['title', 'excerpt', 'content', 'sourceName', 'sourceTitle'],
       highlightPreTag: '<mark class="bg-gold/20 text-gold rounded px-0.5">',

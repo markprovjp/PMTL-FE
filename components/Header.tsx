@@ -12,6 +12,8 @@ import NotificationMenu from "@/components/notifications/NotificationMenu";
 import type { NavItem } from "@/lib/api/navigation";
 import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 
+type NavLinkItem = { label: string; href: string };
+
 const UserIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
@@ -91,20 +93,44 @@ const NavDropdown = ({ label, items, isOpen, onToggle, onClose, columns = 1 }: {
   </div>
 );
 
-const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; tuHoc: NavItem[]; congDong: NavItem[]; hoTri: NavItem }) => {
+const MobileMenu = ({
+  onClose,
+  dailyStudy,
+  contentLibrary,
+  community,
+  organization,
+  hoTri,
+}: {
+  onClose: () => void;
+  dailyStudy: NavLinkItem[];
+  contentLibrary: NavLinkItem[];
+  community: NavLinkItem[];
+  organization: NavLinkItem[];
+  hoTri: NavItem;
+}) => {
   const { user, logout } = useAuth();
   const [openSection, setOpenSection] = useState<string | null>(null);
 
   const sections = [
     {
-      id: 'tu-hoc',
-      label: "Tu Học",
-      items: tuHoc
+      id: 'daily-study',
+      label: "Tu Học Hằng Ngày",
+      items: dailyStudy
     },
     {
-      id: 'cong-dong',
-      label: "Liên Kết",
-      items: congDong
+      id: 'content-library',
+      label: "Kho Nội Dung",
+      items: contentLibrary
+    },
+    {
+      id: 'community',
+      label: "Cộng Đồng",
+      items: community
+    },
+    {
+      id: 'organization',
+      label: "Sự Kiện & Tổ Chức",
+      items: organization
     },
   ];
 
@@ -156,26 +182,6 @@ const MobileMenu = ({ onClose, tuHoc, congDong, hoTri }: { onClose: () => void; 
 
         <Link href="/" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
           Trang Chủ
-        </Link>
-
-        <Link href="/blog" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Khai Thị (Blog)
-        </Link>
-
-        <Link href="/lunar-calendar" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Lịch Tu Học
-        </Link>
-        <Link href="/niem-kinh" onClick={onClose} className="block py-3 px-2 text-base font-display text-gold border-b border-border/50">
-          Niệm Kinh
-        </Link>
-        <Link href="/shares" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Diễn Đàn
-        </Link>
-        <Link href="/events" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Sự Kiện & Pháp Hội
-        </Link>
-        <Link href="/kinh-dien" onClick={onClose} className="block py-3 px-2 text-base font-display text-foreground border-b border-border/50">
-          Kinh Điển
         </Link>
         <NotificationMenu mobile />
 
@@ -271,6 +277,28 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
     hoTri: hoTri ?? defaultHoTri
   };
 
+  const dailyStudyLinks: NavLinkItem[] = [
+    { label: "Lịch Tu", href: "/lunar-calendar" },
+    { label: "Niệm Kinh", href: "/niem-kinh" },
+    { label: "Tu Học", href: "/beginner-guide" },
+  ];
+
+  const contentLibraryLinks: NavLinkItem[] = [
+    { label: "Khai Thị", href: "/blog" },
+    { label: "Kinh Điển", href: "/kinh-dien" },
+    ...groups.tuHoc.filter((item) => !['/beginner-guide', '/directory'].includes(item.href)),
+  ];
+
+  const communityLinks: NavLinkItem[] = [
+    { label: "Diễn Đàn", href: "/shares" },
+    ...groups.congDong,
+  ];
+
+  const organizationLinks: NavLinkItem[] = [
+    { label: "Sự Kiện & Pháp Hội", href: "/events" },
+    { label: "Thông Báo", href: "/thong-bao" },
+  ];
+
   return (
     <header className="sticky top-0 z-50">
       <div className="relative z-[60] bg-background/95 backdrop-blur-md border-b border-border">
@@ -293,45 +321,38 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
                 Trang Chủ
               </Link>
 
-              <Link href="/blog" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-                Khai Thị
-              </Link>
-
-              <Link href="/lunar-calendar" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-                Lịch Tu
-              </Link>
-
-              <Link href="/niem-kinh" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-                Niệm Kinh
-              </Link>
-
-            <Link href="/shares" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-              Diễn Đàn
-            </Link>
-            <Link href="/events" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-              Sự Kiện & Pháp Hội
-            </Link>
-
-            <Link href="/kinh-dien" className="px-2 py-2.5 text-xs font-medium text-muted-foreground hover:text-gold transition-colors whitespace-nowrap">
-              Kinh Điển
-            </Link>
-
               <NavDropdown
-                label="Tu Học"
-                items={groups.tuHoc}
+                label="Tu Học Hằng Ngày"
+                items={dailyStudyLinks}
                 isOpen={activeDropdown === 'tuHoc'}
                 onToggle={() => setActiveDropdown(activeDropdown === 'tuHoc' ? null : 'tuHoc')}
+                onClose={() => setActiveDropdown(null)}
+              />
+
+              <NavDropdown
+                label="Kho Nội Dung"
+                items={contentLibraryLinks}
+                isOpen={activeDropdown === 'content'}
+                onToggle={() => setActiveDropdown(activeDropdown === 'content' ? null : 'content')}
                 onClose={() => setActiveDropdown(null)}
                 columns={2}
               />
 
-            <NavDropdown
-              label="Liên Kết"
-              items={groups.congDong}
-              isOpen={activeDropdown === 'congDong'}
-              onToggle={() => setActiveDropdown(activeDropdown === 'congDong' ? null : 'congDong')}
-              onClose={() => setActiveDropdown(null)}
-            />
+              <NavDropdown
+                label="Cộng Đồng"
+                items={communityLinks}
+                isOpen={activeDropdown === 'community'}
+                onToggle={() => setActiveDropdown(activeDropdown === 'community' ? null : 'community')}
+                onClose={() => setActiveDropdown(null)}
+              />
+
+              <NavDropdown
+                label="Sự Kiện"
+                items={organizationLinks}
+                isOpen={activeDropdown === 'organization'}
+                onToggle={() => setActiveDropdown(activeDropdown === 'organization' ? null : 'organization')}
+                onClose={() => setActiveDropdown(null)}
+              />
 
               <button
                 onClick={() => { setCategoryOpen(!categoryOpen); setActiveDropdown(null); }}
@@ -405,7 +426,18 @@ const Header = ({ tuHoc, congDong, hoTri }: { tuHoc?: NavItem[]; congDong?: NavI
         )}
       </AnimatePresence>
 
-      <AnimatePresence>{mobileOpen && <MobileMenu onClose={() => setMobileOpen(false)} tuHoc={groups.tuHoc} congDong={groups.congDong} hoTri={groups.hoTri} />}</AnimatePresence>
+      <AnimatePresence>
+        {mobileOpen && (
+          <MobileMenu
+            onClose={() => setMobileOpen(false)}
+            dailyStudy={dailyStudyLinks}
+            contentLibrary={contentLibraryLinks}
+            community={communityLinks}
+            organization={organizationLinks}
+            hoTri={groups.hoTri}
+          />
+        )}
+      </AnimatePresence>
       {userMenuOpen && <div className="fixed inset-0 z-50" onClick={() => setUserMenuOpen(false)} />}
     </header>
   );

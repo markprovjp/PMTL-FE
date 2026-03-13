@@ -66,6 +66,22 @@ export default async function EventDetailPage({ params }: Props) {
   const coverUrl = event.coverImage ? getStrapiMediaUrl(event.coverImage.url) : null
   const typeLabel = typeLabels[event.type] ?? event.type
   const isUpcoming = event.eventStatus === 'upcoming' || event.eventStatus === 'live'
+  const dateValue = event.date ? new Date(event.date) : null
+  const eventStart = dateValue && !Number.isNaN(dateValue.getTime()) ? dateValue : null
+  const eventEnd = eventStart ? new Date(eventStart.getTime() + 2 * 60 * 60 * 1000) : null
+  const formatCalendarDate = (value: Date) =>
+    value
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}Z$/, 'Z')
+  const googleCalendarUrl =
+    eventStart && eventEnd
+      ? `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&details=${encodeURIComponent(event.description || event.content?.replace(/<[^>]+>/g, ' ').trim() || '')}&location=${encodeURIComponent(event.location || '')}&dates=${formatCalendarDate(eventStart)}/${formatCalendarDate(eventEnd)}`
+      : null
+  const mapUrl = event.location
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`
+    : null
+  const attendanceLabel = event.link ? 'Trực tuyến / đăng ký' : 'Trực tiếp tại đạo tràng'
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -100,6 +116,9 @@ export default async function EventDetailPage({ params }: Props) {
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <span className="rounded-md border border-gold/20 bg-gold/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-gold backdrop-blur-md">
                 {typeLabel}
+              </span>
+              <span className="rounded-md border border-border bg-card/80 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-foreground/80 backdrop-blur-md">
+                {attendanceLabel}
               </span>
               {event.eventStatus === 'live' && (
                 <span className="flex items-center gap-2 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-red-500 backdrop-blur-md">
@@ -163,33 +182,62 @@ export default async function EventDetailPage({ params }: Props) {
             </div>
 
             {/* Sacred Action CTA Area */}
-            {event.link && (
-              <div className="md:w-72 bg-gold/5 flex flex-col justify-center items-center p-8 border-t md:border-t-0 md:border-l border-gold/10">
-                {isUpcoming ? (
-                  <>
-                    <p className="text-sm text-muted-foreground mb-4 text-center">Hoan hỷ mời quý đạo hữu cùng tham dự pháp hội.</p>
-                    <a
-                      href={event.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gold px-6 py-4 text-sm font-bold text-black transition-all hover:scale-105 hover:bg-gold/90 hover:shadow-gold/20"
-                    >
-                      <ExternalLink className="w-4 h-4" /> Tham Gia Ngay
-                    </a>
-                  </>
+            {(event.link || googleCalendarUrl || mapUrl) && (
+              <div className="md:w-72 bg-gold/5 flex flex-col justify-center items-stretch p-8 border-t md:border-t-0 md:border-l border-gold/10">
+                {event.link ? (
+                  isUpcoming ? (
+                    <>
+                      <p className="text-sm text-muted-foreground mb-4 text-center">Hoan hỷ mời quý đạo hữu cùng tham dự pháp hội.</p>
+                      <a
+                        href={event.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-gold px-6 py-4 text-sm font-bold text-black transition-all hover:scale-105 hover:bg-gold/90 hover:shadow-gold/20"
+                      >
+                        <ExternalLink className="w-4 h-4" /> Tham Gia Ngay
+                      </a>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground mb-4 text-center">Pháp hội đã viên mãn. Quý vị có thể xem lại tư liệu.</p>
+                      <a
+                        href={event.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gold/40 bg-card px-6 py-4 text-sm font-bold text-gold transition-all hover:bg-gold/10"
+                      >
+                        <Video className="w-4 h-4" /> Xem Tư Liệu
+                      </a>
+                    </>
+                  )
                 ) : (
-                  <>
-                    <p className="text-sm text-muted-foreground mb-4 text-center">Pháp hội đã viên mãn. Quý vị có thể xem lại tư liệu.</p>
+                  <p className="text-sm text-muted-foreground mb-4 text-center">
+                    Thông tin tham dự đang cập nhật. Quý đạo hữu có thể lưu lịch và xem đường đi trước.
+                  </p>
+                )}
+
+                <div className="mt-4 space-y-3">
+                  {googleCalendarUrl ? (
                     <a
-                      href={event.link}
+                      href={googleCalendarUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-gold/40 bg-card px-6 py-4 text-sm font-bold text-gold transition-all hover:bg-gold/10"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition hover:border-gold/35 hover:text-gold"
                     >
-                      <Video className="w-4 h-4" /> Xem Tư Liệu
+                      <Calendar className="w-4 h-4" /> Lưu vào lịch cá nhân
                     </a>
-                  </>
-                )}
+                  ) : null}
+                  {mapUrl ? (
+                    <a
+                      href={mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-5 py-3 text-sm font-semibold text-foreground transition hover:border-gold/35 hover:text-gold"
+                    >
+                      <MapPin className="w-4 h-4" /> Xem địa điểm
+                    </a>
+                  ) : null}
+                </div>
               </div>
             )}
           </div>

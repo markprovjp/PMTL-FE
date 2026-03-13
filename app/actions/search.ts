@@ -1,7 +1,7 @@
 'use server'
 
 import { getPosts, GetPostsOptions, getAllTags, getCategories } from '@/lib/api/blog'
-import { searchBlogPostsViaMeilisearch } from '@/lib/meilisearch'
+import { isMeilisearchConfigured, searchBlogPostsViaMeilisearch } from '@/lib/meilisearch'
 import { revalidatePath, unstable_cache } from 'next/cache'
 
 /**
@@ -13,10 +13,15 @@ export async function searchPostsAndCategories(options: GetPostsOptions) {
   const pageSize = options.pageSize ?? 10
 
   try {
+    if (!isMeilisearchConfigured()) {
+      throw new Error('Meilisearch is not configured')
+    }
+
     // Try Meilisearch first (fast, typo-tolerant)
     const res = await searchBlogPostsViaMeilisearch(options.search || '', {
       page: options.page,
       pageSize: options.pageSize,
+      sort: options.sort,
       categorySlug: options.categorySlug,
       tagSlugs: options.tagSlugs,
       dateFrom: options.dateFrom,
@@ -28,7 +33,7 @@ export async function searchPostsAndCategories(options: GetPostsOptions) {
       meta: res.meta,
     }
   } catch (error) {
-    console.warn('[Search] Meilisearch failed, falling back to Strapi:', error)
+    console.warn('[Search] Meilisearch unavailable, falling back to Strapi:', error)
 
     // Fallback to Strapi database search if Meilisearch is down
     try {

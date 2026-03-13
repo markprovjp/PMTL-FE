@@ -6,6 +6,7 @@
 // ─────────────────────────────────────────────────────────────────
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 import {
   Dialog,
@@ -523,6 +524,39 @@ export default function LunarCalendarPage() {
   const isToday = (day: number, month: number, year: number) =>
     day === now.getDate() && month === now.getMonth() + 1 && year === now.getFullYear();
 
+  const todayMarkers = useMemo(() => {
+    if (!todayLunar) return [] as SpecialDay[];
+    const solarStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const markers = allEvents.filter((s) => {
+      if (s.solarDate) return s.solarDate.startsWith(solarStr);
+      if (s.isRecurringLunar) {
+        return s.lunarMonth === todayLunar.lunarMonth && s.lunarDay === todayLunar.lunarDay;
+      }
+      return false;
+    });
+    if (FAST_DAYS_LUNAR.includes(todayLunar.lunarDay)) {
+      markers.push({
+        lunarMonth: todayLunar.lunarMonth,
+        lunarDay: todayLunar.lunarDay,
+        name: `Ngày ${todayLunar.lunarDay === 1 ? 'Mùng 1' : todayLunar.lunarDay === 15 ? 'Rằm' : `${todayLunar.lunarDay}`} — Ngày Trai`,
+        type: 'fast',
+        description: 'Ăn chay, niệm kinh gấp đôi, phóng sinh nếu có thể.',
+        icon: Leaf,
+      });
+    }
+    return markers;
+  }, [allEvents, now, todayLunar]);
+
+  const suggestedBlogsToday = useMemo(() => {
+    const map = new Map<string, BlogLink>();
+    for (const marker of todayMarkers) {
+      for (const blog of marker.relatedBlogs ?? []) {
+        map.set(blog.slug, blog);
+      }
+    }
+    return Array.from(map.values()).slice(0, 4);
+  }, [todayMarkers]);
+
   return (
     <>
 
@@ -637,6 +671,47 @@ export default function LunarCalendarPage() {
 
             {/* ── Sidebar ─────────────────────────────────────── */}
             <div className="lg:w-72 space-y-5">
+              <div className="rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/10 via-card to-card p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <BellIcon className="w-4 h-4 text-gold" />
+                  <h3 className="text-sm font-bold text-foreground">Sự Kiện Tu Học Hôm Nay</h3>
+                </div>
+                {todayMarkers.length > 0 ? (
+                  <div className="space-y-3">
+                    {todayMarkers.map((marker, index) => (
+                      <div key={`${marker.name}-${index}`} className={`rounded-xl border px-3 py-3 ${TYPE_STYLE[marker.type].bg} ${TYPE_STYLE[marker.type].border}`}>
+                        <div className="flex items-start gap-2">
+                          <marker.icon className={`mt-0.5 w-4 h-4 ${TYPE_STYLE[marker.type].text}`} />
+                          <div className="min-w-0">
+                            <p className={`text-sm font-semibold ${TYPE_STYLE[marker.type].text}`}>{marker.name}</p>
+                            <p className="mt-1 text-xs leading-6 text-muted-foreground">{marker.description}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs leading-6 text-muted-foreground">
+                    Hôm nay không có ngày vía lớn. Anh có thể giữ nhịp tu đều với công khóa và bài đọc gợi ý bên dưới.
+                  </p>
+                )}
+
+                <div className="mt-4 grid gap-2">
+                  <Link
+                    href="/niem-kinh"
+                    className="inline-flex items-center justify-center rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-black transition hover:bg-gold/90"
+                  >
+                    Mở công khóa hôm nay
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="inline-flex items-center justify-center rounded-xl border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-gold/35 hover:text-gold"
+                  >
+                    Cài nhắc việc nhẹ nhàng
+                  </Link>
+                </div>
+              </div>
+
               {/* Upcoming events */}
               <div className="rounded-2xl bg-card border border-border overflow-hidden">
                 <div className="px-5 py-4 border-b border-border bg-gradient-to-r from-gold/5 to-transparent flex items-center gap-2">
@@ -683,22 +758,51 @@ export default function LunarCalendarPage() {
               <div className="rounded-2xl bg-card border border-border p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <BookOpen className="w-4 h-4 text-gold" />
-                  <h3 className="text-sm font-bold text-foreground">Khai Thị Theo Ngày Vía</h3>
+                  <h3 className="text-sm font-bold text-foreground">Bài Nên Đọc Theo Ngày</h3>
                 </div>
                 <div className="space-y-1.5">
-                  {adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).slice(0, 5).map((s, idx) => (
+                  {suggestedBlogsToday.length > 0 ? (
+                    suggestedBlogsToday.map((blog) => (
+                      <Link
+                        key={blog.slug}
+                        href={`/blog/${blog.slug}`}
+                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group py-1"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span className="group-hover:underline line-clamp-1">{blog.title}</span>
+                      </Link>
+                    ))
+                  ) : adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).slice(0, 5).map((s, idx) => (
                     s.relatedBlogs!.map((blog) => (
-                      <a key={`${idx}-${blog.id}`} href={`/blog/${blog.slug}`}
+                      <Link key={`${idx}-${blog.id}`} href={`/blog/${blog.slug}`}
                         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-gold transition-colors group py-1">
                         <s.icon className="w-3.5 h-3.5 flex-shrink-0" />
                         <span className="group-hover:underline line-clamp-1">{s.name} — {blog.title}</span>
-                      </a>
+                      </Link>
                     ))
                   ))}
-                  {adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).length === 0 && (
+                  {suggestedBlogsToday.length === 0 && adminEvents.filter((s) => s.relatedBlogs && s.relatedBlogs.length > 0).length === 0 && (
                     <p className="text-xs text-muted-foreground/60">Chưa có khai thị liên kết.</p>
                   )}
                 </div>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-card p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-gold" />
+                  <h3 className="text-sm font-bold text-foreground">Nhắc Việc Không Làm Phiền</h3>
+                </div>
+                <ul className="space-y-2 text-xs leading-6 text-muted-foreground">
+                  <li>Chỉ bật nhóm thật sự cần: tu học, sự kiện, diễn đàn, bài viết mới.</li>
+                  <li>Ngày đặc biệt nên để riêng thành lời nhắc nhẹ vào buổi sáng.</li>
+                  <li>Sự kiện quan trọng chỉ nên nhắc trước giờ và trước 1 ngày.</li>
+                </ul>
+                <Link
+                  href="/thong-bao"
+                  className="mt-4 inline-flex items-center text-xs font-medium text-gold hover:underline"
+                >
+                  Mở trung tâm thông báo
+                </Link>
               </div>
             </div>
           </div>

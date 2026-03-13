@@ -1,8 +1,8 @@
 export const PUSH_NOTIFICATION_TYPES = [
-  { value: 'daily_chant', label: 'Nhắc niệm kinh hằng ngày' },
-  { value: 'content_update', label: 'Bài viết mới' },
-  { value: 'event_reminder', label: 'Sự kiện sắp diễn ra' },
-  { value: 'community', label: 'Cập nhật cộng đồng' },
+  { value: 'daily_chant', label: 'Tu học hằng ngày' },
+  { value: 'content_update', label: 'Kho nội dung' },
+  { value: 'event_reminder', label: 'Sự kiện & lịch tu' },
+  { value: 'community', label: 'Diễn đàn & phản hồi' },
 ] as const
 
 export type PushNotificationType = (typeof PUSH_NOTIFICATION_TYPES)[number]['value']

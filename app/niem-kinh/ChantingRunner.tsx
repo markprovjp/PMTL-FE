@@ -34,27 +34,13 @@ import {
 import { PAGINATION } from '@/lib/config/pagination';
 import { CHANTING_ADMIN_COPY } from '@/lib/config/chanting';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// ── Guest localStorage helpers ────────────────────────────────
-// Chỉ dùng khi chưa đăng nhập (no token)
-const LS_KEY = (date: string, slug: string) => `chant_progress_${date}_${slug}`;
-
-function loadLocalProgress(date: string, planSlug: string): ProgressMap {
-  try {
-    const raw = localStorage.getItem(LS_KEY(date, planSlug));
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
-}
-
-function saveLocalProgress(date: string, planSlug: string, p: ProgressMap) {
-  try {
-    localStorage.setItem(LS_KEY(date, planSlug), JSON.stringify(p));
-  } catch { }
-}
-
-function clearLocalProgress(date: string, planSlug: string) {
-  try { localStorage.removeItem(LS_KEY(date, planSlug)); } catch { }
-}
+import {
+  findNextPendingChantItem,
+  loadLastSelectedChantItem,
+  loadLocalChantProgress,
+  saveLastSelectedChantItem,
+  saveLocalChantProgress,
+} from '@/lib/chanting-progress';
 
 function isTimeRuleViolated(timeRules: TodayChantItem['timeRules'], offset = 0): { violated: boolean; message: string } {
   if (!timeRules) return { violated: false, message: '' };
@@ -101,14 +87,15 @@ interface Props {
   todayChant: TodayChantResponse;
   isoDate: string;
   serverNow: string; // ISO string from server
+  initialSelectedSlug?: string | null;
 }
 
 const DEFAULT_PRESETS: number[] = []; // Presets lấy từ BE (recommendedPresets), không dùng hardcode
 
-export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props) {
+export default function ChantingRunner({ todayChant, isoDate, serverNow, initialSelectedSlug = null }: Props) {
   const { user } = useAuth();
   const [progress, setProgress] = useState<ProgressMap>({});
-  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(initialSelectedSlug);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved' | 'offline'>('saved');
   const [isOnline, setIsOnline] = useState(true);
   const [showInstruction, setShowInstruction] = useState(false);
@@ -162,11 +149,34 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
         });
     } else {
       // Khách: load từ localStorage
-      const local = loadLocalProgress(isoDate, planSlug);
+      const local = loadLocalChantProgress(isoDate, planSlug);
       setProgress(local);
       setSaveStatus('saved');
     }
   }, [isoDate, planSlug, user]);
+
+  useEffect(() => {
+    const requested = initialSelectedSlug && items.some((item) => item.slug === initialSelectedSlug)
+      ? initialSelectedSlug
+      : null
+    const remembered = loadLastSelectedChantItem(planSlug)
+    const rememberedValid = remembered && items.some((item) => item.slug === remembered)
+      ? remembered
+      : null
+    const nextPending = findNextPendingChantItem(items, progress)?.slug ?? null
+
+    setSelectedSlug((current) => {
+      if (current && items.some((item) => item.slug === current)) {
+        return current
+      }
+
+      return requested ?? nextPending ?? rememberedValid ?? items[0]?.slug ?? null
+    })
+  }, [initialSelectedSlug, items, planSlug, progress])
+
+  useEffect(() => {
+    saveLastSelectedChantItem(planSlug, selectedSlug)
+  }, [planSlug, selectedSlug])
 
   // ── Online/offline detection ───────────────────────────────
   useEffect(() => {
@@ -218,7 +228,7 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
         }, 1500);
       } else {
         // Khách: lưu localStorage ngay lập tức
-        saveLocalProgress(isoDate, planSlug, prog);
+        saveLocalChantProgress(isoDate, planSlug, prog);
         setSaveStatus('saved');
       }
     },
@@ -468,7 +478,7 @@ export default function ChantingRunner({ todayChant, isoDate, serverNow }: Props
                   )}
                   {item.timeRules?.notAfter && (
                     <span className="text-xs text-blue-400/80 flex items-center gap-0.5">
-                      <Clock className="w-2.5 h-2.5" />truoc {item.timeRules.notAfter}
+                      <Clock className="w-2.5 h-2.5" />trước {item.timeRules.notAfter}
                     </span>
                   )}
                   {violated && (

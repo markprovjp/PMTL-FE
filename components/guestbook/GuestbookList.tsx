@@ -3,11 +3,16 @@
 
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
 import { Loader2Icon, ShieldCheckIcon } from 'lucide-react'
 import type { GuestbookEntry, GuestbookList as GuestbookListType } from '@/types/strapi'
 import { getStrapiMediaUrl } from '@/lib/strapi'
 import GuestbookForm from './GuestbookForm'
+import { useGuestbookList } from '@/lib/query/guestbook'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 
 interface GuestbookListProps {
   initialData: GuestbookListType
@@ -41,40 +46,34 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -2 }}
       transition={{ duration: 0.3 }}
-      className="relative rounded-lg border border-border border-l-2 border-l-gold bg-card p-6 transition-all duration-300 before:absolute before:left-0 before:top-0 before:h-8 before:w-8 before:font-serif before:text-3xl before:leading-none before:text-gold/20 before:content-['✦'] hover:border-gold/30 md:p-8"
+      className="relative rounded-md border border-border border-l-2 border-l-gold bg-card p-6 transition-all duration-300 before:absolute before:left-0 before:top-0 before:size-8 before:font-serif before:text-3xl before:leading-none before:text-gold/20 before:content-['✦'] hover:border-gold/30 md:p-8"
     >
       {/* Author row */}
-      <div className="flex items-start gap-4 mb-5">
+      <div className="mb-5 flex items-start gap-4">
         <motion.div
           whileHover={{ scale: 1.05 }}
           transition={{ type: 'spring', stiffness: 300 }}
-          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-md border border-gold/40 bg-gradient-to-br from-gold/20 to-gold/5 text-[10px] font-bold text-gold select-none"
+          className="shrink-0"
         >
-          {avatarUrl ? (
-            <Image
-              src={avatarUrl}
-              alt={entry.authorName}
-              width={56}
-              height={56}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <span>{initials}</span>
-          )}
+          <Avatar className="size-14 rounded-md border border-gold/40">
+            {avatarUrl ? <AvatarImage src={avatarUrl} alt={entry.authorName} loading="lazy" className="object-cover" /> : null}
+            <AvatarFallback className="rounded-md bg-gold/10 text-xs font-bold text-gold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
         </motion.div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="ant-title mb-2 text-lg leading-tight text-foreground">{entry.authorName}</p>
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             {entry.entryType === 'question' && (
-              <span className="rounded-md border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight text-amber-600">
+              <Badge variant="outline" className="border-amber-500/20 bg-amber-500/10 text-[10px] uppercase tracking-tight text-amber-700">
                 Câu Hỏi
-              </span>
+              </Badge>
             )}
             {entry.questionCategory && (
-              <span className="rounded-md border border-gold/20 bg-gold/10 px-2 py-0.5 text-[10px] font-medium text-gold">
+              <Badge variant="outline" className="border-gold/20 bg-gold/10 text-[10px] text-gold">
                 {entry.questionCategory}
-              </span>
+              </Badge>
             )}
           </div>
           <p className="text-xs text-muted-foreground/70">
@@ -86,7 +85,7 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
       </div>
 
       {/* Message — journal page style */}
-      <p className="text-base text-foreground/80 leading-relaxed whitespace-pre-wrap mb-6 font-[400]">
+      <p className="mb-6 whitespace-pre-wrap text-base font-[400] leading-relaxed text-foreground/80">
         {entry.message}
       </p>
 
@@ -96,20 +95,18 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`rounded-lg transition-all duration-300 ${entry.isOfficialReply
-            ? 'border border-gold/30 bg-gold/5 p-4 pl-4'
-            : 'border border-border bg-secondary/30 p-4 pl-4'
-            }`}
         >
-          <div className="flex items-center gap-2 mb-2">
-            <ShieldCheckIcon className={`w-4 h-4 shrink-0 ${entry.isOfficialReply ? 'text-gold' : 'text-gold/50'}`} />
-            <span className={`text-xs font-bold uppercase tracking-widest ${entry.isOfficialReply ? 'text-gold' : 'text-muted-foreground'}`}>
+          <Alert
+            className={entry.isOfficialReply ? 'rounded-md border-gold/30 bg-gold/5' : 'rounded-md border-border bg-secondary/20'}
+          >
+            <ShieldCheckIcon className={entry.isOfficialReply ? 'text-gold' : 'text-muted-foreground'} />
+            <AlertTitle className={entry.isOfficialReply ? 'text-xs uppercase tracking-[0.12em] text-gold' : 'text-xs uppercase tracking-[0.12em] text-muted-foreground'}>
               {entry.badge || (entry.isOfficialReply ? 'Ban Quản Trị' : 'Trả lời')}
-            </span>
-          </div>
-          <p className={`text-sm leading-relaxed whitespace-pre-wrap ${entry.isOfficialReply ? 'text-foreground/80 font-[500]' : 'text-muted-foreground'}`}>
-            {entry.adminReply}
-          </p>
+            </AlertTitle>
+            <AlertDescription className={entry.isOfficialReply ? 'whitespace-pre-wrap text-sm leading-relaxed text-foreground/80' : 'whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground'}>
+              {entry.adminReply}
+            </AlertDescription>
+          </Alert>
         </motion.div>
       )}
     </motion.div>
@@ -117,45 +114,25 @@ function EntryCard({ entry }: { entry: GuestbookEntry }) {
 }
 
 export default function GuestbookList({ initialData, year, month }: GuestbookListProps) {
-  const [data, setData] = useState<GuestbookListType>(initialData)
   const [page, setPage] = useState(1)
-  const [loading, setLoading] = useState(false)
   const [showForm, setShowForm] = useState(false)
+  const { data = initialData, isLoading, isFetching } = useGuestbookList({
+    initialData: page === 1 ? initialData : undefined,
+    year,
+    month,
+    page,
+    pageSize: 20,
+  })
 
-  const buildUrl = useCallback(
-    (p: number) => {
-      if (year && month) {
-        return `/api/guestbook/archive/${year}/${month}?page=${p}&pageSize=20`
-      }
-      return `/api/guestbook/list?page=${p}&pageSize=20`
-    },
-    [year, month]
-  )
-
-  const fetchPage = useCallback(
-    async (p: number) => {
-      setLoading(true)
-      try {
-        const res = await fetch(buildUrl(p))
-        if (res.ok) {
-          const json: GuestbookListType = await res.json()
-          setData(json)
-          setPage(p)
-          window.scrollTo({ top: 0, behavior: 'smooth' })
-        }
-      } catch {
-        // giữ nguyên dữ liệu cũ
-      } finally {
-        setLoading(false)
-      }
-    },
-    [buildUrl]
-  )
+  const fetchPage = useCallback((nextPage: number) => {
+    setPage(nextPage)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [])
 
   const handleFormSuccess = useCallback(() => {
     setShowForm(false)
-    fetchPage(1)
-  }, [fetchPage])
+    setPage(1)
+  }, [])
 
   const { data: entries, meta } = data
   const { pageCount, total } = meta.pagination
@@ -168,7 +145,7 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.15 }}
-          className="mb-10"
+          className="mb-9"
         >
           <AnimatePresence mode="wait">
             {showForm ? (
@@ -183,34 +160,34 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
                 <motion.div
                   initial={{ y: -10 }}
                   animate={{ y: 0 }}
-                className="rounded-lg border border-gold/20 bg-gold/5 p-6"
+                  className="rounded-md border border-gold/20 bg-gold/5 p-6"
                 >
-                  <div className="flex items-center justify-between mb-5">
+                  <div className="mb-5 flex items-center justify-between">
                     <h3 className="ant-title text-lg text-foreground">Ghi lưu bút của bạn</h3>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setShowForm(false)}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium"
                     >
                       Đóng
-                    </motion.button>
+                    </Button>
                   </div>
                   <GuestbookForm onSuccess={handleFormSuccess} />
                 </motion.div>
               </motion.div>
             ) : (
-              <motion.button
+              <motion.div
                 key="btn"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                whileHover={{ scale: 1.02, boxShadow: '0 8px 24px rgba(212, 175, 55, 0.15)' }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowForm(true)}
-                className="rounded-md border border-gold/50 bg-gold/10 px-6 py-3 text-sm font-semibold text-gold transition-all duration-200 shadow-ant hover:border-gold/80"
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
               >
-                Ghi lưu bút
-              </motion.button>
+                <Button variant="outlineGlow" size="pill" onClick={() => setShowForm(true)}>
+                  Ghi lưu bút
+                </Button>
+              </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
@@ -222,14 +199,14 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="text-sm text-muted-foreground mb-8 font-medium"
+          className="mb-8 text-sm font-medium text-muted-foreground"
         >
           {total.toLocaleString('vi-VN')} lưu bút đã được ghi lại
         </motion.p>
       )}
 
       {/* Entries */}
-      {loading ? (
+      {isLoading ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -244,7 +221,7 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-lg border border-border/50 bg-secondary/20 py-20 text-center"
+          className="rounded-md border border-border/60 bg-secondary/15 py-20 text-center"
         >
           <p className="text-muted-foreground text-sm">
             Chưa có lưu bút nào{year ? ` trong tháng ${month}/${year}` : ''}. Hãy là người đầu tiên ghi lại hành trình của bạn.
@@ -257,8 +234,15 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="space-y-4"
+            className="relative flex flex-col gap-4"
           >
+            {isFetching && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center">
+                <div className="rounded-md border border-gold/20 bg-background/90 px-3 py-1 text-xs text-muted-foreground shadow-sm backdrop-blur">
+                  Đang cập nhật...
+                </div>
+              </div>
+            )}
             {entries.map((entry, idx) => (
               <motion.div
                 key={entry.documentId}
@@ -281,23 +265,29 @@ export default function GuestbookList({ initialData, year, month }: GuestbookLis
           transition={{ delay: 0.3 }}
           className="mt-12 flex items-center justify-center gap-3"
         >
-          <button
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => fetchPage(page - 1)}
-            disabled={page <= 1 || loading}
-            className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:border-gold/40 hover:text-gold hover:bg-gold/5 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+            disabled={page <= 1 || isFetching}
           >
             Trước
-          </button>
-          <span className="text-sm font-medium text-muted-foreground px-4 py-2">
+          </Button>
+          <Card className="rounded-md border-border/80 bg-muted/20 shadow-none">
+            <CardContent className="px-4 py-2 text-sm font-medium text-muted-foreground">
             <span className="text-foreground font-semibold">{page}</span> / <span className="text-foreground font-semibold">{pageCount}</span>
-          </span>
-          <button
+            </CardContent>
+          </Card>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
             onClick={() => fetchPage(page + 1)}
-            disabled={page >= pageCount || loading}
-            className="px-4 py-2 rounded-lg text-sm font-medium border border-border text-muted-foreground hover:border-gold/40 hover:text-gold hover:bg-gold/5 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+            disabled={page >= pageCount || isFetching}
           >
             Tiếp
-          </button>
+          </Button>
         </motion.div>
       )}
     </div>

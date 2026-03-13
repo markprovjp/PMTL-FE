@@ -1329,7 +1329,6 @@ export default function SharesClient({
               ))}
             </div>
           </motion.div>
-
           {/* ── Pinned Spotlight ─────────────────────────────── */}
           {!loading && pinned.length > 0 && (
             <motion.div

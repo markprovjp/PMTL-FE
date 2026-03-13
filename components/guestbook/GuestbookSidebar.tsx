@@ -4,6 +4,10 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CalendarDaysIcon } from 'lucide-react'
 import type { ArchiveStat } from '@/lib/api/guestbook'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
+import { cn } from '@/lib/utils'
 
 interface GuestbookSidebarProps {
   archives: ArchiveStat[]
@@ -22,102 +26,110 @@ export default function GuestbookSidebar({ archives, currentYear, currentMonth }
   const years = Object.keys(byYear).map(Number).sort((a, b) => b - a)
 
   return (
-    <aside className="w-full lg:w-72 shrink-0 space-y-6">
+    <aside className="w-full shrink-0 lg:w-72">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="surface-panel p-6 transition-colors duration-300 hover:border-gold/20"
+        className="w-full"
       >
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-border/50">
-          <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-            <CalendarDaysIcon className="w-5 h-5 text-gold" />
-          </div>
-          <h3 className="ant-title text-lg text-foreground">Lưu trữ theo tháng</h3>
-        </div>
-
-        <div className="space-y-5">
-          {/* Link Xem tất cả */}
-          <motion.div whileHover={{ x: 4 }} transition={{ duration: 0.2 }}>
-            <Link
-              href="/guestbook"
-              className={`block text-sm font-semibold transition-all duration-200 ${!currentYear
-                ? 'text-gold underline decoration-gold/40 underline-offset-4'
-                : 'text-muted-foreground hover:text-gold hover:underline hover:decoration-gold/40 hover:underline-offset-4'
-                }`}
-            >
-              ← Tất Cả Lưu Bút & Hỏi Đáp
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="rounded-lg border border-gold/18 bg-gold/[0.04] p-4"
-          >
-            <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold">Đặt câu hỏi</h4>
-            <p className="text-xs leading-relaxed text-muted-foreground/90">
-              Có thắc mắc về tu học? Ban Quản Trị sẽ phản hồi khi cần thiết ngay trong mục lưu bút này.
-            </p>
-          </motion.div>
-
-          {years.length === 0 ? (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-sm text-muted-foreground italic text-center py-6"
-            >
-              Chưa có dữ liệu lưu trữ.
-            </motion.p>
-          ) : (
-            <div className="space-y-4">
-              {years.map((y, idx) => (
-                <motion.div
-                  key={y}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 + idx * 0.05 }}
-                  className="space-y-3"
-                >
-                  <motion.p
-                    whileHover={{ x: 2 }}
-                    className="text-sm font-bold text-foreground/90 flex items-center gap-2"
-                  >
-                    <span className="h-2 w-2 rounded-sm bg-gold"></span>
-                    {y}
-                  </motion.p>
-                  <div className="grid grid-cols-2 gap-2 pl-4 border-l-2 border-gold/20">
-                    {byYear[y]
-                      .sort((a, b) => b.month - a.month)
-                      .map((m, midx) => {
-                        const isActive = currentYear === y && currentMonth === m.month
-                        return (
-                          <motion.div
-                            key={`${y}-${m.month}`}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 + idx * 0.05 + midx * 0.02 }}
-                          >
-                            <Link
-                              href={`/guestbook/archive/${y}/${m.month}`}
-                              className={`flex items-center justify-between rounded-md px-3 py-2 text-xs font-medium transition-all duration-200 ${isActive
-                                ? 'bg-gold/15 text-gold border border-gold/40 shadow-sm'
-                                : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground border border-transparent hover:border-border'
-                                }`}
-                            >
-                              <span>Tháng {m.month}</span>
-                              <span className="text-[10px] opacity-60">({m.count})</span>
-                            </Link>
-                          </motion.div>
-                        )
-                      })}
-                  </div>
-                </motion.div>
-              ))}
+        <Card className="rounded-md border-border/90 shadow-none transition-colors duration-300 hover:border-gold/25">
+          <CardHeader className="p-5 pb-4">
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex size-9 items-center justify-center rounded-md bg-gold/10">
+                <CalendarDaysIcon className="text-gold" />
+              </div>
+              <CardTitle className="text-xl">Lưu trữ theo tháng</CardTitle>
             </div>
-          )}
-        </div>
+            <Separator className="bg-border/70" />
+          </CardHeader>
+
+          <CardContent className="flex flex-col gap-5 p-5 pt-0">
+            {/* Link Xem tất cả */}
+            <motion.div whileHover={{ x: 3 }} transition={{ duration: 0.2 }}>
+              <Link
+                href="/guestbook"
+                className={cn(
+                  'block text-sm font-semibold transition-all duration-200',
+                  !currentYear
+                    ? 'text-gold underline decoration-gold/40 underline-offset-4'
+                    : 'text-muted-foreground hover:text-gold hover:underline hover:decoration-gold/40 hover:underline-offset-4'
+                )}
+              >
+                ← Tất Cả Lưu Bút & Hỏi Đáp
+              </Link>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+              className="rounded-md border border-gold/18 bg-gold/[0.04] p-4"
+            >
+              <h4 className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-gold">Đặt câu hỏi</h4>
+              <p className="text-xs leading-relaxed text-muted-foreground/90">
+                Có thắc mắc về tu học? Ban Quản Trị sẽ phản hồi khi cần thiết ngay trong mục lưu bút này.
+              </p>
+            </motion.div>
+
+            {years.length === 0 ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="py-6 text-center text-sm italic text-muted-foreground"
+              >
+                Chưa có dữ liệu lưu trữ.
+              </motion.p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {years.map((y, idx) => (
+                  <motion.div
+                    key={y}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + idx * 0.05 }}
+                    className="flex flex-col gap-3"
+                  >
+                    <motion.p whileHover={{ x: 2 }} className="flex items-center gap-2 text-sm font-bold text-foreground/90">
+                      <span className="size-2 rounded-sm bg-gold" />
+                      {y}
+                    </motion.p>
+                    <div className="grid grid-cols-2 gap-2 border-l-2 border-gold/20 pl-4">
+                      {byYear[y]
+                        .sort((a, b) => b.month - a.month)
+                        .map((m, midx) => {
+                          const isActive = currentYear === y && currentMonth === m.month
+                          return (
+                            <motion.div
+                              key={`${y}-${m.month}`}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              transition={{ delay: 0.4 + idx * 0.05 + midx * 0.02 }}
+                            >
+                              <Link
+                                href={`/guestbook/archive/${y}/${m.month}`}
+                                className={cn(
+                                  'flex items-center justify-between rounded-md border px-3 py-2 text-xs font-medium transition-all duration-200',
+                                  isActive
+                                    ? 'border-gold/40 bg-gold/15 text-gold'
+                                    : 'border-border/40 text-muted-foreground hover:border-gold/30 hover:bg-secondary/35 hover:text-foreground'
+                                )}
+                              >
+                                <span>Tháng {m.month}</span>
+                                <Badge variant="secondary" className="rounded px-1.5 py-0 text-[10px] font-medium">
+                                  {m.count}
+                                </Badge>
+                              </Link>
+                            </motion.div>
+                          )
+                        })}
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </motion.div>
     </aside>
   )

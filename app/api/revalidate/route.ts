@@ -19,8 +19,9 @@
 //    REVALIDATE_SECRET=any-long-random-string-you-choose
 // ─────────────────────────────────────────────────────────────
 
-import { revalidateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
+import { getRevalidationTarget } from '@/lib/revalidate'
 
 /** Strapi v5 webhook payload shape */
 interface StrapiWebhookPayload {
@@ -34,60 +35,6 @@ interface StrapiWebhookPayload {
     slug?: string
     [key: string]: unknown
   }
-}
-
-/**
- * Map a Strapi model name to the cache tags that should be invalidated.
- * These tags must match exactly what is set on strapiFetch() next.tags calls.
- */
-function getTagsForModel(model: string, entry?: StrapiWebhookPayload['entry']): string[] {
-  const tags: string[] = []
-
-  switch (model) {
-    case 'blog-post': {
-      tags.push('blog-posts', 'blog-posts-slugs', 'blog-posts-related')
-      if (entry?.slug) {
-        tags.push(`blog-post-${entry.slug}`, `blog-post-seo-${entry.slug}`)
-      }
-      if (entry?.documentId) {
-        tags.push(`blog-post-${entry.documentId}`)
-      }
-      break
-    }
-    case 'category': {
-      tags.push('categories')
-      break
-    }
-    case 'blog-tag': {
-      tags.push('blog-tags')
-      break
-    }
-    case 'hub-page': {
-      tags.push('hub-pages')
-      break
-    }
-    case 'download-item': {
-      tags.push('download-items')
-      break
-    }
-    case 'guestbook-entry': {
-      // Guestbook dung noCache nen khong can revalidate tag
-      break
-    }
-    case 'setting': {
-      tags.push('homepage-settings')
-      break
-    }
-    case 'sidebar-config': {
-      tags.push('sidebar-config')
-      break
-    }
-    default: {
-      // Unknown model — bo qua
-    }
-  }
-
-  return tags
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -122,28 +69,33 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     )
   }
 
-  const { event, model, entry } = payload
+  const { event, model, uid, entry } = payload
+  const primary = getRevalidationTarget(uid || model, entry)
+  const fallback = uid && uid !== model ? getRevalidationTarget(model, entry) : { tags: [], paths: [] }
+  const tagsToInvalidate = Array.from(new Set([...primary.tags, ...fallback.tags]))
+  const pathsToInvalidate = Array.from(new Set([...primary.paths, ...fallback.paths]))
 
-  // Xác định các cache tags cần xóa
-  const tagsToInvalidate = getTagsForModel(model, entry)
-
-  if (tagsToInvalidate.length === 0) {
+  if (tagsToInvalidate.length === 0 && pathsToInvalidate.length === 0) {
     return NextResponse.json({
       revalidated: false,
-      message: `No cache tags registered for model: ${model}`,
+      message: `No cache targets registered for model: ${model}`,
     })
   }
 
   for (const tag of tagsToInvalidate) {
-    // @ts-expect-error Types in Next 14 may be misaligned temporarily
-    revalidateTag(tag)
+    revalidateTag(tag, 'max')
+  }
+  for (const path of pathsToInvalidate) {
+    revalidatePath(path)
   }
 
   return NextResponse.json({
     revalidated: true,
     model,
+    uid,
     event,
     tags: tagsToInvalidate,
+    paths: pathsToInvalidate,
     timestamp: new Date().toISOString(),
   })
 }

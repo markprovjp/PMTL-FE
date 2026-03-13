@@ -24,11 +24,11 @@ type NotificationItem = {
 }
 
 const KIND_META: Record<string, { label: string; icon: typeof Bell }> = {
-  community: { label: 'Cộng đồng', icon: MessageSquareMore },
-  content_update: { label: 'Bài viết', icon: Newspaper },
-  event_reminder: { label: 'Sự kiện', icon: CalendarClock },
-  daily_chant: { label: 'Tu học', icon: Bell },
-  broadcast: { label: 'Thông báo', icon: Sparkles },
+  community: { label: 'Diễn đàn', icon: MessageSquareMore },
+  content_update: { label: 'Kho nội dung', icon: Newspaper },
+  event_reminder: { label: 'Sự kiện & lịch tu', icon: CalendarClock },
+  daily_chant: { label: 'Tu học hằng ngày', icon: Bell },
+  broadcast: { label: 'Thông báo chung', icon: Sparkles },
 }
 
 const STORAGE_KEY = 'pmtl_read_notifications'
@@ -138,6 +138,7 @@ export default function NotificationMenu({ mobile = false }: { mobile?: boolean 
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-gold/80">Thông báo</p>
+                <p className="mt-1 text-xs text-muted-foreground">Chỉ hiện nhắc việc cần thiết, không làm phiền quá mức.</p>
               </div>
               {unreadCount > 0 ? (
                 <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-gold px-2 text-xs font-semibold text-black">

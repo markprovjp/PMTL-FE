@@ -17,13 +17,13 @@ import type { PushJobRecord } from '@/lib/push-server'
 
 const STORAGE_KEY = 'pmtl_read_notifications'
 const KIND_META: Record<string, { label: string; icon: typeof Bell }> = {
-  community: { label: 'Cộng đồng', icon: MessageSquareMore },
-  content_update: { label: 'Bài viết mới', icon: Newspaper },
-  event_reminder: { label: 'Sự kiện', icon: CalendarClock },
-  daily_chant: { label: 'Tu học', icon: Bell },
+  community: { label: 'Diễn đàn', icon: MessageSquareMore },
+  content_update: { label: 'Kho nội dung', icon: Newspaper },
+  event_reminder: { label: 'Sự kiện & lịch tu', icon: CalendarClock },
+  daily_chant: { label: 'Tu học hằng ngày', icon: Bell },
   broadcast: { label: 'Thông báo chung', icon: Sparkles },
 }
-const FILTERS = ['Tất cả', 'Cộng đồng', 'Bài viết mới', 'Sự kiện', 'Tu học', 'Thông báo chung']
+const FILTERS = ['Tất cả', 'Diễn đàn', 'Kho nội dung', 'Sự kiện & lịch tu', 'Tu học hằng ngày', 'Thông báo chung']
 
 function formatTime(value?: string | null) {
   if (!value) return ''
@@ -95,7 +95,7 @@ export default function NotificationsHubClient({ initialItems }: { initialItems:
           <p className="text-[11px] uppercase tracking-[0.28em] text-gold/80">Thông báo</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground md:text-4xl">Danh sách thông báo</h1>
           <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-            Giao diện đọc lại tối giản. Chỉ hiện những gì cần đọc, dễ bấm, dễ nhìn cho người lớn tuổi.
+            Giao diện đọc lại tối giản. Chỉ hiện những gì cần đọc, dễ bấm, dễ nhìn cho người lớn tuổi và không dồn dập.
           </p>
         </div>
         <Link href="/profile" className="inline-flex rounded-md border border-border bg-background px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-gold/35 hover:text-gold">

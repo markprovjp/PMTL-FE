@@ -23,10 +23,30 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 
 const NOTIFICATION_TYPES = [
-  { value: 'daily_chant', label: 'Thông báo tu học' },
-  { value: 'content_update', label: 'Bài viết mới' },
-  { value: 'event_reminder', label: 'Sự kiện sắp diễn ra' },
-  { value: 'community', label: 'Cập nhật cộng đồng' },
+  { 
+    value: 'daily_chant', 
+    label: 'Tu học hằng ngày',
+    description: 'Lời nhắc công khóa và nhịp tu học.',
+    recommended: true
+  },
+  { 
+    value: 'content_update', 
+    label: 'Bài viết & kinh điển',
+    description: 'Nội dung mới phù hợp với sở thích của anh.',
+    recommended: true
+  },
+  { 
+    value: 'event_reminder', 
+    label: 'Sự kiện & lịch tu',
+    description: 'Sự kiện sắp diễn ra, cách thông báo thông minh.',
+    recommended: true
+  },
+  { 
+    value: 'community', 
+    label: 'Diễn đàn',
+    description: 'Phản hồi trong các bài viết anh quan tâm.',
+    recommended: true
+  },
 ] as const
 
 type NotificationType = (typeof NOTIFICATION_TYPES)[number]['value']
@@ -342,16 +362,16 @@ export default function PushNotificationButton({
               </div>
               <CardTitle className="max-w-2xl text-2xl leading-tight md:text-[2.2rem]">{title}</CardTitle>
               <CardDescription className="max-w-2xl pt-1 text-sm leading-7 text-muted-foreground md:text-base">
-                {description}
+                Chọn nhóm thông báo phù hợp. Hệ thống sẽ gửi ngay khi có nội dung mới hoặc hoạt động anh quan tâm.
               </CardDescription>
             </div>
           </div>
 
           <div className="surface-panel-muted flex items-center gap-3 px-4 py-3">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-foreground">Bật trên thiết bị này</p>
+              <p className="text-sm font-semibold text-foreground">Bật thông báo</p>
               <p className="text-xs text-muted-foreground">
-                {isSubscribed ? 'Thiết bị đang nhận thông báo đã chọn.' : 'Thiết bị chưa nhận thông báo.'}
+                {isSubscribed ? 'Thiết bị này đang nhận thông báo' : 'Chưa bật'}
               </p>
             </div>
             <Switch
@@ -399,10 +419,10 @@ export default function PushNotificationButton({
               <div className="space-y-1">
                 <Label className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em] text-stone-600">
                   <ShieldAlert className="h-3.5 w-3.5" />
-                  Loại thông báo
+                  Chọn nhóm thông báo
                 </Label>
-                <p className="text-sm leading-7 text-muted-foreground">
-                  Chỉ nhóm nào được tick mới nhận push. Khi bài viết, thảo luận hoặc sự kiện được phát hành, hệ thống sẽ gửi ngay.
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Bật những nhóm cần thiết. Giữ ít nhóm để thông báo đủ hữu ích mà không quá phiền.
                 </p>
               </div>
 
@@ -430,14 +450,14 @@ export default function PushNotificationButton({
                           })
                         }}
                       />
-                      <div className="space-y-1">
-                        <p className="text-sm font-semibold leading-none text-foreground">{item.label}</p>
-                        <p className="text-xs leading-6 text-muted-foreground">
-                          {item.value === 'daily_chant' && 'Dùng cho các đợt phát thông báo tu học chung hoặc lời nhắc do hệ thống tạo.'}
-                          {item.value === 'content_update' && 'Khi có bài viết hoặc nội dung mới được phát hành, thiết bị này sẽ nhận ngay.'}
-                          {item.value === 'event_reminder' && 'Khi có sự kiện quan trọng được publish hoặc gửi thủ công, thiết bị này sẽ nhận ngay.'}
-                          {item.value === 'community' && 'Khi có bài chia sẻ mới hoặc phản hồi mới trong cộng đồng, thiết bị này sẽ nhận ngay.'}
-                        </p>
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold leading-none text-foreground">{item.label}</p>
+                          {item.recommended && (
+                            <Badge variant="secondary" className="text-xs">Nên bật</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs leading-5 text-muted-foreground">{item.description}</p>
                       </div>
                     </label>
                   )
@@ -455,25 +475,25 @@ export default function PushNotificationButton({
             compact ? 'px-5 py-4' : 'px-6 py-5 md:px-7'
           )}
         >
-          <p className="text-sm leading-7 text-muted-foreground">
+          <p className="text-sm leading-6 text-muted-foreground">
             {isSubscribed
-              ? 'Sau khi đổi nhóm thông báo, anh lưu lại là hệ thống dùng cấu hình mới ngay.'
-              : 'Bật thông báo để lưu subscription và bắt đầu nhận các nhóm nội dung đã chọn trên thiết bị này.'}
+              ? 'Thay đổi sẽ áp dụng ngay.'
+              : 'Bật thông báo để thiết bị này nhận các nhóm đã chọn.'}
           </p>
 
           <div className="flex flex-wrap gap-3">
             {isSubscribed ? (
               <>
                 <Button type="button" onClick={() => void handleUpdate()} disabled={saving} size="lg">
-                  {saving ? 'Đang lưu...' : 'Lưu cài đặt'}
+                  {saving ? 'Đang lưu...' : 'Lưu'}
                 </Button>
                 <Button type="button" onClick={() => void handleUnsubscribe()} disabled={saving} size="lg" variant="outline">
-                  Tắt thông báo
+                  Tắt
                 </Button>
               </>
             ) : (
               <Button type="button" onClick={() => void handleSubscribe()} disabled={saving} size="lg">
-                {saving ? 'Đang bật thông báo...' : 'Bật thông báo'}
+                {saving ? 'Đang bật...' : 'Bật thông báo'}
               </Button>
             )}
           </div>

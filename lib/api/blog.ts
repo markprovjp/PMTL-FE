@@ -34,6 +34,7 @@ export interface GetPostsOptions {
   dateFrom?: string
   /** Date string like '2026-03-01T00:00:00Z' */
   dateTo?: string
+  sort?: 'relevance' | 'newest' | 'oldest' | 'most-viewed'
   /** revalidate interval in seconds — default 60 */
   revalidate?: number
   /** Force bypass all caches */
@@ -42,7 +43,20 @@ export interface GetPostsOptions {
 
 /** Get paginated list of published blog posts */
 export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiList<BlogPost>> {
-  const { page = 1, pageSize = 10, categorySlug, tagSlugs, search, source, featured, language, dateFrom, dateTo, revalidate = 3600 } = options
+  const {
+    page = 1,
+    pageSize = 10,
+    categorySlug,
+    tagSlugs,
+    search,
+    source,
+    featured,
+    language,
+    dateFrom,
+    dateTo,
+    sort = 'relevance',
+    revalidate = 3600,
+  } = options
 
   const filters: Record<string, unknown> = {}
   if (search) {
@@ -73,10 +87,15 @@ export async function getPosts(options: GetPostsOptions = {}): Promise<StrapiLis
     if (dateTo) publishedAtFilter['$lte'] = dateTo
     filters['publishedAt'] = publishedAtFilter
   }
-
+  const sortOrder =
+    sort === 'oldest'
+      ? ['publishedAt:asc']
+      : sort === 'most-viewed'
+        ? ['views:desc', 'publishedAt:desc']
+        : ['publishedAt:desc']
 
   return strapiFetch<StrapiList<BlogPost>>('/blog-posts', {
-    sort: ['publishedAt:desc'],
+    sort: sortOrder,
     filters,
     pagination: { page, pageSize },
     populate: POPULATE_LIST,
