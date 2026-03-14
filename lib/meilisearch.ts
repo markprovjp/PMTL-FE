@@ -6,19 +6,12 @@ import { z } from 'zod'
 
 const meilisearchEnvSchema = z.object({
   host: z.string().url(),
-  apiKey: z.string().min(1),
   indexName: z.string().min(1).default('blog-post'),
 })
 
 const parseMeilisearchConfig = () =>
   meilisearchEnvSchema.safeParse({
     host: process.env.MEILISEARCH_HOST ?? process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
-    apiKey:
-      process.env.MEILISEARCH_SEARCH_KEY ??
-      process.env.MEILISEARCH_API_KEY ??
-      process.env.MEILISEARCH_MASTER_KEY ??
-      process.env.NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY ??
-      process.env.NEXT_PUBLIC_MEILISEARCH_API_KEY,
     indexName: process.env.MEILISEARCH_BLOG_POST_INDEX ?? 'blog-post',
   })
 
@@ -34,18 +27,31 @@ const getMeilisearchConfig = cache(() => {
   return parsed.data
 })
 
+const getMeilisearchApiKeys = cache(() => {
+  const keys = [
+    process.env.MEILISEARCH_MASTER_KEY,
+    process.env.MEILISEARCH_API_KEY,
+    process.env.MEILISEARCH_SEARCH_KEY,
+    process.env.NEXT_PUBLIC_MEILISEARCH_SEARCH_KEY,
+    process.env.NEXT_PUBLIC_MEILISEARCH_API_KEY,
+  ].filter((value): value is string => Boolean(value?.trim()))
+
+  return Array.from(new Set(keys))
+})
+
 /**
  * Initialize Meilisearch client
  * Only available on server-side
  */
 export const getMeilisearchClient = cache(() => {
   const config = getMeilisearchConfig()
+  const [apiKey] = getMeilisearchApiKeys()
 
-  if (!config) {
+  if (!config || !apiKey) {
     return null
   }
 
-  const { host, apiKey } = config
+  const { host } = config
   return new MeiliSearch({
     host,
     apiKey,
@@ -72,14 +78,13 @@ export async function searchBlogPostsViaMeilisearch(
 
   try {
     const config = getMeilisearchConfig()
-    const client = getMeilisearchClient()
+    const apiKeys = getMeilisearchApiKeys()
 
-    if (!config || !client) {
+    if (!config || apiKeys.length === 0) {
       throw new Error('Meilisearch is not configured')
     }
 
-    const { indexName } = config
-    const index = client.index(indexName)
+    const { host, indexName } = config
 
     // Build filter array
     const filters: string[] = []
@@ -113,39 +118,50 @@ export async function searchBlogPostsViaMeilisearch(
             : query
               ? undefined
               : ['publishedAt:desc']
+    let lastError: unknown = null
 
-    const result = await index.search(query, {
-      limit: pageSize,
-      offset: (page - 1) * pageSize,
-      filter: filterString ?? undefined,
-      sort: sortOptions,
-      // Highlight matching keywords in title, excerpt, content, and source metadata
-      attributesToHighlight: ['title', 'excerpt', 'content', 'sourceName', 'sourceTitle'],
-      highlightPreTag: '<mark class="bg-gold/20 text-gold rounded px-0.5">',
-      highlightPostTag: '</mark>',
-      // Only return the fields we need (performance)
-      attributesToRetrieve: [
-        'id', 'documentId', 'title', 'slug', 'excerpt', 'content',
-        'thumbnail', 'categories', 'tags', 'views', 'likes',
-        'publishedAt', 'createdAt', 'featured',
-        'sourceName', 'sourceTitle', 'sourceUrl',
-      ],
-      // Return a snippet of the content around the match
-      attributesToCrop: ['content', 'excerpt', 'sourceTitle'],
-      cropLength: 200,
-    })
+    for (const apiKey of apiKeys) {
+      try {
+        const client = new MeiliSearch({ host, apiKey })
+        const index = client.index(indexName)
+        const result = await index.search(query, {
+          limit: pageSize,
+          offset: (page - 1) * pageSize,
+          filter: filterString ?? undefined,
+          sort: sortOptions,
+          attributesToHighlight: ['title', 'excerpt', 'content', 'sourceName', 'sourceTitle'],
+          highlightPreTag: '<mark class="bg-gold/20 text-gold rounded px-0.5">',
+          highlightPostTag: '</mark>',
+          attributesToRetrieve: [
+            'id', 'documentId', 'uuid', 'title', 'slug', 'excerpt', 'content',
+            'thumbnail', 'categories', 'tags', 'views', 'likes',
+            'publishedAt', 'createdAt', 'featured',
+            'sourceName', 'sourceTitle', 'sourceUrl',
+          ],
+          attributesToCrop: ['content', 'excerpt', 'sourceTitle'],
+          cropLength: 200,
+        })
 
-    return {
-      data: result.hits,
-      meta: {
-        pagination: {
-          page,
-          pageSize,
-          total: result.estimatedTotalHits || 0,
-          pageCount: Math.ceil((result.estimatedTotalHits || 0) / pageSize),
-        },
-      },
+        return {
+          data: result.hits,
+          meta: {
+            pagination: {
+              page,
+              pageSize,
+              total: result.estimatedTotalHits || 0,
+              pageCount: Math.ceil((result.estimatedTotalHits || 0) / pageSize),
+            },
+          },
+        }
+      } catch (error) {
+        lastError = error
+        if (!(error instanceof Error) || !String(error.message).includes('invalid')) {
+          throw error
+        }
+      }
     }
+
+    throw lastError ?? new Error('Meilisearch search failed')
   } catch (error) {
     console.error('[Meilisearch] Search failed:', error)
     throw error

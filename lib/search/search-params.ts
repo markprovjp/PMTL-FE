@@ -6,11 +6,13 @@ const searchPageParamsSchema = z.object({
   tags: z.array(z.string().trim().min(1).max(120)).default([]),
   time: z.enum(['all', 'week', 'month']).default('all'),
   sort: z.enum(['relevance', 'newest', 'oldest', 'most-viewed']).default('relevance'),
+  library: z.enum(['all', 'read', 'favorite', 'unread']).default('all'),
   page: z.number().int().min(1).default(1),
 })
 
 export type SearchTimeFilter = z.infer<typeof searchPageParamsSchema>['time']
 export type SearchSortOption = z.infer<typeof searchPageParamsSchema>['sort']
+export type SearchLibraryFilter = z.infer<typeof searchPageParamsSchema>['library']
 
 export interface SearchPageState {
   q: string
@@ -18,6 +20,7 @@ export interface SearchPageState {
   tags: string[]
   time: SearchTimeFilter
   sort: SearchSortOption
+  library: SearchLibraryFilter
   page: number
 }
 
@@ -32,15 +35,29 @@ function getValue(input: SearchParamInput, key: string): string | undefined {
 export function parseSearchPageParams(input: SearchParamInput): SearchPageState {
   const rawTags = getValue(input, 'tags')
   const rawPage = getValue(input, 'page')
-
-  return searchPageParamsSchema.parse({
+  const parsed = searchPageParamsSchema.safeParse({
     q: getValue(input, 'q') ?? '',
     cat: getValue(input, 'cat') ?? null,
     tags: rawTags ? rawTags.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
     time: getValue(input, 'time') ?? 'all',
     sort: getValue(input, 'sort') ?? 'relevance',
+    library: getValue(input, 'library') ?? 'all',
     page: rawPage ? Number(rawPage) : 1,
   })
+
+  if (parsed.success) {
+    return parsed.data
+  }
+
+  return {
+    q: getValue(input, 'q')?.trim().slice(0, 120) ?? '',
+    cat: getValue(input, 'cat')?.trim().slice(0, 120) ?? null,
+    tags: rawTags ? rawTags.split(',').map((tag) => tag.trim()).filter(Boolean).slice(0, 20) : [],
+    time: 'all',
+    sort: 'relevance',
+    library: 'all',
+    page: 1,
+  }
 }
 
 export function serializeSearchPageParams(state: SearchPageState): string {
@@ -50,6 +67,7 @@ export function serializeSearchPageParams(state: SearchPageState): string {
   if (state.tags.length > 0) params.set('tags', state.tags.join(','))
   if (state.time !== 'all') params.set('time', state.time)
   if (state.sort !== 'relevance') params.set('sort', state.sort)
+  if (state.library !== 'all') params.set('library', state.library)
   if (state.page > 1) params.set('page', String(state.page))
   return params.toString()
 }
@@ -74,6 +92,7 @@ export function hasActiveSearchFilters(state: SearchPageState): boolean {
       state.tags.length > 0 ||
       state.time !== 'all' ||
       state.sort !== 'relevance' ||
+      state.library !== 'all' ||
       state.page > 1
   )
 }

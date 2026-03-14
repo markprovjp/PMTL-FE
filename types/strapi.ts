@@ -89,12 +89,15 @@ export interface UiIcon {
   sortOrder: number
 }
 
+export type UiIconValue = UiIcon | string | null
+
 // ─── Category ─────────────────────────────────────────────────
 
 /** Category with hierarchical tree support — can have parent/children */
 export interface Category {
   id: number
   documentId: string
+  uuid?: string | null
   name: string
   slug: string
   description: string | null       // rich text — ghi chú cho admin
@@ -185,7 +188,7 @@ export interface BeginnerGuide {
   order: number
   step_number: number
   guide_type: 'so-hoc' | 'kinh-bai-tap'
-  icon: UiIcon | null
+  icon: UiIconValue
   pdf_url: string | null
   video_url: string | null
   images: StrapiMedia[] | null
@@ -219,7 +222,7 @@ export interface PhapBaoItem {
   borderColor: string
   description: string
   link: string
-  icon: UiIcon | null
+  icon: UiIconValue
   iconType?: string | null // legacy fallback
 }
 
@@ -227,7 +230,7 @@ export interface ActionCardItem {
   title: string
   description: string
   link: string
-  icon: UiIcon | null
+  icon: UiIconValue
   iconType?: string | null // legacy fallback
 }
 
@@ -438,7 +441,7 @@ export interface HubPage {
   visualTheme?: 'teaching' | 'practice' | 'story' | 'reference' | null  // Hub personality
   sortOrder: number
   showInMenu: boolean
-  menuIcon?: UiIcon | null
+  menuIcon?: UiIconValue
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -478,7 +481,7 @@ export interface CmsSocialLink {
   id: number
   label: string
   url: string
-  icon: UiIcon | null
+  icon: UiIconValue
   iconName?: string | null // legacy fallback
 }
 
@@ -667,4 +670,60 @@ export interface SutraBookmark {
   sutra: Pick<Sutra, 'documentId' | 'title' | 'slug'> | null
   volume: Pick<SutraVolume, 'documentId' | 'title' | 'slug' | 'volumeNumber'> | null
   chapter: Pick<SutraChapter, 'documentId' | 'title' | 'slug' | 'chapterNumber'> | null
+}
+
+export interface BlogReaderState {
+  id: number
+  documentId: string
+  isFavorite: boolean
+  isPinned: boolean
+  firstReadAt: string | null
+  lastReadAt: string | null
+  favoritedAt: string | null
+  pinnedAt: string | null
+  readCount: number
+  updatedAt: string
+  post: Pick<
+    BlogPost,
+    'documentId' | 'title' | 'slug' | 'excerpt' | 'publishedAt' | 'createdAt' | 'views' | 'featured'
+  > & {
+    thumbnail: BlogPost['thumbnail']
+    categories: BlogPost['categories']
+    tags: BlogPost['tags']
+  } | null
+}
+
+export interface BlogReaderPostList {
+  data: BlogPost[]
+  meta: {
+    pagination: {
+      page: number
+      pageSize: number
+      pageCount: number
+      total: number
+    }
+    counts: {
+      totalRead: number
+      totalFavorite: number
+      totalPinned: number
+      recentReadToday: number
+      recentReadWeek: number
+      recentFavoriteToday: number
+      recentFavoriteWeek: number
+    }
+    states: Record<
+      string,
+      Pick<BlogReaderState, 'documentId' | 'isFavorite' | 'isPinned' | 'firstReadAt' | 'lastReadAt' | 'favoritedAt' | 'pinnedAt' | 'readCount'> | null
+    >
+  }
+}
+
+export interface BlogReaderSummary {
+  totalRead: number
+  totalFavorite: number
+  totalPinned: number
+  recentReadToday: number
+  recentReadWeek: number
+  recentFavoriteToday: number
+  recentFavoriteWeek: number
 }

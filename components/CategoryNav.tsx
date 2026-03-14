@@ -11,32 +11,8 @@ import {
   ShieldCheck, HeartPulse, Users, Sparkles, Moon, Scroll,
   BookOpen, ArrowRight, Zap, Leaf, Compass, Award, ChevronRight
 } from 'lucide-react'
-import { getCategoriesClient } from '@/lib/api/categories-client'
-import type { Category, CategoryTree } from '@/types/strapi'
-
-// ── Xây dựng cây danh mục từ danh sách phẳng ─────────────────
-function xayDungCayDanhMuc(danhSachPhang: Category[]): CategoryTree[] {
-  const banDo = new Map<number, CategoryTree>()
-  for (const dm of danhSachPhang) {
-    banDo.set(dm.id, { ...dm, children: [], depth: 0 } as CategoryTree)
-  }
-  const gocCay: CategoryTree[] = []
-  for (const nut of Array.from(banDo.values())) {
-    if (nut.parent?.id && banDo.has(nut.parent.id)) {
-      const nutCha = banDo.get(nut.parent.id)!
-      nut.depth = nutCha.depth + 1
-      nutCha.children.push(nut)
-    } else {
-      gocCay.push(nut)
-    }
-  }
-  const sapXep = (arr: CategoryTree[]) => {
-    arr.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
-    arr.forEach((n) => sapXep(n.children as CategoryTree[]))
-  }
-  sapXep(gocCay)
-  return gocCay
-}
+import { getCategoryTreeClient } from '@/lib/api/categories-client'
+import type { CategoryTree } from '@/types/strapi'
 
 // ── Map biểu tượng theo slug/tên ─────────────────────────────
 function layBieuTuong(ten: string, slug: string) {
@@ -106,11 +82,10 @@ export default function CategoryNav({ onClose }: { onClose?: () => void }) {
   useEffect(() => {
     const taiDanhMuc = async () => {
       try {
-        const danhSach = await getCategoriesClient()
-        if (!danhSach || danhSach.length === 0) {
+        const cayDaXay = await getCategoryTreeClient()
+        if (!cayDaXay || cayDaXay.length === 0) {
           setLoi('Chưa có khai thị nào được cấu hình')
         } else {
-          const cayDaXay = xayDungCayDanhMuc(danhSach)
           setCay(cayDaXay)
           if (cayDaXay.length > 0) setIdGocDangChon(cayDaXay[0].id)
           setLoi(null)
@@ -342,9 +317,9 @@ export function CategoryNavMobile({ onClose }: { onClose: () => void }) {
   const [dangTai, setDangTai] = useState(true)
 
   useEffect(() => {
-    getCategoriesClient()
+    getCategoryTreeClient()
       .then(danhSach => {
-        if (danhSach && danhSach.length > 0) setCay(xayDungCayDanhMuc(danhSach))
+        if (danhSach && danhSach.length > 0) setCay(danhSach)
       })
       .catch(console.error)
       .finally(() => setDangTai(false))

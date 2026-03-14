@@ -118,6 +118,14 @@ export async function updatePushJob(documentId: string, data: Record<string, unk
   })
 }
 
+export async function fetchPushJobByDocumentId(documentId: string): Promise<PushJobRecord | null> {
+  const data = await strapiAdminFetch<{ data: PushJobRecord }>(`/push-jobs/${documentId}`, {
+    method: 'GET',
+  })
+
+  return data.data ?? null
+}
+
 export async function fetchNextPushJob(): Promise<PushJobRecord | null> {
   const query = [
     'filters[status][$in][0]=pending',

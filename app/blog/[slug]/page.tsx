@@ -19,6 +19,7 @@ import { ArrowRightIcon } from '@/components/icons/ZenIcons'
 import ShareButtons from './ShareButtons'
 import CommentsSection from '@/components/comments/CommentsSection'
 import SeriesNav from '@/components/blog/SeriesNav'
+import BlogPostEngagement from '@/components/blog/BlogPostEngagement'
 import Sidebar from '@/components/layout/Sidebar'
 export const revalidate = 3600 // 1h fallback — webhook clears cache instantly on admin publish
 
@@ -200,6 +201,9 @@ export default async function BlogPostPage({ params }: Props) {
                   {post.likes > 0 && (
                     <span>{post.likes} thích</span>
                   )}
+                </div>
+                <div className="mt-4">
+                  <BlogPostEngagement documentId={post.documentId} />
                 </div>
               </div>
 

@@ -5,6 +5,13 @@
 import { strapiFetch } from '@/lib/strapi'
 import type { Category, CategoryTree, StrapiList } from '@/types/strapi'
 
+interface CategoryTreeResponse {
+  data: CategoryTree[]
+  meta: {
+    totalRoots: number
+  }
+}
+
 /** Fetch flat list of all categories */
 export async function getCategories(): Promise<Category[]> {
   try {
@@ -17,6 +24,19 @@ export async function getCategories(): Promise<Category[]> {
     return res.data
   } catch {
     return []
+  }
+}
+
+export async function getCategoryTree(): Promise<CategoryTree[]> {
+  try {
+    const res = await strapiFetch<CategoryTreeResponse>('/categories/tree', {
+      next: { revalidate: 300, tags: ['categories'] },
+    })
+
+    return Array.isArray(res.data) ? res.data : []
+  } catch {
+    const flat = await getCategories()
+    return buildCategoryTree(flat)
   }
 }
 

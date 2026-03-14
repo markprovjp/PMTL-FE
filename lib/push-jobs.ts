@@ -1,4 +1,5 @@
-import { createPushJob } from '@/lib/push-server'
+import { createPushJob, fetchPushJobByDocumentId } from '@/lib/push-server'
+import { processNextPushJob } from '@/lib/push-worker'
 
 interface EnqueuePushJobInput {
   kind: string
@@ -37,6 +38,42 @@ export async function enqueuePushJobSafe(input: EnqueuePushJobInput) {
 }
 
 export async function dispatchQueueUntil(targetJobDocumentId?: string) {
-  void targetJobDocumentId
-  return null
+  const maxRounds = 20
+  const results: Array<Record<string, unknown>> = []
+
+  for (let round = 1; round <= maxRounds; round += 1) {
+    const result = await processNextPushJob()
+
+    if (!result) {
+      return {
+        reachedTarget: false,
+        rounds: round,
+        reason: 'empty-queue',
+        results,
+      }
+    }
+
+    results.push(result)
+
+    if (!targetJobDocumentId || result.jobDocumentId === targetJobDocumentId) {
+      const latest = await fetchPushJobByDocumentId(result.jobDocumentId)
+      return {
+        reachedTarget: !targetJobDocumentId || result.jobDocumentId === targetJobDocumentId,
+        rounds: round,
+        result,
+        latest,
+        results,
+      }
+    }
+  }
+
+  const latest = targetJobDocumentId ? await fetchPushJobByDocumentId(targetJobDocumentId) : null
+
+  return {
+    reachedTarget: false,
+    rounds: maxRounds,
+    reason: 'max-rounds-exceeded',
+    latest,
+    results,
+  }
 }

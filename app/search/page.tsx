@@ -35,18 +35,33 @@ export async function generateMetadata({ searchParams }: SearchPageProps): Promi
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const initialState = parseSearchPageParams(await searchParams)
 
+  const initialResultsPromise =
+    initialState.library === 'all'
+      ? searchPostsAndCategories({
+          search: initialState.q || undefined,
+          categorySlug: initialState.cat || undefined,
+          tagSlugs: initialState.tags.length > 0 ? initialState.tags : undefined,
+          dateFrom: getSearchDateFrom(initialState.time),
+          page: initialState.page,
+          pageSize: 10,
+          sort: initialState.sort,
+        })
+      : Promise.resolve({
+          data: [],
+          meta: {
+            pagination: {
+              page: initialState.page,
+              pageSize: 10,
+              pageCount: 0,
+              total: 0,
+            },
+          },
+        })
+
   const [categories, tags, initialResults] = await Promise.all([
     getCategories().catch(() => []),
     getAllTags().catch(() => []),
-    searchPostsAndCategories({
-      search: initialState.q || undefined,
-      categorySlug: initialState.cat || undefined,
-      tagSlugs: initialState.tags.length > 0 ? initialState.tags : undefined,
-      dateFrom: getSearchDateFrom(initialState.time),
-      page: initialState.page,
-      pageSize: 10,
-      sort: initialState.sort,
-    }),
+    initialResultsPromise,
   ])
 
   return (

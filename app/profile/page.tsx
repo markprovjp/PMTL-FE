@@ -15,6 +15,8 @@ import Breadcrumbs from '@/components/Breadcrumbs'
 import { getErrorMessage, updateMe, uploadAvatarFile } from '@/lib/api/user'
 import PushNotificationButton from '@/components/PushNotificationButton'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import BlogLibraryPanel from '@/components/profile/BlogLibraryPanel'
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_API_URL || 'http://localhost:1337'
 
@@ -291,48 +293,58 @@ export default function ProfilePage() {
             </div>
           </motion.div>
 
-          {/* ── Form thông tin ──────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="surface-panel p-6"
-          >
-            <h2 className="ant-title mb-4 text-xl text-foreground">Thông tin tài khoản</h2>
-
-            <div className="mb-4">
-              <label className="text-xs text-muted-foreground block mb-1">Email (Đăng nhập)</label>
-              <input value={user.email} disabled className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground opacity-70" />
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field label="Họ và tên" name="fullName" value={form.fullName} onChange={handleChange} />
-              <Field label="Pháp danh" name="dharmaName" value={form.dharmaName} onChange={handleChange} />
-              <Field label="Số điện thoại" name="phone" value={form.phone} onChange={handleChange} />
-              <Field label="Địa chỉ" name="address" value={form.address} onChange={handleChange} />
-              <div className="sm:col-span-2">
-                <Field label="Giới thiệu" name="bio" value={form.bio} onChange={handleChange} multiline />
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 mt-6">
-              <Button
-                onClick={handleSave}
-                disabled={saving}
-                variant="sacred"
-                size="lg"
-              >
-                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </Button>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.22 }}
             className="mt-6"
           >
-            <PushNotificationButton />
+            <Tabs defaultValue="account" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="account">Tài khoản</TabsTrigger>
+                <TabsTrigger value="library">Thư viện</TabsTrigger>
+                <TabsTrigger value="notifications">Thông báo</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="account" className="mt-6">
+                <div className="surface-panel p-6">
+                  <h2 className="ant-title mb-4 text-xl text-foreground">Thông tin tài khoản</h2>
+
+                  <div className="mb-4">
+                    <label className="text-xs text-muted-foreground block mb-1">Email (Đăng nhập)</label>
+                    <input value={user.email} disabled className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground opacity-70" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Họ và tên" name="fullName" value={form.fullName} onChange={handleChange} />
+                    <Field label="Pháp danh" name="dharmaName" value={form.dharmaName} onChange={handleChange} />
+                    <Field label="Số điện thoại" name="phone" value={form.phone} onChange={handleChange} />
+                    <Field label="Địa chỉ" name="address" value={form.address} onChange={handleChange} />
+                    <div className="sm:col-span-2">
+                      <Field label="Giới thiệu" name="bio" value={form.bio} onChange={handleChange} multiline />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mt-6">
+                    <Button
+                      onClick={handleSave}
+                      disabled={saving}
+                      variant="sacred"
+                      size="lg"
+                    >
+                      {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="library" className="mt-6">
+                <BlogLibraryPanel />
+              </TabsContent>
+
+              <TabsContent value="notifications" className="mt-6">
+                <PushNotificationButton />
+              </TabsContent>
+            </Tabs>
           </motion.div>
         </div>
       </main>

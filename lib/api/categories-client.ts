@@ -1,8 +1,10 @@
-import type { Category, StrapiList } from '@/types/strapi'
+import type { Category, CategoryTree, StrapiList } from '@/types/strapi'
 
 // ── Cache phía trình duyệt: categories ít khi thay đổi ────────
 let _cacheData: Category[] | null = null
 let _cacheTime = 0
+let _treeCacheData: CategoryTree[] | null = null
+let _treeCacheTime = 0
 const CACHE_THOI_GIAN = 5 * 60 * 1000 // 5 phút
 
 /**
@@ -35,5 +37,31 @@ export async function getCategoriesClient(): Promise<Category[]> {
   } catch (error) {
     console.error('[DanhMuc] Lỗi khi lấy danh mục:', error)
     return _cacheData ?? []
+  }
+}
+
+export async function getCategoryTreeClient(): Promise<CategoryTree[]> {
+  if (_treeCacheData && Date.now() - _treeCacheTime < CACHE_THOI_GIAN) {
+    return _treeCacheData
+  }
+
+  try {
+    const res = await fetch('/api/categories/tree', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    if (!res.ok) return _treeCacheData ?? []
+
+    const data: { data: CategoryTree[] } = await res.json()
+    const tree = data.data ?? []
+
+    _treeCacheData = tree
+    _treeCacheTime = Date.now()
+
+    return tree
+  } catch (error) {
+    console.error('[DanhMuc] Lỗi khi lấy cây danh mục:', error)
+    return _treeCacheData ?? []
   }
 }

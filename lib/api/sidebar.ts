@@ -10,7 +10,7 @@ export async function getSidebarConfig(): Promise<SidebarConfig | null> {
     const res = await strapiFetch<StrapiSingle<SidebarConfig>>('/sidebar-config', {
       populate: {
         downloadLinks: true,
-        socialLinks: { populate: { icon: true } },
+        socialLinks: true,
         qrImages: { fields: ['url', 'formats', 'width', 'height', 'alternativeText'] },
       },
       next: { revalidate: 3600, tags: ['sidebar-config'] },

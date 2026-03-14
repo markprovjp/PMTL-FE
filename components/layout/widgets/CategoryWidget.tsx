@@ -2,13 +2,13 @@
 // Compact category list for sidebar (top-level only)
 import Link from 'next/link'
 import { TagIcon } from 'lucide-react'
-import { getCategories, buildCategoryTree } from '@/lib/api/categories'
+import { getCategoryTree } from '@/lib/api/categories'
+import type { CategoryTree } from '@/types/strapi'
 
 export default async function CategoryWidget() {
-  let topLevel: ReturnType<typeof buildCategoryTree> = []
+  let topLevel: CategoryTree[] = []
   try {
-    const flat = await getCategories()
-    const tree = buildCategoryTree(flat)
+    const tree = await getCategoryTree()
     topLevel = tree.slice(0, 12) // max 12 top-level for sidebar
   } catch {
     return null

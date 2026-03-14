@@ -1,7 +1,8 @@
 // components/layout/widgets/SocialLinksWidget.tsx — Server component
 import Image from 'next/image'
 import { getStrapiMediaUrl } from '@/lib/strapi'
-import type { CmsSocialLink, StrapiMedia, UiIcon } from '@/types/strapi'
+import { resolveIconToken } from '@/lib/ui-icons'
+import type { CmsSocialLink, StrapiMedia, UiIconValue } from '@/types/strapi'
 
 interface SocialLinksWidgetProps {
   socialLinks: CmsSocialLink[]
@@ -9,8 +10,8 @@ interface SocialLinksWidgetProps {
 }
 
 // Map iconName to a simple SVG path or a recognizable character fallback
-function SocialIcon({ icon, legacyName }: { icon: UiIcon | null; legacyName?: string | null }) {
-  const token = (icon?.key ?? icon?.lucideName ?? legacyName ?? '').toLowerCase()
+function SocialIcon({ icon, legacyName }: { icon: UiIconValue; legacyName?: string | null }) {
+  const token = String(resolveIconToken(icon) ?? legacyName ?? '').toLowerCase()
   if (!token) return null
   const n = token
   if (n.includes('facebook')) {
